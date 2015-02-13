@@ -56,7 +56,7 @@ eval {
     my $modName = $cgi->param('module');
     if ($modName eq 'FIG_Config') {
         # Here the user wants a dump of the FIG_Config. Get the data we need.
-        my $configHash = Env::GetFigConfigs("$FIG_Config::source/config/FIG_Config.pm");
+        my $configHash = Env::GetFigConfigs("$FIG_Config::proj/config/FIG_Config.pm");
         # Start with a heading.
         push @lines, CGI::div({ class => 'heading' }, CGI::h1("FIG_Config"));
         # Start the output table.

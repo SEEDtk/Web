@@ -3,8 +3,6 @@
 	<name>Web</name>
 	<comment></comment>
 	<projects>
-		<project>ERDB</project>
-		<project>kernel</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -16,4 +14,26 @@
 	<natures>
 		<nature>org.epic.perleditor.perlnature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>charset.conv</name>
+			<type>1</type>
+			<location>C:/Apache24/conf/charset.conv</location>
+		</link>
+		<link>
+			<name>magic</name>
+			<type>1</type>
+			<location>C:/Apache24/conf/magic</location>
+		</link>
+		<link>
+			<name>mime.types</name>
+			<type>1</type>
+			<location>C:/Apache24/conf/mime.types</location>
+		</link>
+		<link>
+			<name>openssl.cnf</name>
+			<type>1</type>
+			<location>C:/Apache24/conf/openssl.cnf</location>
+		</link>
+	</linkedResources>
 </projectDescription>
