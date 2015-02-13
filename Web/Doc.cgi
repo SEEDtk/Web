@@ -94,7 +94,7 @@ eval {
         # Loop through the script directories.
         for my $dir (@FIG_Config::scripts) {
             # Get the base name of the path and use it as our section title.
-            $dir =~ /(\w+)$/;
+            $dir =~ /\/(\w+)\/scripts$/;
             push @lines, CGI::h2($1);
             # Get a hash of the scripts in this directory.
             my $scriptHash = Env::GetScripts($dir);
@@ -165,6 +165,26 @@ eval {
             }
             # Put the result in the output area.
             push @lines, CGI::div({ id => 'Dump' }, $pod, CGI::br({ class => 'clear' }));
+            # Now loop through the file finding TODOs.
+            my @todoList;
+            if (! open(my $ih, "<$fileFound")) {
+                # Here we could not open the file.
+                push @lines, CGI::h3("Error opening file for TODO search: $!");
+            } else {
+                # Loop through the file, extracting TODOs.
+                while (! eof $ih) {
+                    my $line = <$ih>;
+                    if ($line =~ /##\s*TODO\s+(.+)/) {
+                        push @todoList, $1;
+                    }
+                }
+                # Write out the TODO list.
+                push @lines, CGI::h1("TO DO");
+                push @lines, CGI::start_ul();
+                push @lines, map { CGI::li($_) } @todoList;
+                push @lines, CGI::end_ul();
+                push @lines, CGI::br({ class => 'clear' });
+            }
         }
     }
     print join("\n", @lines);
