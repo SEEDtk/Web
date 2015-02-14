@@ -6,13 +6,13 @@ package WebUtils;
     use base qw(Exporter);
     use vars qw(@EXPORT);
     @EXPORT = qw(Open Min Max Pad SetGraphic Default Trace ClearTrace Phrase Die
-                 Between Conjoin);
+                 Between Conjoin Cmp);
 
 =head2 Utility Methods
 
 =head3 Clean
 
-    my $cleaned = Tracer::Clean($string);
+    my $cleaned = WebUtils::Clean($string);
 
 Clean up a string for HTML display. This not only converts special
 characters to HTML entity names, it also removes control characters.
@@ -448,7 +448,7 @@ sub Between {
 
 =head3 PutFields
 
-    Tracer::PutFields($oh, @fields);
+    WebUtils::PutFields($oh, @fields);
 
 Write a list of fields to the output file. The fields are tab-delimited
 with a following new-line.
@@ -477,7 +477,7 @@ sub PutFields {
 
 =head3 GetFields
 
-    my @fields = Tracer::GetFields($ih, $count);
+    my @fields = WebUtils::GetFields($ih, $count);
 
 Read a list of fields from the input file. The fields should be
 tab-delimited on a single line.
@@ -530,7 +530,7 @@ sub GetFields {
 
 =head3 Cmp
 
-    my $cmp = Tracer::Cmp($a, $b);
+    my $cmp = Cmp($a, $b);
 
 This method performs a universal sort comparison. Each value coming in is
 separated into a text parts and number parts. The text
@@ -623,7 +623,7 @@ sub _Parse {
 
 =head3 Ordinal
 
-    my $word = Tracer::Ordinal($number);
+    my $word = WebUtils::Ordinal($number);
 
 Return a string representing the ordinal corresponding to the specified
 number. C<0> becomes C<first>, C<1> becomes C<second>, and so forth.
