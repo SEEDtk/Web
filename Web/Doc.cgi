@@ -164,7 +164,7 @@ eval {
                 $pod = CGI::h3("No POD documentation found in <u>$modName</u>.");
             }
             # Put the result in the output area.
-            push @lines, CGI::div({ id => 'Dump' }, $pod, CGI::br({ class => 'clear' }));
+            push @lines, CGI::div({ id => 'Pod' }, $pod, CGI::br({ class => 'clear' }));
             # Now loop through the file finding TODOs.
             my @todoList;
             if (! open(my $ih, "<$fileFound")) {
