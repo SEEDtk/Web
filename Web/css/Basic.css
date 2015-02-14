@@ -304,7 +304,7 @@ div.right {
  * The styles in this section are used when displaying a TestUtils-style data
  * structure dump or POD document.
  **/
-
+#Pod,
 #Dump {
    font-family: Tahoma, Arial, sans-serif;
    font-size: small;
@@ -314,29 +314,37 @@ div.right {
    background-attachment: fixed;
 }
 
+#Pod dd,
 #Dump dd {
    line-height: 110%;
 }
 
+#Pod dl,
 #Dump dl {
 	margin-left: 5em;
 }
 
+#Pod p,
 #Dump p {
    line-height: 110%;
 }
 
+#Pod a,
 #Dump a {
    text-decoration: none;
    font-weight: bold;
    color: #00C;
 }
 
+#Pod hr,
 #Dump hr {
    color: #CCCCCC;
    background-color: #CCCCCC;
 }
 
+#Pod pre,
+#Pod code,
+#Pod tt,
 #Dump pre,
 #Dump code,
 #Dump tt {
@@ -345,6 +353,7 @@ div.right {
 	color: #006666;
 }
 
+#Pod blockquote,
 #Dump blockquote {
    border-style: solid;
    border-width: 3px;
@@ -358,6 +367,12 @@ div.right {
    color: #fff;
 }
 
+#Pod h1,
+#Pod h2,
+#Pod h3,
+#Pod h4,
+#Pod h5,
+#Pod h6,
 #Dump h1,
 #Dump h2,
 #Dump h3,
@@ -368,26 +383,34 @@ div.right {
    font-family: Garamond, Georgia, serif;
 }
 
+#Pod h1 a:link,
+#Pod h1 a:visited,
 #Dump h1 a:link,
 #Dump h1 a:visited {
    color: #8C0015;
 }
 
+#Pod h1 a:hover,
 #Dump h1 a:hover {
    color: #fff;
    background-color: #8C0015;
 }
 
+#Pod dt,
 #Dump dt {
    font-weight: bold;
    background-color: #fcc;
 }
 
+#Pod th,
 #Dump th {
    background-color: #ccc;
    text-align: left;
 }
 
+#Pod table,
+#Pod th,
+#Pod td,
 #Dump table,
 #Dump th,
 #Dump td,
@@ -398,6 +421,7 @@ div.right {
    font-size: small;
 }
 
+#Pod table,
 #Dump table {
    margin-top: 6px;
 }
@@ -406,6 +430,7 @@ div.right {
    font-weight: bold;
 }
 
+#Pod dd,
 #Dump dd {
    margin-bottom: 0.5em;
    margin-top: 0;
