@@ -167,25 +167,50 @@ eval {
             }
             # Put the result in the output area.
             push @lines, CGI::div({ id => 'Pod' }, $pod, CGI::br({ class => 'clear' }));
-            # Now loop through the file finding TODOs.
-            my @todoList;
+            # Now we want to find the TODOs and USEs. For the USEs, we map them to the type
+            # of USE. Currently, only "use base" is supported in this way.
+            my (@todoList, %useHash);
             if (! open(my $ih, "<$fileFound")) {
                 # Here we could not open the file.
                 push @lines, CGI::h3("Error opening file for TODO search: $!");
             } else {
-                # Loop through the file, extracting TODOs.
+                # Loop through the file, extracting TODOs and USEs.
                 while (! eof $ih) {
                     my $line = <$ih>;
                     if ($line =~ /##\s*TODO\s+(.+)/) {
+                        # Here we have a TODO.
                         push @todoList, $1;
+                    } elsif ($line =~ /^\s+use\s+base\s+(?:qw\(|'|")([^)'"]+)/) {
+                        # Here we have a use base.
+                        if ($1 ne 'Exporter') {
+                            $useHash{$1} = 'Base';
+                        }
+                    } elsif ($line =~ /^\s+use\s+(\w+);/) {
+                        # Here we have a normal use.
+                        $useHash{$1} = '';
                     }
                 }
+                # Write out the use list.
+                if (scalar(keys %useHash)) {
+                    push @lines, CGI::h1("MODULES");
+                    push @lines, CGI::start_ul();
+                    for my $subModule (sort keys %useHash) {
+                        my $line = CGI::a({ href => "Doc.cgi?module=$subModule"}, $subModule);
+                        if ($useHash{$subModule}) {
+                            $line .= " ($useHash{$subModule})";
+                        }
+                        push @lines, CGI::li($line);
+                    }
+                    push @lines, CGI::end_ul();
+                }
                 # Write out the TODO list.
-                push @lines, CGI::h1("TO DO");
-                push @lines, CGI::start_ul();
-                push @lines, map { CGI::li($_) } @todoList;
-                push @lines, CGI::end_ul();
-                push @lines, CGI::br({ class => 'clear' });
+                if (scalar(@todoList)) {
+                    push @lines, CGI::h1("TO DO");
+                    push @lines, CGI::start_ol();
+                    push @lines, map { CGI::li($_) } @todoList;
+                    push @lines, CGI::end_ol();
+                    push @lines, CGI::br({ class => 'clear' });
+                }
             }
         }
     }
