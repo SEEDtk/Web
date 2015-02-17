@@ -167,6 +167,8 @@ eval {
             }
             # Put the result in the output area.
             push @lines, CGI::div({ id => 'Pod' }, $pod, CGI::br({ class => 'clear' }));
+            # Tell the user where the file came from.
+            push @lines, CGI::p("Module $modName is located at $fileFound.\n");
             # Now we want to find the TODOs and USEs. For the USEs, we map them to the type
             # of USE. Currently, only "use base" is supported in this way.
             my (@todoList, %useHash);
