@@ -4,3 +4,6 @@
 dw*.xml
 /run_perl.sh
 _notes
+/.com.apple.timemachine.supported
+/.localized
+/.DS_Store
