@@ -105,10 +105,12 @@ eval {
                 # We need to loop through the scripts, displaying them.
                 # This variable will count undocumented scripts.
                 my @undoc;
+                # Sort the script names.
+                my @scripts = sort { Cmp($a, $b) } keys %$scriptHash;
                 # This variable will count documented scripts.
                 my $doc = 0;
                 # Do the looping.
-                for my $script (sort keys %$scriptHash) {
+                for my $script (@scripts) {
                     # Get the comment.
                     my $comment = $scriptHash->{$script};
                     # Are we documented?

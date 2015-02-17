@@ -67,15 +67,11 @@ eval {
     # Get the parameters.
     my $height = $cgi->param('height') || 900;
     my $xmlFileName = $cgi->param('xmlFileName') || $FIG_Config::shrub_dbd;
+    # Remove the drive letter. It causes a 2048 error.
+    $xmlFileName =~ s/^\w+://;
     # Get the datanase object.
     my $erdb;
-    if ($xmlFileName) {
-        # Yes, get a pseudo-database object for that XML file.
-        $erdb = Shrub->new(DBD => $xmlFileName, offline => 1);
-    } else {
-        # No, get the live database.
-        $erdb = Shrub->new();
-    }
+    $erdb = Shrub->new(DBD => $xmlFileName, offline => 1);
     # Get a page creator.
     my $page = ERDBPDocPage->new(dbObject => $erdb);
     # Create the body HTML.
