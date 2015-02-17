@@ -1,4 +1,4 @@
-#!/usr/bin/env run_perl.sh
+#!/usr/bin/env perl
 
 #
 # Copyright (c) 2003-2006 University of Chicago and Fellowship
