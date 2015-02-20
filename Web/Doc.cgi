@@ -40,9 +40,13 @@ Display a list of the available command-line scripts.
 
 # Get the CGI query object.
 my $cgi = CGI->new();
+# Get the module name parameter.
+my $modName = $cgi->param('module');
+# Compute the page title.
+my $title = $modName || 'Documentation Page';
 # Start the output page.
 print CGI::header();
-print CGI::start_html(-title => 'Documentation Page',
+print CGI::start_html(-title => $title,
                       -style => { src => '/css/Basic.css' });
 # Specify a borderless body.
 print CGI::start_body({ class => 'borderless' });
@@ -53,7 +57,6 @@ eval {
     # We'll put the HTML text in here.
     my @lines;
     # Do we have a module?
-    my $modName = $cgi->param('module');
     if ($modName eq 'FIG_Config') {
         # Here the user wants a dump of the FIG_Config. Get the data we need.
         my $configHash = Env::GetFigConfigs("$FIG_Config::proj/config/FIG_Config.pm");

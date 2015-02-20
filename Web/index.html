@@ -4,30 +4,41 @@
 <meta charset="utf-8">
 <title>SEEDtk Start Page</title>
 <link href="css/Basic.css" rel="stylesheet" type="text/css">
+<script>
+    function setTitle(newTitle) {
+        document.title = newTitle;
+        return true;
+    }
+
+    function setModule() {
+        var nameBox = document.getElementById("moduleName");
+        return setTitle(nameBox.value);
+    }
+</script>
 </head>
 
 <body>
 <div class="heading"><h1>SEEDtk Start Page</h1></div>
 <div id="Content">
 <div class="searchBar">
-        <h3><a href="Doc.cgi?module=ReadMe" target="landing">SEEDtk Code</a></h3>
+        <h3><a href="Doc.cgi?module=ReadMe" target="landing" onclick="return setTitle('SEEDtk ReadMe');">SEEDtk Documentation</a></h3>
         <p>
-            <form method="get" action="Doc.cgi" target="landing">
+            <form method="get" action="Doc.cgi" target="landing" onsubmit="return setModule()">
             Enter a script or module name<br>
-            <input type="text" class="textFix" name="module"><br>
+            <input type="text" class="textFix" name="module" id="moduleName"><br>
             <input type="submit" value="Search">
             </form>
         <p></p>
         <ul class="nav">
-            <li><a href="Links.html" target="landing">Links</a></li>
-            <li><a href="http://pubseed.theseed.org/ErdbDocWidget.cgi?xmlFileName=/home/parrello/SEEDtk/modules/ERDB/ShrubDBD.xml" target="landing">DBD</a></li>
-            <li><a href="Method.html" target="landing">Methods</a></li>
+            <li><a href="Links.html" target="landing" onclick="return setTitle('SEEDtk Start Page');">Links</a></li>
+            <li><a href="http://pubseed.theseed.org/ErdbDocWidget.cgi?xmlFileName=/home/parrello/SEEDtk/modules/ERDB/ShrubDBD.xml" target="landing" onclick="return setTitle('Shrub DBD');">DBD</a></li>
+            <li><a href="Method.html" target="landing" onclick="return setTitle('Method Generator');">Methods</a></li>
         </ul>
         <p></p>
         <ul class="nav">
-            <li><a href="Doc.cgi?module=scripts" target="landing">Scripts</a></li>
-            <li><a href="Doc.cgi?module=ENV" target="landing">ENV</a></li>
-            <li><a href="Doc.cgi?module=FIG_Config" target="landing">Config</a></li>
+            <li><a href="Doc.cgi?module=scripts" target="landing" onclick="return setTitle('SEEDtk Scripts');">Scripts</a></li>
+            <li><a href="Doc.cgi?module=ENV" target="landing" onclick="return setTitle('Localhost ENV');">ENV</a></li>
+            <li><a href="Doc.cgi?module=FIG_Config" target="landing" onclick="return setTitle('FIG_Config');">Config</a></li>
         </ul>
         <p></p>
         <hr>
