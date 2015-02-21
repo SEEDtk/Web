@@ -44,18 +44,20 @@ my $cgi = CGI->new();
 my $modName = $cgi->param('module');
 # Compute the page title.
 my $title = $modName || 'Documentation Page';
-# Start the output page.
-print CGI::header();
-print CGI::start_html(-title => $title,
-                      -style => { src => '/css/Basic.css' });
+# Create the default output page header.
+my @header = (CGI::header() .
+        CGI::start_html(-title => $title,
+                      -style => { src => '/css/Basic.css' }));
 # Specify a borderless body.
-print CGI::start_body({ class => 'borderless' });
+push @header, CGI::start_body({ class => 'borderless' });
+# Create the default output page trailer.
+my @trailer = CGI::end_html();
+# We'll put the HTML body text in here.
+my @lines;
 # Clear the trace file.
 ClearTrace();
 # Protect from errors.
 eval {
-    # We'll put the HTML text in here.
-    my @lines;
     # Do we have a module?
     if ($modName eq 'FIG_Config') {
         # Here the user wants a dump of the FIG_Config. Get the data we need.
@@ -143,6 +145,9 @@ eval {
         }
         # Close off the display.
         push @lines, CGI::end_ul(), CGI::br({ class => 'clear' }), CGI::end_div();
+    } elsif ($modName =~ /^perl\s+(\S+)$/) {
+        # Generate a redirection script for the specified perl function.
+        push @lines, "<script>", "window.location='http://perldoc.perl.org/functions/$1.html';", "</script>";
     } elsif ($modName) {
         # Here we have a regular module. Try to find it.
         my $fileFound = FindPod($modName);
@@ -218,15 +223,14 @@ eval {
                 }
             }
         }
+        push @lines, CGI::end_html();
     }
-    print join("\n", @lines);
+    print join("\n", @header, @lines, @trailer);
 };
 # Process any error.
 if ($@) {
-    print CGI::blockquote($@);
+    print join("\n", @header,  CGI::blockquote($@), @trailer);
 }
-# Close off the page.
-print CGI::end_html();
 
 =head3 FindPod
 
@@ -281,4 +285,3 @@ sub FindPod {
     return $retVal;
 }
 
-1;
