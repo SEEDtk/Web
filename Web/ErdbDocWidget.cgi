@@ -22,7 +22,7 @@ use strict;
 use lib::Web_Config;
 use Tracer qw(:DEFAULT PrintLine);
 use Shrub;
-use ERDBPDocPage;
+use ERDB::PDocPage;
 use ERDBExtras;
 
 =head1 ErdbDocWidget Script
@@ -73,7 +73,7 @@ eval {
     my $erdb;
     $erdb = Shrub->new(DBD => $xmlFileName, offline => 1);
     # Get a page creator.
-    my $page = ERDBPDocPage->new(dbObject => $erdb);
+    my $page = ERDB::PDocPage->new(dbObject => $erdb);
     # Create the body HTML.
     my $html = CGI::div({ class => 'doc' }, $page->DocPage(boxHeight => $height));
     # Output it.
@@ -83,8 +83,6 @@ eval {
 if ($@) {
     # Here we have a fatal error. Save the message.
     my $errorText = "SCRIPT ERROR: $@";
-    # Issue a feed event.
-    Warn($errorText);
     # Output the error message.
     PrintLine CGI::pre($errorText);
 }
