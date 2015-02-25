@@ -89,9 +89,13 @@ eval {
     # Is this a diagram or a query?
     my $action = $cgi->param('action');
     my $offline = ($action eq 'Diagram' ? 1 : 0);
+    # Get the DBD name.
+    my $xmlFileName = $FIG_Config::shrub_dbd;
+    # Remove the drive letter. It causes a 2048 error.
+    $xmlFileName =~ s/^\w+://;
     # Get the datanase object. Note that we don't connect to the database
     # if we're doing a diagram.
-    my $shrub = Shrub->new(offline => $offline);
+    my $shrub = Shrub->new(DBD => $xmlFileName, offline => $offline);
     if ($offline) {
         # We're displaying a diagram. Get a page creator.
         my $page = ERDB::PDocPage->new(dbObject => $shrub);
