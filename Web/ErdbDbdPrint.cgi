@@ -17,8 +17,8 @@
 # http://www.theseed.org/LICENSE.TXT.
 #
 
-    use strict;
-    use CGI;
+use strict;
+use CGI;
 
 
 =head1 ERDB DBD Display

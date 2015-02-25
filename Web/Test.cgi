@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 
-    use strict;
-    use lib 'lib';
-    use CGI;
-    use TestUtils;
-    use WebUtils;
-    use XML::Simple;
-    use Web_Config;
-    use Shrub;		# This must go after "Web_Config" or it won't be found!
+use strict;
+use lib 'lib';
+use CGI;
+use TestUtils;
+use WebUtils;
+use XML::Simple;
+use Web_Config;
+use Shrub;		# This must go after "Web_Config" or it won't be found!
 
 print CGI::header();
 print CGI::start_html(-title => 'Test Page',
