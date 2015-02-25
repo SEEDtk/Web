@@ -96,7 +96,7 @@ eval {
         # We're displaying a diagram. Get a page creator.
         my $page = ERDB::PDocPage->new(dbObject => $shrub);
         # Create the body HTML.
-        my $html = CGI::div({ class => 'doc' }, $page->DocPage(boxHeight => 750));
+        my $html = CGI::div({ class => 'doc' }, $page->DocPage(boxHeight => 740));
         # Output it.
         print "$html\n";
     } else {
@@ -133,7 +133,22 @@ eval {
             push @lines, CGI::h3("Query Failed") . "\n";
             push @lines, $console->Summary();
         } else {
-            # Here the query worked. We can display the output.
+            # Here the query worked. We can display the output. Start with the code
+            # (if any).
+            if ($style eq 'Get' || $style eq 'GetAll') {
+                # Yes. Generate the PERL code.
+                my $code = $console->GetCode('shrub', $style, @vars);
+                push @lines, CGI::h3("Perl Code for Query");
+                push @lines, CGI::pre($code);
+            } elsif ($style eq 'get_all') {
+                # He wants a command line. Generate it.
+                my $code = $console->GetCommand(@vars);
+                my $mode = ($FIG_Config::win_mode ? "Windows" : "Unix");
+                push @lines, CGI::h3("get_all Command for Query ($mode)");
+                push @lines, CGI::pre($code);
+            }
+            # Now the results.
+            push @lines, CGI::h3("Results");
             push @lines, CGI::start_table({ class => 'fancy' });
             # Get the headers.
             my (@aligns, @captions);
@@ -167,19 +182,6 @@ eval {
             $console->AddStat(duration => int(time() - $start));
             # Write the summary.
             push @lines, $console->Summary();
-            # Does the user want code?
-            if ($style eq 'Get' || $style eq 'GetAll') {
-                # Yes. Generate the PERL code.
-                my $code = $console->GetCode('shrub', $style, @vars);
-                push @lines, CGI::h3("Perl Code for Query");
-                push @lines, CGI::pre($code);
-            } elsif ($style eq 'get_all') {
-                # He wants a command line. Generate it.
-                my $code = $console->GetCommand(@vars);
-                my $mode = ($FIG_Config::win_mode ? "Windows" : "Unix");
-                push @lines, CGI::h3("get_all Command for Query ($mode)");
-                push @lines, CGI::pre($code);
-            }
         }
         # Display the accumulated HTML.
         push @lines, CGI::end_div();

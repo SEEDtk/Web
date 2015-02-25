@@ -6,7 +6,11 @@
 <link href="css/Basic.css" rel="stylesheet" type="text/css">
 <script>
     function setTitle(newTitle) {
-        document.title = newTitle;
+        if (window.location.port.substr(0, 2) == '50') {
+            document.title = 'SEEDtk DEBUG';
+        } else {
+            document.title = newTitle;
+        }
         return true;
     }
 
@@ -14,11 +18,14 @@
         var nameBox = document.getElementById("moduleName");
         return setTitle(nameBox.value);
     }
+    setTitle("SEEDtk Start Page");
 </script>
 </head>
 
 <body>
-<div class="heading"><h1>SEEDtk Start Page</h1></div>
+<div class="heading">
+    <h1>SEEDtk Start Page</h1>
+</div>
 <div id="Content">
 <div class="searchBar">
         <h3><a href="Doc.cgi?module=ReadMe" target="landing" onclick="return setTitle('SEEDtk ReadMe');">SEEDtk Documentation</a></h3>
@@ -65,7 +72,7 @@
                 <option value="search-alias=jewelry">Jewelry</option>
                 <option value="search-alias=digital-text">Kindle Store</option>
                 <option value="search-alias=magazines">Magazine Subscriptions</option>
-                <option current="parent" value="search-alias=movies-tv">Movies &amp; TV</option>
+                <option value="search-alias=movies-tv">Movies &amp; TV</option>
                 <option value="search-alias=digital-music">MP3 Downloads</option>
                 <option value="search-alias=popular">Music</option>
                 <option value="search-alias=mi">Musical Instruments</option>
@@ -114,7 +121,7 @@
         <hr>
     </div>
     <div class="panel">
-        <iframe name="landing" id="landing" src="Links.html" />
+        <iframe name="landing" id="landing" src="Links.html"></iframe>
     </div>
     <br class="clear" />
 </div>
