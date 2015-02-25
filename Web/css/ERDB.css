@@ -42,12 +42,13 @@ textarea.common {
    font-family: inherit;
 }
 
-.doc blockquote {
+blockquote.err {
    border-style: solid;
    border-width: 3px;
-   border-color: #000;
-   background-color: #ff0;
+   border-color: #ccc;
+   background-color: #c00;
    padding: 2px;
+   color: #fff;
 }
 
 .doc h1,
@@ -96,6 +97,21 @@ table.fancy {
 .code th,
 .code td {
     text-align: left;
+}
+
+.left th,
+.left td {
+	text-align: left;
+}
+
+.right th,
+.right td {
+	text-align: right;
+}
+
+.center th,
+.center td {
+	text-align: center;
 }
 
 /**
