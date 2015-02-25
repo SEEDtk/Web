@@ -118,7 +118,7 @@ eval {
         # need to check for a variable specification.
         my $parmText = $cgi->param('parms') // '';
         my (@parms, @vars);
-        for my $parm (split /\n/, $parmText) {
+        for my $parm (split /[\r\n]+/, $parmText) {
             # Do we have a variable spec?
             if ($parm =~ /^(\$\w+)\s+=\s(.+)/) {
                 # Yes. Save it.
