@@ -190,12 +190,12 @@ eval {
                     if ($line =~ /##\s*TODO\s+(.+)/) {
                         # Here we have a TODO.
                         push @todoList, $1;
-                    } elsif ($line =~ /^\s+use\s+base\s+(?:qw\(|'|")([^)'"]+)/) {
+                    } elsif ($line =~ /^\s*use\s+base\s+(?:qw\(|'|")([^)'"]+)/) {
                         # Here we have a use base.
                         if ($1 ne 'Exporter') {
                             $useHash{$1} = 'Base';
                         }
-                    } elsif ($line =~ /^\s+use\s+(\w+);/) {
+                    } elsif ($line =~ /^\s*use\s+(\w+);/) {
                         # Here we have a normal use.
                         $useHash{$1} = '';
                     }
