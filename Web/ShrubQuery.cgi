@@ -113,7 +113,7 @@ eval {
         my $filter = $cgi->param('filter') // '';
         my $fields = $cgi->param('fields');
         my $style = $cgi->param('style') || '0';
-        my $limit = $cgi->param('limit') || 100;
+        my $limit = $cgi->param('limit') // 100;
         # The parameters require special processing. We break them up into lines. In each line, we
         # need to check for a variable specification.
         my $parmText = $cgi->param('parms') // '';
