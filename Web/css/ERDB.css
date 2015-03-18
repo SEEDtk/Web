@@ -1,4 +1,4 @@
-/* Style sheet for ERDBDocPage and others */
+/* Style sheet for ERDB pages */
 
 
 div.doc {
@@ -101,17 +101,17 @@ table.fancy {
 
 .left th,
 .left td {
-	text-align: left;
+    text-align: left;
 }
 
 .right th,
 .right td {
-	text-align: right;
+    text-align: right;
 }
 
 .center th,
 .center td {
-	text-align: center;
+    text-align: center;
 }
 
 /**
@@ -127,7 +127,7 @@ table.fancy {
 }
 
 #pod dt {
-   
+
 }
 
 #pod code,

@@ -21,11 +21,11 @@ use strict;
 use CGI;
 
 
-=head1 ERDB DBD Display
+=head1 ERDBtk DBD Display
 
 =head2 Introduction
 
-This script outputs the XML definition file of an L<ERDB> database. The
+This script outputs the XML definition file of an L<ERDBtk> database. The
 definition file is located and then output directly; this allows us
 to pass the DBD to the Flash documentation program.
 

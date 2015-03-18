@@ -21,15 +21,15 @@
 use strict;
 use lib::Web_Config;
 use Shrub;
-use ERDB::PDocPage;
-use ERDBExtras;
-use ERDB::QueryConsole;
+use ERDBtk::PDocPage;
+use ERDBtkExtras;
+use ERDBtk::QueryConsole;
 use Time::HiRes;
 
 =head1 Shrub Query and Display Script
 
-This script displays or queries the Shrub database. It uses L<ERDB::PDocPage>
-to display the diagram or L<ERDB::QueryConsole> to display the results of a
+This script displays or queries the Shrub database. It uses L<ERDBtk::PDocPage>
+to display the diagram or L<ERDBtk::QueryConsole> to display the results of a
 query. If the action is C<Diagram>, all the other parameters are ignored.
 The two scripts are combined to simplify the design of the input form.
 
@@ -43,11 +43,11 @@ C<QUERY> to execute a query, C<Diagram> to display the database diagram.
 
 =item path
 
-The path through the database, as described in L<ERDB/Object Name List>.
+The path through the database, as described in L<ERDBtk/Object Name List>.
 
 =item filter
 
-The filter clause for the query, as described in L<ERDB/Filter Clause>.
+The filter clause for the query, as described in L<ERDBtk/Filter Clause>.
 
 =item parms
 
@@ -58,7 +58,7 @@ a single space, after which anything present serves as the value.
 
 =item fields
 
-A list of field names in L<standard field name format|ERDB/Standard Field Name Format>.
+A list of field names in L<standard field name format|ERDBtk/Standard Field Name Format>.
 
 =item limit
 
@@ -67,7 +67,7 @@ The maximum number of result rows to display, or C<0> to display them all.
 =item style
 
 The style of code to generate for the code display at the end. The values are
-C<Get> for a get-loop, C<GetAll> for a single L<GetAll|ERDB/GetAll> call, or
+C<Get> for a get-loop, C<GetAll> for a single L<GetAll|ERDBtk/GetAll> call, or
 C<get_all> for a command-line invocation of the L<get_all.pl> command.
 
 =back
@@ -98,7 +98,7 @@ eval {
     my $shrub = Shrub->new(DBD => $xmlFileName, offline => $offline);
     if ($offline) {
         # We're displaying a diagram. Get a page creator.
-        my $page = ERDB::PDocPage->new(dbObject => $shrub);
+        my $page = ERDBtk::PDocPage->new(dbObject => $shrub);
         # Create the body HTML.
         my $html = CGI::div({ class => 'doc' }, $page->DocPage(boxHeight => 740));
         # Output it.
@@ -107,7 +107,7 @@ eval {
         # Here we have a query. We'll accumulate HTML lines in here.
         my @lines = CGI::start_div({ class => 'doc' });
         # Create the query console helper.
-        my $console = ERDB::QueryConsole->new($shrub, secure => 1);
+        my $console = ERDBtk::QueryConsole->new($shrub, secure => 1);
         # Get the query parameters.
         my $path = $cgi->param('path');
         my $filter = $cgi->param('filter') // '';
