@@ -7,6 +7,7 @@ use lib 'lib';
 use WebUtils;
 use Web_Config;
 use Env;
+use ParseSpec;
 
 
 =head1 Documentation Display
@@ -153,8 +154,13 @@ eval {
         my $fileFound = FindPod($modName);
         if (! $fileFound) {
             push @lines, CGI::h3("Module $modName not found.");
+        } elsif ($modName =~ /\.spec/) {
+            # This is a type specification file.
+            push @lines, ParseSpec::ToHtml($fileFound);
+            # Tell the user where the file came from.
+            push @lines, CGI::p("Module $modName is located at $fileFound.\n");
         } else {
-            # We have a file containing our module documentation.
+            # We have a file containing our module documentation in POD form.
             # Tell the user its name.
             push @lines, CGI::div({ class => 'heading'}, CGI::h1($modName));
             # Now we must convert the pod to HTML. To do that, we need a parser.
@@ -259,13 +265,15 @@ sub FindPod {
     # Declare the return variable.
     my $retVal;
     # Insure the name is reasonable.
-    if ($modName =~ /^(?:\w|::)+(?:\.pl)?$/) {
+    if ($modName =~ /^(?:\w|::)+(?:\.(?:pl|spec))?$/) {
         # Convert the module name to a path.
         $modName =~ s/::/\//g;
         # Get a list of the possible file names for our desired file.
         my @files;
         if ($modName =~ /\.pl/) {
             @files = map { "$_/$modName" } @FIG_Config::scripts;
+        } elsif ($modName =~ /\.spec/) {
+            @files = map { "$_/$modName" } @FIG_Config::libs;
         } else {
              @files = map { ("$_/$modName.pod", "$_/$modName.pm", "$_/pods/$modName.pod") } @INC;
              push @files, map { ("$_/$modName.pod", "$_/$modName.pm") } @FIG_Config::libs;
