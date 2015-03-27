@@ -132,7 +132,7 @@ sub Display {
         # Here we have an invalid format, which we display normally with
         # an error message thrown in.
         $retVal = $map->DisplayNormal($value);
-        my $safeFormat = Tracer::Clean($format);
+        my $safeFormat = Clean($format);
         $retVal = join("\n", CGI::blockquote("Invalid format type \"$safeFormat\"."),
                         $retVal);
     }
@@ -192,7 +192,7 @@ sub IsComplex {
 Create a new, blank mapping of object reference strings to object names.
 
 This object needs to perform two functions. First, it tracks objects already
-found so we don't get into a recursion loop. Second, it uses a 
+found so we don't get into a recursion loop. Second, it uses a
 hash to track the number of objects of each type already found.
 This is used to generate pretty names for each object.
 
@@ -375,9 +375,9 @@ sub DisplayThing {
         # they really goof up the display.
         $retVal = CGI::span({class => "marker"}, length($value) . " white chars");
     } elsif (! ref $value) {
-        # Here we have a scalar. 
+        # Here we have a scalar.
         $retVal = CGI::escapeHTML($value);
-    } else { 
+    } else {
         # Here we have a structure. Get the name hash and the path.
         my $nameHash = $self->{nameHash};
         my $path = $self->{path};
@@ -666,7 +666,7 @@ sub DisplayTable {
         my %columns = ();
         my $columnsFound = 0;
         my $okFlag = 1;
-        my @keys = sort { Tracer::Cmp($a, $b) } keys %valueMap;
+        my @keys = sort { StringUtils::Cmp($a, $b) } keys %valueMap;
         my $n = scalar @keys;
         for (my $i = 0; $i < $n && $okFlag; $i++) {
             # Get the element with this key.
@@ -701,7 +701,7 @@ sub DisplayTable {
             $retVal .= $self->DisplayNormal($value);
         } else {
             # Finally, we can write output. Sort the column names.
-            my @cols = sort { Tracer::Cmp($a,$b) } keys %columns;
+            my @cols = sort { StringUtils::Cmp($a,$b) } keys %columns;
             # Start the table with a header row.
             my @rows = (CGI::Tr(CGI::th([ $keyType, map { CGI::escapeHTML($_) } @cols])));
             # Loop through the row keys.
@@ -795,5 +795,47 @@ sub DisplayCell {
     # Return the result.
     return $retVal;
 }
+
+=head3 Clean
+
+    my $cleaned = TestUtils::Clean($string);
+
+Clean up a string for HTML display. This not only converts special
+characters to HTML entity names, it also removes control characters.
+
+=over 4
+
+=item string
+
+String to convert.
+
+=item RETURN
+
+Returns the input string with anything that might disrupt an HTML literal removed. An
+undefined value will be converted to an empty string.
+
+=back
+
+=cut
+
+sub Clean {
+    # Get the parameters.
+    my ($string) = @_;
+    # Declare the return variable.
+    my $retVal = "";
+    # Only proceed if the value exists.
+    if (defined $string) {
+        # Get the string.
+        $retVal = $string;
+        # Clean the control characters.
+        $retVal =~ tr/\x00-\x1F/?/;
+        # Escape the rest.
+        $retVal = CGI::escapeHTML($retVal);
+    }
+    # Return the result.
+    return $retVal;
+}
+
+
 
 1;
