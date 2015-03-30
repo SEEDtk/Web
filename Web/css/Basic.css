@@ -304,6 +304,7 @@ div.right {
  * The styles in this section are used when displaying a TestUtils-style data
  * structure dump or POD document.
  **/
+div.pod,
 #Pod,
 #Dump {
    font-family: Tahoma, Arial, sans-serif;
@@ -314,21 +315,25 @@ div.right {
    background-attachment: fixed;
 }
 
+div.pod dd,
 #Pod dd,
 #Dump dd {
    line-height: 110%;
 }
 
+div.pod dl,
 #Pod dl,
 #Dump dl {
     margin-left: 5em;
 }
 
+div.pod p,
 #Pod p,
 #Dump p {
    line-height: 110%;
 }
 
+div.pod a,
 #Pod a,
 #Dump a {
    text-decoration: none;
@@ -336,12 +341,17 @@ div.right {
    color: #00C;
 }
 
+div.pod hr,
 #Pod hr,
 #Dump hr {
    color: #CCCCCC;
    background-color: #CCCCCC;
 }
 
+
+div.pod pre,
+div.pod code,
+div.pod tt,
 #Pod pre,
 #Pod code,
 #Pod tt,
@@ -353,6 +363,7 @@ div.right {
     color: #006666;
 }
 
+div.pod blockquote,
 #Pod blockquote,
 #Dump blockquote {
    border-style: solid;
@@ -367,6 +378,12 @@ div.right {
    color: #fff;
 }
 
+div.pod h1,
+div.pod h2,
+div.pod h3,
+div.pod h4,
+div.pod h5,
+div.pod h6,
 #Pod h1,
 #Pod h2,
 #Pod h3,
@@ -383,6 +400,8 @@ div.right {
    font-family: Garamond, Georgia, serif;
 }
 
+div.pod h1 a:link,
+div.pod h1 a:visited,
 #Pod h1 a:link,
 #Pod h1 a:visited,
 #Dump h1 a:link,
@@ -390,24 +409,29 @@ div.right {
    color: #8C0015;
 }
 
+div.pod h1 a:hover,
 #Pod h1 a:hover,
 #Dump h1 a:hover {
    color: #fff;
    background-color: #8C0015;
 }
 
+div.pod dt,
 #Pod dt,
 #Dump dt {
    font-weight: bold;
    background-color: #fcc;
 }
 
+div.pod th,
 #Pod th,
 #Dump th {
    background-color: #ccc;
    text-align: left;
 }
 
+div.pod table,
+div.pod th,
 #Pod table,
 #Pod th,
 #Pod td,
@@ -421,6 +445,7 @@ div.right {
    font-size: small;
 }
 
+div.pod table,
 #Pod table,
 #Dump table {
    margin-top: 6px;
@@ -430,6 +455,7 @@ div.right {
    font-weight: bold;
 }
 
+div.pod dd,
 #Pod dd,
 #Dump dd {
    margin-bottom: 0.5em;

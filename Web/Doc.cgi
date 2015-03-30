@@ -182,10 +182,12 @@ eval {
             # Put the result in the output area.
             push @lines, CGI::div({ id => 'Pod' }, $pod, CGI::br({ class => 'clear' }));
             # Tell the user where the file came from.
-            push @lines, CGI::p("Module $modName is located at $fileFound.\n");
+            my $name = ($modName =~ /\.pl$/ ? "Script " : "Module ") . $modName;
+            push @lines, CGI::p("$name is located at $fileFound.\n");
             # Now we want to find the TODOs and USEs. For the USEs, we map them to the type
-            # of USE. Currently, only "use base" is supported in this way.
-            my (@todoList, %useHash);
+            # of USE. Currently, only "use base" is supported in this way. We also look for
+            # a ScriptUtils::Opts call.
+            my (@todoList, %useHash, $optCalled);
             if (! open(my $ih, "<$fileFound")) {
                 # Here we could not open the file.
                 push @lines, CGI::h3("Error opening file for TODO search: $!");
@@ -204,6 +206,26 @@ eval {
                     } elsif ($line =~ /^\s*use\s+(\w+);/) {
                         # Here we have a normal use.
                         $useHash{$1} = '';
+                    } elsif ($line =~ /^[^#]+ScriptUtils::Opts\(/) {
+                        # Here the user called ScriptUtils::Opts. We can generate a usage
+                        # help dump.
+                        $optCalled = 1;
+                    }
+                }
+                # Write out the usage dump.
+                if ($optCalled && $modName =~ /\.pl$/) {
+                    # Here we have a script that uses our standard options call. We can generate
+                    # a usage statement.
+                    push @lines, CGI::h1("USAGE");
+                    my @usage;
+                    eval {
+                        @usage = `$modName --help`;
+                    };
+                    if ($@) {
+                        push @lines, CGI::blockquote("Script has error: $@");
+                    } else {
+                        # Here we successfully got the usage data.
+                        push @lines, CGI::div({ class => 'pod' }, CGI::pre(join("", @usage)));
                     }
                 }
                 # Write out the use list.
