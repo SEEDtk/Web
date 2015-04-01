@@ -213,13 +213,14 @@ eval {
                     }
                 }
                 # Write out the usage dump.
-                if ($optCalled && $modName =~ /\.pl$/) {
+                if ($optCalled && $modName =~ /^(.+)\.pl$/) {
                     # Here we have a script that uses our standard options call. We can generate
                     # a usage statement.
+                    my $cmd = $1;
                     push @lines, CGI::h1("USAGE");
                     my @usage;
                     eval {
-                        @usage = `$modName --help`;
+                        @usage = `$cmd --help`;
                     };
                     if ($@) {
                         push @lines, CGI::blockquote("Script has error: $@");
