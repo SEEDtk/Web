@@ -93,7 +93,7 @@ eval {
     my $xmlFileName = $FIG_Config::shrub_dbd;
     # Remove the drive letter. It causes a 2048 error.
     $xmlFileName =~ s/^\w+://;
-    # Get the datanase object. Note that we don't connect to the database
+    # Get the database object. Note that we don't connect to the database
     # if we're doing a diagram.
     my $shrub = Shrub->new(DBD => $xmlFileName, offline => $offline);
     if ($offline) {
