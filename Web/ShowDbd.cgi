@@ -27,7 +27,7 @@ use ERDBtkExtras;
 =head1 Database Definition Display Script
 
 This script displays a database definition. The definition must be stored in the
-C<DBD> subdirectory of the SEEDtk data directory as an XML file. It is designed for
+C<DBD> subdirectory of the ERDB module as an XML file. It is designed for
 displaying experimental databases that will eventually be exported to other environments.
 The following CGI parameters are used.
 
@@ -55,7 +55,7 @@ eval {
     if (! $dbdName) {
         print CGI::blockquote({ class => 'err'}, "No DBD name specified.") . "\n";
     } else {
-        my $xmlFileName = "$FIG_Config::data/DBD/$dbdName.xml";
+        my $xmlFileName = "$FIG_Config::mod_base/ERDB/DBD/$dbdName.xml";
         if (! -f $xmlFileName) {
             print CGI::blockquote({ class => 'err'}, "Database definition file $dbdName not found.") . "\n";
         } else {
