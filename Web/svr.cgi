@@ -21,6 +21,7 @@
 use strict;
 use lib::Web_Config;
 use Shrub;
+use Data::Dumper;
 
 =head1 SEEDtk Server Script
 
@@ -40,7 +41,7 @@ The output should be a text string, possibly a json-encoded object.
 =cut
 
 ## This constant contains the legal module names.
-use constant MODULES => { Genome => 1 };
+use constant MODULES => { Genome => 1, upload=>1 };
 
 # Get the CGI query object.
 my $cgi = CGI->new();
