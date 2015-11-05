@@ -58,7 +58,7 @@ if (! $modName) {
 my %parms = map { $_ => [$cgi->param($_)] } grep { $_ ne 'action' } $cgi->param;
 # Load the module.
 require "SVR/$modName.pm";
-my $result = eval('SVR::' . $modName . '::exec($shrub, \%parms)');
+my $result = eval('SVR::' . $modName . '::exec($cgi, $shrub, \%parms)');
 if ($@) {
     die "Execution error: $@";
 } else {
