@@ -8,6 +8,7 @@ use WebUtils;
 use Web_Config;
 use Env;
 use ParseSpec;
+use SeedAware;
 
 
 =head1 Documentation Display
@@ -220,13 +221,13 @@ eval {
                     push @lines, CGI::h1("USAGE");
                     my @usage;
                     eval {
-                        @usage = `$cmd --help`;
+                        @usage = SeedAware::run_gathering_output('perl', $fileFound, '--help'); ##`$cmd --help`;
                     };
                     if ($@) {
                         push @lines, CGI::blockquote("Script has error: $@");
                     } else {
                         # Here we successfully got the usage data.
-                        push @lines, CGI::div({ class => 'pod' }, CGI::pre(join("", @usage)));
+                        push @lines, CGI::div({ class => 'pod' }, CGI::pre(join("\n", @usage)));
                     }
                 }
                 # Write out the use list.
