@@ -94,6 +94,35 @@ eval {
         push @lines, CGI::end_table(), CGI::br({ class => 'clear' });
         # Close off the display area.
         push @lines, CGI::end_div();
+    } elsif ($modName eq 'tutorials') {
+        # Here the user wants a list of the tutorials.
+        push @lines, CGI::div({ class => 'heading'}, CGI::h1("Tutorials"));
+        push @lines, CGI::start_div({ id => 'Dump' });
+        # Loop through the tutorial directory.
+        my $tutDir = "$FIG_Config::web_dir/Tutorials";
+        opendir (my $dh, $tutDir) || die "Could not open tutorial directory: $!";
+        my @tuts = grep { $_ =~ /\.html$/i } readdir $dh;
+        closedir $dh;
+        # Sort the tutorial names.
+        my @tutsInOrder = sort { Cmp($a, $b) } @tuts;
+        # Start the list.
+        push @lines, CGI::start_ol();
+        for my $tut (@tutsInOrder) {
+            # Compute the title.
+            open(my $ih, "<$tutDir/$tut") || die "Could not open tutorial file $tut: $!";
+            my $title;
+            while (! eof $ih && ! $title) {
+                my $line = <$ih>;
+                if ($line =~ /<title>(.+)<\/title>/i) {
+                    $title = $1;
+                }
+            }
+            push @lines, CGI::li({ class => 'item' }, CGI::a({ href => "Tutorials/$tut" }, $tut) .
+                                ": $title");
+        }
+        push @lines, CGI::end_ol();
+        # Close off the display.
+        push @lines, CGI::br({ class => 'clear' }), CGI::end_div();
     } elsif ($modName eq 'scripts') {
         # Here the user wants a list of the command-line scripts.
         push @lines, CGI::div({ class => 'heading'}, CGI::h1("Command-Line Scripts"));
