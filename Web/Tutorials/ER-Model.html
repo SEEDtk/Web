@@ -1,0 +1,455 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>The SEEDtk Database</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h1>The SEEDtk Database</h1>
+<div id="Content">
+<p>SEEDtk is built around a database which we will call the <b>ERDB</b>.</p>
+
+<p>Because the ERDB plays such a central role, it is very important that you
+learn to browse the model.  You should bookmark the following link: <a href="/Shrub.html">ERDB</a>,
+which should get you to the current ERDB diagram (which depicts the overall structure of the database).
+There is a great deal of detail and some fairly elegant technology that you may end up mastering.
+However, we believe that the right way to get started quickly is to study examples.  Hence, we will go through
+an initial set right now.  We encourage you to type in each command - at the very least you should convince yourself
+that they can be made to work in your environment.</p>
+
+<h2>Example 1: Which <i>Pyrococcus</i> Genomes are included in the ERDB?</h2>
+
+<p><a href="/Shrub.html" target="_blank">Go to the ER diagram</a>.  Note that the squares represent <i>entities</i>, and the diamonds 
+represent <i>relationships</i> that connect the entities.  You now need to ask yourself
+<i>Where in the diagram would you go to find the data you need?</i>  After a little thought, 
+it should appear likely that you are trying to answer a question that would need access to data stored
+in the <b>Genome</b> entity.  To see what data is associated with each genome, you should click on the
+entity in the diagram, and this should bring you to a page describing the data store for each genome.
+You will need to consult these entity and relationship descriptions frequently.  An entity description has three
+main divisions; ignore the last one and look at <b>Relationships</b> and <b>Genome Fields</b>.</p>
+<p>
+The listed relationships include
+<ul class="notes">
+<li> Genome2Feature (connecting each genome to the <b>Features</b> it includes)</li>
+<li> Genome2Contig (connecting each genome to <b>Contig</b> data</li>
+</ul>
+as well as some other relationships.  Note that a relationship is really a 2-way connection:
+just as we have <b>Genome2Feature</b>, we also have <b>Feature2Genome</b>.  The diagram shows the
+relationship between Features and Genomes as <i>Genome to Feature</i>, but you need to remember
+that the actual names of the relationships are of the form <b>Entitya2Entityb</b>, and they come in pairs.
+</p>
+<p>The second division (<b>Genome Fields</b>) shows you the data fields we have stored for each entity.</p>
+<p>
+Now, we can use the <b>all_entities</b> command
+<pre>
+  all_entities Genome --fields &quot;id,name&quot; --like &quot;name,%Pyrococcus%&quot;
+</pre>
+to extract a 2-column table (tab-separated fields) for the <i>Pyrococcus</i> genomes.</p>
+
+<p>Run it and verify that it produces something like
+<pre>
+272844.1        Pyrococcus abyssi GE5
+186497.1        Pyrococcus furiosus DSM 3638
+</pre>
+</p>
+<p>The 
+<pre>  --like &quot;name,%Pyrococcus%&quot;</pre>
+parameter requires some discussion.  It says
+<blockquote class="example">
+              keep only entities for which the &quot;name&quot; field matches &quot;%Pyrococcus%&quot;, 
+              where the &quot;%&quot; characted can match any string of characters.</blockquote>
+</p>
+<p>Note that the columns and their order are determined by the <i>--fields</i> parameter (verify this
+by asking for the fields in the opposite order).</p>
+<p>
+Now try to construct an output table in which each row (i.e., each of the <i>Pyrococcus</i> genomes)
+contains:
+<ol class="notes">
+<li>Id</li>
+<li>Name</li>
+<li>Size of genome.</li>
+<li>GC content</li>
+<li>Number of contigs,</li>
+</ol>
+</p>
+<p>Try to do this yourself, and then compare what you tried to
+<pre>
+  all_entities Genome --fields &quot;id,name,dna-size,gc-content,contigs&quot; --like &quot;name,%Pyrococcus%&quot;
+</pre>
+</p>
+<p>
+This ends <b>Example 1</b>.  We have introduced a surpring amount of detail in a very short
+disussion.  We urge you to play around with these basic notions.  For example, can you give a query
+that finds all <i>Bacillus</i> genomes that contain &quot;str.&quot; in the name? (you can do this with a 
+slightly more complex pattern, or by using two --like constraints).
+</p>
+<!-- ##### add discussion of coreSEED and getting coreseed genomes #### -->
+<h2>Example 2: What Features Are Present in Genome 83333.1?</h2>
+
+<p>This example is a bit harder.  It will require learning how to
+<i>cross relationships</i> to arrive at a suitable answer.  First note that
+<pre>
+	svc_echo &quot;83333.1&quot;
+</pre>
+
+is a command that writes an output file containing just the line given
+as an argument.  We think of this file as a simple table to which rows and columns
+can be added by crossing relationships.  For example
+
+<pre>
+	svc_echo &quot;83333.1&quot; | get_relationship Genome2Feature --to id
+</pre>
+produces a 2-column, tab-separated file of rows containing 
+<pre>
+	[genome-id,feature-id]
+</pre>
+You could use
+<pre>
+	svc_echo &quot;83333.1&quot; | get_relationship Genome2Feature --to id | head -n 5
+</pre>
+to get just the first five lines of output.  Try it. Here is what is happening:
+
+<ol class="notes">
+<li> The <b>svc_echo</b> command generates what we think of as a table containing one row composed of a single column.</li>
+<li>The <b>get_relationship</b> command 
+takes each input row (there is only one), uses the genome id from the row and accesses the <i>Genome2Feature</i>
+relationship to determine which Features are associated with the genome id, and constructs a set of output rows.
+Each row in the output table begins with an input row, and fields are appended from a connected Feature.  The fields
+to append are specified in the <b>--to</b> parameter.</li>
+<li> Finally, the <b>head -n 5</b> command writes just the first five rows of the output table.</li>
+</ol>
+The concept of &quot;crossing the relationship&quot; needs to be considered carefully.  It is the key concept behind composing
+pipelines.  The typical database query can be thought of as traversing a path in the ERDB, picking up fields 
+as you go.  For example,
+
+<pre>
+	svc_echo &quot;83333.1&quot; | get_relationship Genome2Feature | get_relationship Feature2Function --to description
+</pre>
+takes a slightly longer path (from <b>Genome</b>, to <b>Feature</b>, to <b>Function</b>) to add the function
+as a column in the constructed table.  We are going to work with this example a bit more, so
+we suggest that you make sure you can run it (add the use of a <b>head</b> command to limit the output).
+
+</p>
+<p>
+You might wish to limit the displayed features to those that encode proteins (we call them <i>pegs</i>).
+This could be done using 
+<pre>
+   svc_echo &quot;83333.1&quot; | get_relationship Genome2Feature --like &quot;feature-type,peg&quot; | get_relationship Feature2Function --to description
+</pre>
+That is, you could add a constraint when you cross the Genome2Feature relationship.  Can you construct
+a command that would give you just features of type &quot;peg&quot; or &quot;rna&quot;?  You will probably need to
+run two pipelines and merge the results.  Below we discuss how to sort the results (by both id and location).</p>
+<p>
+Now suppose that you wished to get rid of the first column and sort the output on the feature id column.
+This could be done using
+<pre>
+svc_echo &quot;83333.1&quot; | get_relationship Genome2Feature --like &quot;feature-type,peg&quot; | 
+                     get_relationship Feature2Function --to description | 
+                     svc_extract -f 2,3 | svc_sort -c &quot;1,fid&quot;
+</pre>
+<blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
+<pre>svc_echo "83333.1" | get_relationship Genome2Feature --like "feature-type,peg" | get_relationship Feature2Function --to description | svc_extract -f 2,3 | svc_sort -c "1,fid"
+</pre><br /></blockquote>
+Here, the <b>svc_extract</b> extracts the two columns you wish to keep, and specifies the order of the
+columns in the output.  That is, <b>svc_extract -f 2,3</b> and <b>svc_extract -f 3,</b> each produce 2-column tables,
+but the columns are in different order.</p>
+<p>
+The <b>svc_sort</b> command is useful because it knows how to order feature locations and feature ids.
+Thus,
+<pre>
+	svc_sort -c 3                 < in > out # alphanumeric sort on column 3
+
+	svc_sort -c &quot;1,fid&quot;           < in > out # sort on column 1, which contains feature ids
+    
+	svc_sort -c &quot;1,fid&quot; -c 2      < in > out # sort on column 1, which contains feature ids
+	                                         # and column 2, which is alphanumeric
+    
+	svc_sort -c &quot;2,loc&quot; -c &quot;1,n&quot;  < in > out # sort on column 2, which contains locations
+	                                         # and column 1, which is numeric
+</pre>
+It also handles white space in tab-delimited fields without needing the incantation 
+required by the normal system <b>sort</b> command.
+</p>
+<h2>Example 3: Estimating the Metabolic Network for an Organism</h2>
+
+<p><b>SEEDtk</b> includes an encoding of biochemical data.
+This data is necessarily incomplete, and there are undoubtedly
+errors in the encoding.  It has been gleaned by integrating data from many sources.
+</p>
+<p>
+The ER model you see when you study the diagram contains (among others) the 
+following entities:
+<ul class="notes">
+<li>A  <b>Role</b> (often called a <i>functional role</i>) is just a description
+that has been used to describe the role played by a gene (or its product).
+For example, <i>Pyruvate kinase (EC 2.7.1.40)</i> is the description associated with a specific role.
+This specific role also has the id <b>PyruKina</b>.  For reasons we will not go into here,
+some entities (<b>Genome, Role, Function, Subsystem</b>, and others) include both ids and descriptions,
+and you may need to bear this in mind as you ponder SEEDtk's responses.</li>
+<li>A <b>Function</b> is thought of as a set of roles.  Normally, it is just a single role.
+However, there are special forms for rpresenting multi-role functions:
+<ol class="notes"> <li> <b>Function1; Function2</b> means <i>Function1 or Function2 (uncertain)</i></li>
+     <li> <b>Function1 / Function2</b> means <i>Function1 and Function2 via fused domains</i></li>
+     <li> <b>Function1 @ Function2</b> means <i>Function1 and Function2 via a single domain of broad specificity</i></li>
+</ol></li>
+<li>A <b>Complex</b> is a molecular machine (when we are discussing the metabolic network, it will
+usually be an enzyme).  It may be formed
+using the product of either a single gene or a set of genes.</li>
+<li>A <b>Reaction</b> is normally an enzymatic reaction catalyzed by a Complex. However, Reactions are
+also used to represent transport or spontaneous reactions.</li>
+<li>A <b>Pathway</b> is thought of as a set of Reactions.</li>
+</ul>
+</p>
+<p>
+For now, that should give us enough context to pursue some more examples.</p>
+
+<h3>Getting the Reactions that Might be in the Metabolic Network</h3>
+
+<p>Suppose we wished to compute the set of reactions that are 
+supported by the protein-encoding genes (i.e., pegs) present
+in a genome.  Can we compute this set using the tools we have already
+discussed?  To make the discussion concrete, let us focus on genome 83333.1 (<i>E.coli</i>).
+Consider the following relevant subcomputations:
+<blockquote class="basic">We can get a table of the roles supported by the pegs in 83333.1 by starting
+     with a small table representing the <b>Genome</b>, and then crossing 
+     relationships
+  <blockquote class="alert">
+        <b>Genome -> Feature -> Function -> Role -> Complex -> Reaction</b>
+   </blockquote>
+   Can you derive the actual query that is needed?  Try before continuing.</blockquote>
+
+<p>Here is one version:
+<pre>
+             svc_echo 83333.1 | 
+             get_relationship Genome2Feature --to id | 
+             get_relationship Feature2Function --to id | 
+             get_relationship Function2Role --to id | 
+             get_relationship Role2Complex --to id | 
+             get_relationship Complex2Reaction --to id | 
+             svc_extract -f 6 | svc_sort -c 1 -u > reactions.supported.by.83333.1
+</pre>
+<blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
+<pre>svc_echo 83333.1 | get_relationship Genome2Feature --to id | get_relationship Feature2Function --to id | get_relationship Function2Role --to id | get_relationship Role2Complex --to id | get_relationship Complex2Reaction --to id | svc_extract -f 6 | svc_sort -c 1 -u > reactions.supported.by.83333.1
+</pre><br /></blockquote>
+This easily stated task required crossing four relationships, but you did get as output
+a sorted list of 
+the reactions that were connected to the roles of the pegs in 83333.1?</p>
+
+<h3>How did SEEDtk know which Column in an Input Role Contained the ID Used to Cross the Relationship?</h3>
+
+<p>Becoming fluent in composing these pipelines for extracting data does require practice, and we
+will expose you to a broad set of such exercises.  However, before we continue there is another
+detail that we need to cover.  
+To set the stage, run</p>
+
+<pre>
+             svc_echo 83333.1 | 
+             get_relationship Genome2Feature --to id | 
+             get_relationship Feature2Function --to id | 
+             get_relationship Function2Role --to id | 
+             get_relationship Role2Complex --to id | 
+             head -n 5
+</pre>
+<blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
+<pre>svc_echo 83333.1 | get_relationship Genome2Feature --to id | get_relationship Feature2Function --to id | get_relationship Function2Role --to id | get_relationship Role2Complex --to id | head -n 5
+</pre><br /></blockquote>
+If you look at the five lines of output, you should note that each contains 
+six fields, and each of the fields is an id of an entity in the path from
+the Genome to a Complex that implements one or more Reactions.
+These lines would be used as input by 
+<pre>
+             get_relationship Complex2Reaction --to id
+</pre>
+which adds an extra column containing the Reaction id.  The question we need to
+discuss is, given an input row like
+<pre>
+83333.1 fig|83333.1.peg.1002    Delt1Pyrr5CarbDehy/ProlDehy/TranReprPutaPutp    ProlDehy        cpx31435
+</pre>
+which contains five distinct ids, which id should be used to cross the relationship to
+Complex2Reaction?
+</p>
+<p>
+That is, the act of crossing a relationship takes as input a table.  A specific
+column of that table contains ids of entities that are thought of as &quot;from entities&quot;.
+How did SEEDtk know that <i>cpx31435</i> (column 5) should be the id used expand the table?
+</p><p>
+The rule is simply: the last column of the table is the default for containing &quot;from values&quot;.
+You can specify any other column by adding a parameter of the form <i>-c N</i> (where N is the column number).  You will
+occasionally have to use this parameter, but you can usually avoid it by making sure that id fields are
+normally tacked onto the end of newly-formed expanded rows.</p>
+
+<h2>Returning to the Computation of the Metabolic Network</h2>
+
+<p>Previously, we discussed the use of
+<pre>
+             svc_echo 83333.1 | 
+             get_relationship Genome2Feature --to id | 
+             get_relationship Feature2Function --to description,id | 
+             get_relationship Function2Role --to id | 
+             get_relationship Role2Complex --to id | 
+             get_relationship Complex2Reaction --to id > reaction.data.for.83333.1
+
+             svc_extract -f 7 < reaction.data.for.83333.1 | svc_sort -c 1 -u > reactions.supported.by.83333.1
+</pre>
+to compute the set of reactions that might be used in genome 83333.1.  The table
+<i> reaction.data.for.83333.1</i> will be a resource we can use for many things.
+The file <i>reactions.supported.by.83333.1</i> is just a 1-column table containing 
+reactions that might be supported in 83333.1.
+</p>
+<p>
+Here, the assumption is that, if any role connecting to a complex is present,
+then the complex is thought of as probably capable of supporting the reactions
+connecting to the complex.  In general, of course, this is not true.
+If you have a complex that is connected to three roles, and we
+can only find a single gene that connects to one of the roles, then something
+is probably amiss. 
+</p>
+<p>
+One might prefer &quot;let's say that a reaction is supported, if at least
+half of the roles that connect to the supporting complex are present&quot;.  You can achieve this by 
+using
+<pre>
+             svc_echo 83333.1 | 
+             get_relationship Genome2Feature --to id | 
+             get_relationship Feature2Function --to id | 
+             get_relationship Function2Role --to id | 
+             svc_extract -f 4 | 
+             svc_roles_to_implied_reactions -m 0.5 |
+             svc_sort -c 1 -u > reactions.implied.by.roles.in.83333.1
+</pre>
+<blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
+<pre>svc_echo 83333.1 | get_relationship Genome2Feature --to id | get_relationship Feature2Function --to id | get_relationship Function2Role --to id | svc_extract -f 4 | svc_roles_to_implied_reactions -m 0.5 | svc_sort -c 1 -u > reactions.implied.by.roles.in.83333.1
+</pre><br /></blockquote>
+That is, SEEDtk has a tool that takes as input a 1-column table composed
+of Roles (i.e., role ids), and produces as output a 1-column table composed
+of implied reactions.  The <b>-f 0.5</b> specifies the fraction of roles
+connected to a complex that must be found to produce an &quot;implied reaction&quot;.
+</p>
+<h2>Looking for Possible Errors in the Reaction Network</h2>
+
+<p>We have now covered two alternative ways to compute the set of reactions
+implied by the functions assigned to pegs in a specific genome.
+Let us call these sets of reactions <b>reaction-networks</b>.
+A reaction-network is not a metabolic model (it includes no biomass reaction
+and lacks other data needed to support accurate metabolic modelling).
+However, it is an estimate of the reactions supported by a genome, and as
+such it offers a convenient summary of data that is critical to quality
+control of the annotations.</p>
+<p>
+Simultaneous curation of both the annotations for a genome and the metabolic-network
+supported by the genome will be essential to automatic derivation of accurate
+annotations, as well as the metabolic models they support.
+</p>
+<p>
+In this short tutorial we will explore how to detect inconsistencies that can
+be used to reveal problems in  annotations, as well as errors in metabolic models.
+</p>
+<p>Let begin with the following simple questions:</p>
+<ol class="notes">
+<li>Which Role are in the &quot;biochemical data&quot; (that is, derived from the integration
+effort led by Chis Henry), but not in SEEDtk?</li>
+<li>Which Roles are in common between SEEDtk and the biochemical data (these are Roles in which
+the ModelSEED and SEEDtk support one another)?</li>
+<li>Which Roles containing EC numbers are in SEEDtk, but not the biochemical data?</li>
+</ol>
+<h3>Roles in Biochemical data, but Not SEEDtk (and Vice Versa)</h3>
+
+<p>Let us define &quot;Roles in the biochemical data&quot; as Roles connected to Reactions
+via Complexes.  These Roles can be computed using</p>
+<pre>
+       all_entities Role --fields id | 
+       get_relationship Role2Complex --to id | 
+       get_relationship Complex2Reaction |
+       svc_extract -f 1 > roles.in.biochem
+</pre>
+<blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
+<pre>all_entities Role --fields id | get_relationship Role2Complex --to id | get_relationship Complex2Reaction | svc_extract -f 1 > roles.in.biochem
+</pre><br /></blockquote>
+<p>
+Similarly, we can get the Roles in Subsystems using
+</p>
+<pre>
+       all_entities Subsystem --fields id |
+       get_relationship Subsystem2Role --to id |
+       svc_extract -f 2 > roles.in.subsystems
+</pre>
+<blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
+<pre>all_entities Subsystem --fields id | get_relationship Subsystem2Role --to id | svc_extract -f 2 > roles.in.subsystems
+</pre><br /></blockquote>
+
+<p>Now to get the roles in roles.in.biochem, but not in roles.in.subsystems,
+one would use</p>
+
+<pre>
+       svc_matching -f roles.in.subsystems -v < roles.in.biochem > roles.in.just.biochem 
+</pre>
+
+<p>This would give you a file of the Role ids in just the biochemistry data.  
+</p>
+<p>
+The <b>-v</b> parameter means keep the lines in the input that DO NOT match.
+If it is omitted, you keep matching lines.
+</p>
+<p>
+These Role ids are not terribly informative, so you would probably wish to use
+</p>
+<pre>
+       svc_role_to_desc < roles.in.just.biochem | svc_sort -c 2 > roles.in.just.biochem.with.desc
+</pre>
+
+<p>Similarly, you would use</p>
+<pre>
+       svc_matching -f roles.in.biochem -v < roles.in.subsystems > roles.in.just.subsystems
+       svc_role_to_desc < roles.in.just.subsystems | svc_sort -c 2 > roles.in.just.subsystems.with.desc
+</pre>
+<p>to get a file of Roles in just subsystems.</p>
+<p>
+To get a file of just the Roles in common, one would use</p>
+<pre>
+       svc_matching -f roles.in.biochem < roles.in.subsystems > roles.in.both
+       svc_role_to_desc < roles.in.both | svc_sort -c 2 > roles.in.both.with.desc
+</pre>
+
+<h2>Looking for Compounds that Occur in Just a Single Reaction</h2>
+
+<p>Compounds that occur in just a single reaction in a metabolic network are of interest.
+They indicate that something may be wrong.  Frequently, there is a missing consuming or
+producing reaction, or it may be that a needed reaction was not included in the
+metabolic-network.  Let us consider the metbolic-network for genome 83333.1 that we computed
+and stored in <i>reactions.implied.by.roles.in.83333.1</i>.  Here is how you check for
+single-ocurrence compounds:</p>
+
+<pre>
+    single_occurence_compounds < reactions.implied.by.roles.in.83333.1
+</pre>
+
+<p>which produces a 2-column table containing reaction ids and compound ids.
+To add the reaction formula to the table, you would use the <b>svc_reaction_formuLa</b>
+script. Note we use the <b>names</b> option so the formulae contain the compound
+names instead of their chemical formulas.</p>
+
+<pre>
+    single_occurence_compounds < reactions.implied.by.roles.in.83333.1 |
+    svc_reaction_formula -c 1 --names > single.occurrence.compounds.with.descriptions				 
+</pre>
+<blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
+<pre>single_occurence_compounds < reactions.implied.by.roles.in.83333.1 | svc_reaction_formula -c 1 > single.occurrence.compounds.with.descriptions
+</pre><br /></blockquote>
+<p>The table you now have shows you the formula, but does not tell you which of the compounds in the formula
+is the singly-occurring one. The compound IDs are things like &quot;cpd23709&quot;
+which don't tell us very much. The compound names are in the database, however. If we
+look at the ER model page, we see that the field name is &quot;label&quot;. So, we need to
+get that field for each compound. The <b>get_entities</b> script allows us to get fields from
+an entity given the entity IDs in a file. In this case, the compound IDs are in column
+2, so we will ask for the <b>label</b> field of the <b>Compound</b> entity using
+the IDs in column 2, as follows.</p>
+<pre>
+    get_entities -c 2 --fields=label Compound < single.occurrence.compounds.with.descriptions
+</pre>
+<p>Figuring out what the problem might be in each case will require studying
+the reaction data we stored in <i>reaction.data.for.83333.1</i>.
+</p>
+</div>
+</body>
+</html>

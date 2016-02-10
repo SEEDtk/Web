@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Using GIT In SEEDtk</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h1>Getting Started Using GIT for Code Development in SEEDtk</h1>
+<div id="Content">
+
+<h2>Projects: Where to Go to Find Code</h2>
+
+<p>Within the SEEDtk Project we have defined a set of projects.  Each project directory can be found
+in SEEDtk/GIT/<i>project-name</i>.  Each project directory will include two subdirectories</p>
+<ol class="notes">
+<li><b>lib</b> will contain perl modules and</li>
+<li><b>scripts</b> will contain perl scripts.</li>
+</ol>
+<p>The following projects form the core of SEEDtk:</p>
+
+<ul class="notes">
+<li><b>tbltools</b> includes the code for svc-scripts, as well
+the general databse access scripts (e.g., <i>all_entities, get_entities, </i>and</i> get_relationship</i>).
+When you code an svc-script, there are usually two components: 
+<ol class="notes">
+<li>A core subroutine will be placed in tbltools/lib/STKServices.pm which can be invoked from
+any Perl script to gain the basic functionality via a subroutine call.</li>
+<li> Then the actual svc-script is put into tbltools/scripts.</li>
+</ol></li>
+<li><b>RASTtk</b> is the project used to hold code that is shared with the
+old SEED world.</li>
+<li><b>kernel</b> contains the collection of tools that make up the SEEDtk.</li>
+</ul>
+
+<p>Most of the code a user or developer adds will go into the <i>kernel</i> 
+project with a few occasional svc-scripts in <i>tbltools</i>.</p>
+
+<h2>Maintaining the Source in GIT</h2>
+
+<p>The original SEED Project used CVS, and it worked remarkably well.
+Users developing code in SEEDtk will be using GIT.  They can elect
+to use Eclipse (get help from <a href="mailto:bparrello@figresearch.com">Bruce Parrello</a>) or they can use
+a much more primitive style analogous to the old CVS commands.
+Here we summarize the command line style.</p>
+<ol class="notes">
+<li>Code development can be done anywhere, as long as you source
+<i>usr-env.sh</i> using something like
+<pre>
+      source /home/SEEDtk/GIT/SEEDtk/user-env.sh
+</pre>
+which assumes that you set up SEEDtk in /home/SEEDtk.</li>
+
+<li>Before beginning to debug a new program, we suggest that you
+run
+<pre>
+      pull-all
+</pre>
+which pulls all changes others have made.</li>
+
+<li> Code and debug your program.</li>
+
+<li>Copy your new script to the appropriate scripts directory, usually
+something like
+<pre>
+  mv CODE.pl /home/SEEDtk/GIT/kernel/scripts
+  cd /home/SEEDtk/GIT/kernel/scripts</pre>
+or
+<pre>
+  mv CODE.pl /home/SEEDtk/GIT/tbltools/scripts
+  cd /home/SEEDtk/GIT/tbltools/scripts
+</pre>
+</li>
+<li>then run
+<pre>
+  git -add CODE.pl
+  git commit -m "added code CODE.pl"
+  git pull
+  git push
+</pre>
+Make sure that you check for errors on the pull before running the push.
+If you get one, you probably have a conflict.  To fix this, you go to CODE.pl,
+fix it, rerun the add, commit, and push.</li>
+</ol>
+<p>
+These are just minimal notes to get you started, but if you are careful,
+you should be able to fairly painlessly develop code.  Eventually, you will
+probably get into errors that are difficult to resolve.  When you get there,
+ask for help.
+</p>
+</div>
+</body>
+</html>

@@ -294,7 +294,9 @@ sub FindPod {
         $modName =~ s/::/\//g;
         # Get a list of the possible file names for our desired file.
         my @files;
-        if ($modName =~ /\.pl/) {
+        if ($modName eq 'Config.pl') {
+            @files = ("$FIG_Config::proj/Config.pl");
+        } elsif ($modName =~ /\.pl/) {
             @files = map { "$_/$modName" } @FIG_Config::scripts;
         } elsif ($modName =~ /\.spec/) {
             @files = map { "$_/$modName" } @FIG_Config::libs;

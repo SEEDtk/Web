@@ -8,6 +8,12 @@ body {
     font-size: small;
 }
 
+pre {
+	font-size: medium;
+	background-color: white;
+	color: black;
+}
+
 body.borderless {
     background-image:url(BlackNoise.jpg);
 }
@@ -197,6 +203,11 @@ li {
     margin-bottom: 3pt;
 }
 
+ol.notes li,
+ul.notes li {
+	padding-bottom: 3pt;
+	padding-top: 3pt;
+}
 ul.nav {
     margin: 4px auto;
     display: table;
@@ -361,6 +372,7 @@ div.pod tt,
     font-family: Courier New, Courier, monospace;
     font-weight: bold;
     color: #006666;
+	font-size: small;
 }
 
 div.pod blockquote,
