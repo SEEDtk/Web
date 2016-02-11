@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>The SEEDtk Database</title>
-<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+<!-- ##### <link href="../css/Basic.css" rel="stylesheet" type="text/css"> --->
 </head>
 <body>
 <h1>The SEEDtk Database</h1>
@@ -57,7 +57,7 @@ to extract a 2-column table (tab-separated fields) for the <i>Pyrococcus</i> gen
 parameter requires some discussion.  It says
 <blockquote class="example">
               keep only entities for which the &quot;name&quot; field matches &quot;%Pyrococcus%&quot;, 
-              where the &quot;%&quot; characted can match any string of characters.</blockquote>
+              where the &quot;%&quot; character can match any string of characters.</blockquote>
 </p>
 <p>Note that the columns and their order are determined by the <i>--fields</i> parameter (verify this
 by asking for the fields in the opposite order).</p>
@@ -78,8 +78,8 @@ contains:
 </pre>
 </p>
 <p>
-This ends <b>Example 1</b>.  We have introduced a surpring amount of detail in a very short
-disussion.  We urge you to play around with these basic notions.  For example, can you give a query
+This ends <b>Example 1</b>.  We have introduced a surprising amount of detail in a very short
+discussion.  We urge you to play around with these basic notions.  For example, can you give a query
 that finds all <i>Bacillus</i> genomes that contain &quot;str.&quot; in the name? (you can do this with a 
 slightly more complex pattern, or by using two --like constraints).
 </p>
@@ -424,7 +424,7 @@ single-ocurrence compounds:</p>
 </pre>
 
 <p>which produces a 2-column table containing reaction ids and compound ids.
-To add the reaction formula to the table, you would use the <b>svc_reaction_formuLa</b>
+To add the reaction formula to the table, you would use the <b>svc_reaction_formula</b>
 script. Note we use the <b>names</b> option so the formulae contain the compound
 names instead of their chemical formulas.</p>
 
