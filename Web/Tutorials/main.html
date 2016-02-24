@@ -1,0 +1,443 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>ERDB Data Extraction Examples</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h1>Examples of How to Extract Data from the ERDB</h1>
+
+<p>If you wish to work in the SEEDtk environment, it is critical that you become very familiar
+with the Entity-Relationship model used by the SEEDtk Project (<a href="/Shrub.html">ERDB</a>).</p>
+
+<p>This diagram represents a moderately abstract organization of the data the
+project uses, maintains, and borrows (from public sources).</p>
+
+<p>You need to be able to get to the diagram, locate the fields in each entity and relationship (you
+will find yourself consulting this data continuously as you formulate queries).</p>
+<p>
+We say that first in most of our tutorials, because it is critical.  Be sure that you can
+<ul>
+<li>get to the ERDB diagram and</li>
+<li>be able to move to entities and relationships (locating the fields stored in each).</li>
+</ul>
+</p>
+<p>In this tutorial we hope to expose you to the basic steps needed to answer typical queries.  We
+believe that if you actually type in commands, run them, and then start exploring minor variations,
+you will gradually figure out how to answer a wide variety of queries without the help of
+a programmer.  We realize that using the command line is often viewed as an insurmountable barrier,
+but we feel that being able to easily handle the types of situations we explore here justifies your
+considering this approach seriously.</p>
+
+<h2>Some Example Queries We Intend to Use</h2>
+
+<p>In this tutorial, we will present an overview of how to formulate queries to extract data
+from the ERDB.  A general overview will be useful only if you take the time to explore it
+by trying to solve typical examples.  Here are some examples we will cover.  In each case, as we 
+develop a solution, you should think of minor variants, formuate the changes needed to solve them, and gradually
+develop the expertise to attack more difficult queries.</p>
+
+<ul>
+<li>Which <i>Bacilli</i> Genomes are in the ERDB, and Which of These Are in the coreSEED?</li>
+<li>Which <i>Streptococcus</i> Genomes Have a Single Contig (i.e., are complete)?</li>
+<li>Given a Genome G, Which PEGs in G Occur in Subsystems?</li>
+<li>Which Roles are used in Metabolic Models</li>
+<li>Which Roles are Used in Subsystems</li>
+<li>Which Roles Used in Models Exist in at Least one Subsystem (and Which Do Not)</li>
+<li>Given Two Genomes G1 and G2, which Roles Occur in Both (and which in G1 but not G2)</li>
+<li>Given a Genome G, which Ribosomal Proteins Have Been Identified in G?</li>
+<li>Get FastA Sequences for all PEGs with the Function <i>Aspartokinase (EC 2.7.2.4)</i></li>
+</ul>
+
+<h2>Formulating a Plan: How to Get Started</h2>
+
+<p>Our overall approach will almost always be;
+<ul>
+<li><strong>Step 1</strong>: create an initial tab-separated table containing the ids of a set of entities.</li>
+<li><strong>Step 2</strong>: take the initial table and use a sequence of transformations to add desired fields.</li>
+<li><strong>Step 3</strong>: reformat the table (delete unnecessary columns and sort the result).</li>
+</ul>
+</p>
+
+<h3>The Notion of <i>entity column</i></h3>
+
+<p>The tables we work with are text files consisting of <i>columns</i> separated by the tab character; in these examples, we have two types of columns:
+<ol>
+<li>The most common type of column is an <i>attribute column</i></li>
+<li>Other columns composed of entity ids (all from the same type of entity, of course), we
+call <i>entity columns</i>.</li>
+</ol>
+</p>
+<p>Consider the following 4-column table containing [genome-id,GC-content,contigs,name]:
+<pre>
+1001584.4	40.842673521629	83	Avibacterium paragallinarum AVPAR72
+100226.1	71.9983672832904	3	Streptomyces coelicolor A3(2)
+1002672.3	31.6706973543796	1	Candidatus Pelagibacter sp. IMCC9063
+1002809.3	38.5933388868963	2	Solibacillus silvestris StLB046
+1004151.3	43.2871086624099	17	Photorhabdus temperata subsp. khanii NC19
+</pre>
+</p> 
+<p>It should be clear on reflection that there is a single entity column (the one with Genome ids).</p>
+
+<h3>Introducing the <b>get_entity</b> command</h3>
+
+<p>Suppose that you have such a table, you can then add attribute columns using the <b>get_entities</b> command.
+Here is a command that would add two columns to the 4-column table:</p>
+
+<pre>
+    get_entities Genome -c 1 --fields dna-size,genetic-code
+</pre>
+
+<p>You need the <b>-c 1</b> to indicate that you wish to add columns associated with the
+ids in entity column 1. </p>
+
+<p>Suppose that I asked you "What strains are referred to by genome ids 1041139.4 and 1045855.3?"
+Spend a few minutes trying to answer the question, and then study</p>
+<pre>
+    <i>svc_echo 1041139.4 1045855.3 | get_entities Genome -c 1 --fields name</i>
+    1041139.4   Rhizobium giardinii bv. giardinii H152
+    1045855.3   Pseudoxanthomonas spadix BD-a59
+</pre>
+<h3>The <b>svc_echo command</b></h3>
+<p>The <b>svc_echo</b> command produces a single-coumn table with two rows (run it and verify that you understand it).</p>
+<p>The <b>get_entities</b> command adds a <i>name</i> column, allowing you to answer the question.
+You could have avoided the use of <b>svc_echo</b> by just creating a file with two lines in it and
+using that as the initial table.</p>
+
+<h3>Which <i>Bacilli</i> Genomes are in the ERDB, and Which of These Are in the coreSEED?</h3>
+
+<p>Now let us attack the first problem in our list, which involves finding a set of <i>Bacilli</i> genomes.
+Our initial plan is pretty simple -- just use an <b>all_entities</b> command, constraing the output using
+the <b>--like field,PATTERN</b> argument (which we need to discuss) twice.  Consider
+<pre>
+   <i>all_entities Genome --fields 'id,name' --like 'name,Bacillus%' --like 'core,1'</i>
+   261594.1 Bacillus anthracis str. 'Ames Ancestor'
+   198094.1 Bacillus anthracis str. Ames
+   649639.5 Bacillus cellulosilyticus DSM 2522
+   226900.1 Bacillus cereus ATCC 14579
+   637380.6 Bacillus cereus biovar anthracis str. CI
+   .
+   .
+   
+</pre>
+</p>
+<p>This is a typical use of the <b>all_entities</b> command to build an initial table (which in
+this case is also the final table).  You designate the fields you want in the table, and then
+use <b>--like 'name,Bacillus%' --like 'core,1'</b> as arguments to constrin the set of Genomes returned.
+The <b>--like </b> option specifies a field and a PATTERN. The PATTERN must match the contents of the field
+precisely, exept that a percent sign will match any string.  Thus, the first use of "--like" keeps only 
+Genomes with names that begin with "Bacillus", and the second causes all Genomes with a value other
+than '1' in the <i>core</i> field to be rejected.  Note that <i>core</i> is a boolean field. In boolean fields
+we use '0' to represent <i>false</i> and '1' to represent <i>true</i>.
+
+<h3>Which <i>Streptococcus</i> Genomes Have a Single Contig (i.e., are complete)?</h3>
+
+<p>Given what we have talked about so far, you should be able to handle this one without too much
+grief.  It is just a variant of the last one.  We suggest</p>
+<pre>
+    <i>all_entities Genome --fields 'id,name' --like 'name,Streptococcus%' --like 'contigs,1'</i>
+    205921.3    Streptococcus agalactiae A909
+    862971.3    Streptococcus anginosus C238
+    552526.7    Streptococcus equi subsp. zooepidemicus MGCS10565
+    467705.8    Streptococcus gordonii str. Challis substr. CH1
+    591365.3    Streptococcus intermedius JTH08
+    246201.1    Streptococcus mitis NCTC 12261
+    .
+    .
+    .
+
+</pre>
+
+<h3>Given a Genome G, Which PEGs in G Occur in Subsystems?</h3>
+
+<p>This one, however, is going to force us to discuss crossing relationships.</p>
+
+<p><img src="../img/Crossing.fw.png" width="400" height="533" alt="Crossing Genome2Feature showing genome and the associated features" style="float: left; padding: 0 5px 0 5px;"/><img src="../img/G2F.png" width="98" height="201" alt="genome to feature" style="float: right; padding: 0 5px 0 5px;"/>Relationships are represented as diamonds in the <a href="/Shrub.html">ER diagram</a>. A
+relationship always connects two entities in the diagram. This represents the fact that it associates
+instances of one entity with instances of another. For example, the relationship <b>Genome2Feature</b>
+connects each genome to all of its called features. If we are positioned on <i>Streptococcus agalacticae A989</i>
+(genome 205921.3), the <b>Genome2Feature</b> relationship will enable us to find all of the genome's
+protein-encoding genes, RNA-encoding genes, and other identified regions. Getting from the genome to those
+features is what we mean by <i>crossing the relationship</i>.</p>
+<p>In this case we want only the protein-encoding genes.  Begin by studying the ERDB.  Our initial plan for this one might
+go something like this:</p>
+<ol>
+<li> Create an initial table containing just G.</li>
+<li> Cross the Genome2Feature relationship, picking up all Features in G.</li>
+<li> Then cross the Feature2Cell relationship, which results in retention of
+all of the Features that occur in at least one cell of a subsystem.</li>
+<li>At this point, we will have a table that has a Feature entity column containing exactly 
+those Features we want in the final table, we will then need to extract from the big table 
+the desired column, remove duplicates, and sort the result.</li>
+</ol>
+<p>To make the problem concrete, suppose that 83333.1 is G.
+You should be able to create the initial trivial table containing just the id of G using</p>
+<pre>
+     svc_echo 83333.1
+</pre>
+<br clear="all" />
+<p>The next step is to cross the Genome2Feature relationship using
+<pre>
+    <i>svc_echo 83333.1 | get_relationship Genome2Feature -c 1 --to id</i>
+    83333.1 fig|83333.1.lrr.1
+    83333.1 fig|83333.1.lrr.10
+    83333.1 fig|83333.1.lrr.11
+    83333.1 fig|83333.1.lrr.12
+    83333.1 fig|83333.1.lrr.13
+    83333.1 fig|83333.1.lrr.14
+    83333.1 fig|83333.1.lrr.15
+    83333.1 fig|83333.1.lrr.16
+    .
+    .
+    .
+</pre>
+which will create a new column in the table. The crossing requires that you spcify
+an entity column in the input table (in this case, <b>-c 1</b>). Then for each row in the input table,
+the entity id is examined if it is connected by the specified relationship (Genome2Feature) to one or
+more Feature entities, then for each connected entity a row is built that includes the input row 
+followed by the fields designated by <b>--to</b> (in this case the id of the connected entity - these added target entities make up a new column added to the end of the columns in the input rows).  Thus,
+for each input row, 0 or more extended output rows are added to the new table.  If you run the above
+command, you should get a new table with one row for each Feature in genome 83333.1.
+</p>
+<p>
+We can create a three column table, adding the key of a subsystem Cell using
+<pre>
+    get_relationship Feature2Cell -c 2 --to id
+</pre>
+</p>
+<p>Now we have a table composed of [Genome,Feature,Cell].
+To create a single-column table containing just the sorted Features that connected to Cells, we would
+use <b>svc_extract</b> and <b>svc_sort</b>.  Here is the whole pipeline put together
+
+<pre>
+    <i>svc_echo 83333.1 | 
+    get_relationship Genome2Feature -c 1 --to id |
+    get_relationship Feature2Cell -c 2 --to id |
+    svc_extract -f 2 |
+    svc_sort -c 1 -u</i>
+    fig|83333.1.peg.100
+    fig|83333.1.peg.1000
+    fig|83333.1.peg.1001
+    fig|83333.1.peg.1002
+    fig|83333.1.peg.1003
+    fig|83333.1.peg.1004
+    fig|83333.1.peg.1005
+    .
+    .
+    .
+
+</pre>
+</p>
+<p>Here is the command sequence on a single line for copy/paste purposes.</p>
+<pre>
+svc_echo 83333.1 | get_relationship Genome2Feature -c 1 --to id | get_relationship Feature2Cell -c 2 --to id | svc_extract -f 2 | svc_sort -c 1 -u
+</pre>
+<p>We urge you to step through this pipeline one command at a time (i.e., run an initial segment and pipe
+the results to <b>head</b>).</p>
+    
+<h3>Which Roles are used in Metabolic Models</h3>
+<p>Metabolic models are represented in the database by the <b>Complex</b> entity, which represents a set of reactions triggered by a role.
+So, we are looking for roles connected to complexes.  The ability to cross relationships opens up many possibilities.  A simple plan for this task would be
+<ol>
+<li>create an initial table containing all of the Roles,</li>
+<li>cross the relationship from Roles to Complexes,</li>
+<li>extract the remaining Roles in the first column (the entity column for Roles), and</li>
+<li>sort the result using the <b>-u</b> argument.</li>
+</ol>
+</p>
+<p>
+There is a wrinkle though.  For Roles, we have long descriptions (the <i>description</i> field) and
+shorter, cryptic ids.  We need to make clear what the desired output will be.  We decided
+to produce a 2-column table [id,description] sorted on the second field.
+Here is the result:
+<pre>
+    <i>all_entities Role --fields id,description | 
+    get_relationship Role2Complex -c 1 --to id | 
+    svc_extract -f 1,2 | 
+    svc_sort -c 2 -u</i>
+    6aHydr3OMeth    (+)-6a-hydroxymaackiain 3-O-methyltransferase (EC 2.1.1.270)
+    TMuurSynt   (+)-T-muurolol synthase (EC 4.2.3.98)
+    AbscAcid8Hydr   (+)-abscisic acid 8'-hydroxylase (EC 1.14.13.93)
+    AlphBarbSynt    (+)-alpha-barbatene synthase (EC 4.2.3.69)
+    AlphPineSynt    (+)-alpha-pinene synthase (EC 4.2.3.121)
+    AlphSantSyntFarn    (+)-alpha-santalene synthase [(2Z,6Z)-farnesyl diphosphate cyclizing] (EC 4.2.3.50)
+    AlphTerpSynt    (+)-alpha-terpineol synthase (EC 4.2.3.112)
+    .
+    .
+    .
+</pre>
+</p>
+<p>Here is the command sequence on a single line for copy/paste purposes.</p>
+<pre>
+all_entities Role --fields id,description | get_relationship Role2Complex -c 1 --to id | svc_extract -f 1,2 | svc_sort -c 2 -u
+</pre>
+<h3>Which Roles are Used in Subsystems</h3>
+<p>If you studied the last example, this one is a breeze. We simply use <b>Role2Subsystem</b> instead of <b>Role2Complex</b>.
+<pre>
+    <i>all_entities Role --fields id,description | 
+    get_relationship Role2Subsystem -c 1 --to id | 
+    svc_extract -f 1,2 | 
+    svc_sort -c 2 -u</i>
+    Cary1OlSynt (+)-caryolan-1-ol synthase (EC 4.2.1.138)
+    FarnDiphSynt    (2E,6E)-farnesyl diphosphate synthase (EC 2.5.1.10)
+    FarnDiphSynt2   (2E,6Z)-farnesyl diphosphate synthase (EC 2.5.1.68)
+    SulfSulfLyasSubu2   (2R)-sulfolactate sulfo-lyase subunit alpha (EC 4.4.1.24)
+    SulfSulfLyasSubu    (2R)-sulfolactate sulfo-lyase subunit beta (EC 4.4.1.24)
+    HydrAcpDehySubuHada (3R)-hydroxyacyl-ACP dehydratase subunit HadA
+    HydrAcpDehySubuHadb (3R)-hydroxyacyl-ACP dehydratase subunit HadB
+    .
+    .
+    .
+</pre>
+<p>
+<p>Here is the command sequence on a single line for copy/paste purposes.</p>
+<pre>
+all_entities Role --fields id,description | get_relationship Role2Subsystem -c 1 --to id | svc_extract -f 1,2 | svc_sort -c 2 -u
+</pre>
+<h3>Which Roles Used in Models Exist in at Least one Subsystem (and Which Do Not)</h3>
+
+<p>Using the last two examples, we can build two files (each a 2-column table)
+<pre>all_entities Role --fields id,description | 
+    get_relationship Role2Complex -c 1 --to id | 
+    svc_extract -f 1,2 | 
+    svc_sort -c 2 -u &gt; roles.in.models</pre>
+<p>nbsp;</p>
+<pre>all_entities Role --fields id,description | 
+    get_relationship Role2Subsystem -c 1 --to id | 
+    svc_extract -f 1,2 | 
+    svc_sort -c 2 -u &gt; roles.in.subsystems
+</pre>
+<p>Now <b>roles.in.models</b> contains the roles connected to complexes and <b>roles.in.subsystems</b> contains the roles connected to
+subsystems. We need to see which roles are found in both files and which are only found in <b>roles.in.models</b>.
+The tool <b>svc_matching</b> is a tool designed to support such queries.
+Here is how you would invoke it</p>
+<pre>
+    svc_matching --matchCol 1 -f roles.in.subsystems -c 1 &lt; roles.in.models &gt; roles.in.both
+    svc_matching --invert --matchCol 1 -f roles.in.subsystems -c 1 &lt; roles.in.models &gt; roles.in.just.models
+</pre>
+<p>Think of the <b>svc_matching</b> command as a filter.  The rows flowing into the filter
+are from the input file (<i>roles.in.models</i>) and the will filtered on the contents of
+the entity column given as <b>c -1</b>.  The <b>--matchcol 1</b> and <b>-f roles.in.subsystems</b>
+cause the filter to be based on column 1 of <i>roles.in.subsystems</i>.  These are the entities that
+will be kept from the input file, unless <b>-v</b> is specified, in which they are the entities that will
+not be kept.  We realize that this seems quite complex, but it is very powerful.  We suggest that you create two input files with just
+a few columns and rows and play with the command until you can easily extract intersections and set differences.
+</p>
+
+<h3>Given Two Genomes G1 and G2, which Roles Occur in Both (and which in G1 but not G2)</h3>
+
+<p>Here we need to figure out how to get a 2-column table of [role-id,role-description]
+values for a Genome.  Once you can do that, the previous examples cover how to get intersections and set differences.
+Here is how to get the 2-column table for Genome 83333.1:
+<pre>
+    svc_echo 83333.1 | 
+    get_relationship Genome2Feature -c 1 --to id | 
+    get_relationship Feature2Function -c 2 --to id | 
+    get_relationship Function2Role -c 3 --to id,description | 
+    svc_extract -f 4,5 | 
+    svc_sort -c 2 -u > roles.in.83333.1
+</pre>
+</p>
+<p>This is certainly a nontrivial pipeline, but by experimenting and checking what comes
+out from each initial segment of the pipeline, you should be able to understand what is being
+done.</p>
+<ol>
+<li>We start with a single genome ID created by <b>svc_echo</b>.</li>
+<li>We cross <b>Genome2Feature</b> to get all the features in that genome.</li>
+<li><b>Feature2Function</b> gets each feature's functional assignment. Note that a functional assignment is usually a single role, but may be more than one (for example, because
+the protein has two domains with two different roles).</li>
+<li><b>Function2Role</b> gets us the roles for each function.</li>
+<li><b>svc_extract</b> pulls out the columns containing the role ID and description values.</li>
+<li><b>svc_sort</b> removes duplicates, leaving us a simple list of roles.</li>
+</ol>
+<p>We want to do this procedure for G2 as well. In this case, we will choose 205921.3 as the genome. The two command sequences, formatted for copy/paste, are below.</p>
+<pre>
+svc_echo 83333.1 | get_relationship Genome2Feature -c 1 --to id | get_relationship Feature2Function -c 2 --to id | get_relationship Function2Role -c 3 --to id,description | svc_extract -f 4,5 | svc_sort -c 2 -u &gt; roles.in.83333.1
+svc_echo 205921.3 | get_relationship Genome2Feature -c 1 --to id | get_relationship Feature2Function -c 2 --to id | get_relationship Function2Role -c 3 --to id,description | svc_extract -f 4,5 | svc_sort -c 2 -u &gt; roles.in.205921.3
+</pre>
+<p>Now we use <b>svc_matching</b> to find the roles in both.</p>
+<pre>
+	<i>svc_matching --matchcol 1 -f roles.in.205921.3 -c 1 &lt; roles.in.83333.1</i>
+	FarnDiphSynt	(2E,6E)-farnesyl diphosphate synthase (EC 2.5.1.10)
+	14AlphGlucBranEnzy	1,4-alpha-glucan (glycogen) branching enzyme, GH-13-type (EC 2.4.1.18)
+	1Phos	1-phosphofructokinase (EC 2.7.1.56)
+	16sRrna2OMeth2	16S rRNA (cytidine(1402)-2'-O)-methyltransferase (EC 2.1.1.198)
+	16sRrnaNMethEc21n1	16S rRNA (cytosine(1402)-N(4))-methyltransferase EC 2.1.1.199)
+	16sRrnaCMeth	16S rRNA (cytosine(967)-C(5))-methyltransferase (EC 2.1.1.176)
+	16sRrnaNMeth4	16S rRNA (guanine(1207)-N(2))-methyltransferase (EC 2.1.1.172)
+	.
+    .
+    .
+</pre>
+<p>We add the <b>--invert</b> option to find the roles only in 83333.1</p>
+<pre>
+	<i>svc_matching --invert --matchcol 1 -f roles.in.205921.3 -c 1 &lt; roles.in.83333.1</i>
+	45RegiAtLacOper	-45 region at lac operon
+	12EpoxCoaIsom	1,2-epoxyphenylacetyl-CoA isomerase (EC 5.3.3.18)
+	12PhenCoaEpoxSubu	1,2-phenylacetyl-CoA epoxidase, subunit A (EC 1.14.13.149)
+	12PhenCoaEpoxSubu2	1,2-phenylacetyl-CoA epoxidase, subunit B (EC 1.14.13.149)
+	12PhenCoaEpoxSubu3	1,2-phenylacetyl-CoA epoxidase, subunit C (EC 1.14.13.149)
+	12PhenCoaEpoxSubu4	1,2-phenylacetyl-CoA epoxidase, subunit D (EC 1.14.13.149)
+	12PhenCoaEpoxSubu5	1,2-phenylacetyl-CoA epoxidase, subunit E (EC 1.14.13.149)
+	14Dihy2NaphPoly	1,4-dihydroxy-2-naphthoate polyprenyltransferase (EC 2.5.1.74)
+	.
+    .
+    .
+</pre>
+ <h3>Given a Genome G, which Ribosomal Proteins Have Been Identified in G?</h3>
+
+<p>Let us make G specific and use Genome 83333.1 as before.</p>
+<pre>
+    svc_echo 83333.1 | 
+    get_relationship Genome2Feature -c1 --to id | 
+    get_relationship Feature2Function --like 'description,%ribosomal protein%' --to description |
+    svc_extract -f 2,3 | 
+    svc_sort -u -c 2
+</pre>
+<p>or formatted for copy/paste</p>
+<pre>
+svc_echo 83333.1 | get_relationship Genome2Feature -c1 --to id | get_relationship Feature2Function --like 'description,%ribosomal protein%' --to description | svc_extract -f 2,3 | svc_sort -u -c 2
+</pre>
+<p>We are essentially filtering for functions that contain the words
+"ribosomal protein". But if you save the output into a file and look at it, you should see 
+that it is not exactly what you needed.  For example
+<pre>
+  fig|83333.1.peg.1073	FIG01269488: protein, clustered with ribosomal protein L32p
+</pre>
+is in the output.  This is a case where you must save the results to a file and manually
+delete lines you do not want.  If that annoys you, you could experiment with using SSU and LSU in
+added constraints (this would probably require using multiple commands and merging the results).</p>
+
+<h3>Get FastA Sequences for all PEGs with the Function <i>Aspartokinase (EC 2.7.2.4)</i></h3>
+
+<p>This can be done with
+<pre>
+    <i>all_entities Function --like 'description,Aspartokinase (EC 2.7.2.4)' --fields id | 
+    get_relationship Function2Feature --to id | 
+    svc_fasta</i>
+    &gt;fig|1001584.4.peg.1725 
+    MAHLSVAKFGGTSVANHAAMRACADIVIADPHTRVVVLSASAGITNLLVALANGKEAEERAKLLADVRQIEENILAELKDDSEVRSKIEEILKHIETLAEAACVATSPALTDELICQGEMMSTLLFVQVLKELGAKATWVDVRTIVATNSHFGKAAPDDEQTQKNSDELLKPLLAQDDDTMIITQGFIGRDPQGKTTTLGRGGSDYSAALLAEVLNAKDVLIWTDVAGIYTTDPRIVPAAKRIDTMSFAEAAEMATFGAKVLHPATLLPAVRSNIPVFVGSSKAPQDGGTWVTKDPQPRPTFRAIALRRDQTLVTLSSLSMLHAQGFLANIFNILAKHKISVDTITTSEVSVALTLDKTGSASSGAEMLSPELLAELREVSSVKVDTGLSLVALVGNDLHVTAGIAKQIFSTLESYNIRMVSYGASTNNICMLVKSEQADDVVRALHKNLFE
+    &gt;fig|100226.1.peg.3572 
+    MGLVVQKYGGSSVADAEGIKRVAKRIVEAKKNGNQVVAVVSAMGDTTDELIDLAEQVSPIPAGRELDMLLTAGERISMALLAMAIKNLGHEAQSFTGSQAGVITDSVHNKARIIDVTPGRIRTSVDEGNVAIVAGFQGVSQDSKDITTLGRGGSDTTAVALAAALDADVCEIYTDVDGVFTADPRVVPKAKKIDWISFEDMLELAASGSKVLLHRCVEYARRYNIPIHVRSSFSGLQGTWVSSEPIKQGEKHVEQALISGVAHDTSEAKVTVVGVPDKPGEAAAIFRAIADAQVNIDMVVQNVSAASTGLTDISFTLPKSEGRKAIDALEKNRPGIGFDSLRYDDQIGKISLVGAGMKSNPGVTADFFTALSDAGVNIELISTSEIRISVVTRKDDVNEAVRAVHTAFGLDSDSDEAVVYGGTGR
+    &gt;fig|1002672.3.peg.142 
+    MSKIVMKFGGTSVADTDRISHVANIIKAKIDQNHKIAVVVSAMAGVTNDLIQKSKKISDSFPSDEYDALLSSGEQVTATLLAAALQKFGIKSRSWLGWQIPIVTEGDHKNSRIISVNSKVLNDCIDQDIVPIIPGFQGLTEGNRISTIGRGGSDASAVAIAKCLEADFCEIYTDVDGVFTTNPDLESKAKKIEKISYEEMLEMASLGAKVMQSSSVQKAMINDVDIYVKSTFSNNSGTKIGSQDRVSYDKVITGVAYSSDDAKVTLQGVKDKPGVASSIFKPLYENNIVIDMIVQNVSADNSKTDVTFTIKRDDLQKTTSVLEKLKEQLNFDKLLTDGHVSKISIVGAGMITHPGVAYRMFDALSSKKINIMVISTSEIKISVLIDEKNTKEAVKTIHQIFELDK
+    .
+    .
+    .
+</pre>
+If you wanted DNA sequences, you could add an argument <b>--dna</b> to the <b>svc_fasta</b>
+command.
+<p>Here are both versions formatted for copy/paste.</p>
+<pre>
+all_entities Function --like 'description,Aspartokinase (EC 2.7.2.4)' --fields id | get_relationship Function2Feature --to id | svc_fasta
+all_entities Function --like 'description,Aspartokinase (EC 2.7.2.4)' --fields id | get_relationship Function2Feature --to id | svc_fasta --dna
+</pre>
+<h2>Summary</h2>
+
+<p>We have attempted to give you a fairly detailed exposure to how we use pipelines
+of commands to extract data from the ERDB.  If you find errors, find sections unclear,
+or would like help formulating queries, please just send us email at
+<a href="mailto:bparrello@figresearch.com">SEEDtk support</a>
+</body>
+</html>
