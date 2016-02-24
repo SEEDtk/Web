@@ -1,0 +1,302 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Searching for Genomes Close to a Given Genome</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+
+<h1>Locating Genomes that Are Close to a Given Genome</h1>
+
+<p>Given the contigs in a genome (either one from our database or a newly-sequenced genome),
+you frequently would like to quickly be able to find a set of the <i>closest</i>
+genomes stored in the ERDB.  Here, closest is being used loosely.  One could define close
+precisely (e.g., in terms of distance between genomes in a phylogenetic tree), and
+a great deal of valuable research has been done on rapid construction of phylogenetic trees.
+However, there are many times when all you want is a quick estimate of the closest N 
+genomes from the set stored in the ERDB.  We have implemented a scheme for quickly
+providing such estimates.  We believe that it works well, and we will describe it in
+detail.  However, we also feel that the way we implemented it, using "pipes" composed
+of basic tools chained together, will also be of interest to groups building command-line toolkits.</p>
+<p>
+Like many interesting algorithms in bioinformatics, our approach is based on <i>kmers</i> -- in
+our case, short sequences in the protein alphabet.  For the purposes of this tutorial,
+let's restrict the use of the term "kmer" to mean a 10-character sequence (i.e., 10 amino acids).
+</p>
+<p>
+We begin by selecting a few universal Roles (i.e., Roles we expect to occur in every
+microbial genome).  We chose twelve tRNA synthetases, but there is nothing magic about
+that number.  Call this small set of universal Roles the <b>representative roles</b>.
+</p>
+<p>
+We must build a table of kmers that occur in translations of genes encoding 
+these representative roles in genomes from the ERDB.  To be concrete, suppose that the
+file</p>
+<pre>
+  ~/SEEDtk/Data/Global/rep_roles.tbl
+</pre>
+<p>contains the list of representative role IDs like this</p>
+<pre>
+    GtpBindNuclAcidBind
+    PhenTrnaSyntAlph
+    PhenTrnaSyntBeta
+    PrepTranSecySubu
+    TranInitFact2n1
+    HistTrnaSynt
+    SignRecoPartSubu
+    MethTrnaSynt
+    IsolTrnaSynt
+    SeryTrnaSynt
+</pre>
+
+<p>and that we are going to build a database of kmers that connects kmers to the genomes they occur in.
+The following sequence of commands accomplishes this:</p>
+<pre>
+      get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl | 
+      get_relationship Function2Feature --to id | 
+      get_relationship Feature2Protein --to sequence | 
+      svc_genome_of -c 3 | 
+      svc_extract -f 5,4 |
+      get_entities Genome -c 1 --fields name |
+      svc_kmer_db --id 1 --name 3 -c 2 > kmer.db
+</pre>
+
+<p>Here is what is accomplished by each of the chained commands:
+<ol>
+<li>
+<pre>get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl
+</pre>
+Takes the list of representative Roles as input and appends a column giving
+Functions that implement the Roles (usually the Function will be identical to
+the Role, and both are ids.  Try running just this command and pipe the output
+to <b>head</b>).
+<pre>
+    <i>get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl| head</i>
+
+    GtpBindNuclAcidBind GtpBindNuclAcidBind
+    PhenTrnaSyntAlph    PhenTrnaSyntAlph
+    PhenTrnaSyntBeta    PhenTrnaSyntBeta
+    PrepTranSecySubu    PrepTranSecySubu
+    TranInitFact2n1 TranInitFact2n1
+    TranInitFact2n1 InteCont@TranInitFact2n1
+    HistTrnaSynt    HistTrnaSynt
+    HistTrnaSynt    HistTrnaSynt@HistTrnaSyntMito
+    SignRecoPartSubu    SignRecoPartSubu
+    MethTrnaSynt    MethTrnaSynt
+</pre>
+</li>
+<li>
+<pre>get_relationship Function2Feature --to id
+</pre>
+Tacks the column containing Feature ids onto the table.  Note that this
+can expand the number of rows dramatically.
+<pre>
+    <i>get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl |  
+    get_relationship Function2Feature --to id | head</i>
+
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1001584.4.peg.457
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|100226.1.peg.5016
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1002672.3.peg.707
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1002809.3.peg.117
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1004151.3.peg.3046
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1004152.3.peg.251
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1005048.3.peg.619
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1005058.3.peg.1706
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1006006.8.peg.1991
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1006551.4.peg.4659
+</pre>
+</li>
+<li>
+<pre>get_relationship Feature2Protein --to sequence
+</pre>
+Adds an extra column containing translations of the Features.
+<pre>
+    <i>get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl |  
+    get_relationship Function2Feature --to id | 
+    get_relationship Feature2Protein --to sequence | head</i>
+
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1001584.4.peg.457   MGFKCGIVGLPNVGKSTLFNALTKAGIEAANYPFCTIEPNTGVVPMPDPRLDALAEIVKPERVLPTTMEFVDIAGLVAGASKGEGLGNKFLANIRETDAIGHVVRCFENDDIVHVAGKIDPAEDIDTINTELALADLDSCERAIQRLQKRAKGGDKEAKFELSVMEKILPVLENAGMIRSIDLDKEELHAIKSYNFLTLKPTMYIANVNEDGFENNPYLDRVREIAAKEGAVVVPVCAAIESEIAELDDEEKVEFLQDLGIEEPGLNRVIRAGYALLNLQTYFTAGVKEVRAWTVSVGATAPKAAAVIHTDFEKGFIRAEVISYEDFIQYKGENGAKEAGKWRLEGKDYIVQDGDVMHFRFNV
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|100226.1.peg.5016   MSLTIGIVGLPNVGKSTLFNALTKNDVLAANYPFATIEPNVGVVGVPDPRLTKLAEIFSSEKILPATVDFVDIAGIVRGASEGEGLGNKFLANIRESDAICQVIRAFKDENVVHVDGKVSPKDDIETINTELILADLQTIEKVLPRLQKESRIKKDVAPKVKAVEEAKEILEKGDTLFSQGILQGSERAELLHDLHLLTTKPFLYVFNVDEDELTDDDFKSEQRALVAPAEAIFLNAKLEADLAELDEDEALELLQSVGQDEPGLATLAHVGFRTLGLQTYLTAGPKESRAWTIKKGATAPEAAGVIHTDFQKGFIKAEVISFDDLVETGSVTEARAKGKARMEGKEYVMRDGDVVEFRFNV
+    GtpBindNuclAcidBind GtpBindNuclAcidBind fig|1002672.3.peg.707   MFNALTKSKNAEAANFPFCTIEPNVGVVSVPDERIEKISKIAISKKTIPTLITFVDIAGLVAGASKGEGLGNKFLSHIREVDAIVHLLRCFESDEIQNVNKTVDPVRDFEIIETELMLADLESLEKRIGKKNKNVVENEDLNKLLEQAYALLKDGKNPYSLRNDFDSKIINSASILTLKPKIIVCNTGEESIESGNQYTKLIEEHFKGEQIVNISAEIEQQITELGDSEASEFMRDLNIQETGLDRVIRSSYKALDLSTYFTAGPEETRAWTIPTVCKAPDAAEVIHTDFKKGFIKVETIAYEDFIQCKGESGARDKGKLRIEGKDYLVKDGDVLHFRFNT
+</pre>
+</li>
+<li>
+<pre>svc_genome_of -c 3
+</pre>
+Adds a column of Genome IDs.
+<pre>
+   <i> get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl |  
+    get_relationship Function2Feature --to id | 
+    get_relationship Feature2Protein --to sequence | 
+    svc_genome_of -c 3 | head</i>
+
+    GtpBindNuclAcidBind   GtpBindNuclAcidBind fig|1001584.4.peg.457   MGFKCGIVGLPNVGKSTLFNALTKAGIEAANYPFCTIEPNTGVVPMPDPRLDALAEIVKPERVLPTTMEFVDIAGLVAGASKGEGLGNKFLANIRETDAIGHVVRCFENDDIVHVAGKIDPAEDIDTINTELALADLDSCERAIQRLQKRAKGGDKEAKFELSVMEKILPVLENAGMIRSIDLDKEELHAIKSYNFLTLKPTMYIANVNEDGFENNPYLDRVREIAAKEGAVVVPVCAAIESEIAELDDEEKVEFLQDLGIEEPGLNRVIRAGYALLNLQTYFTAGVKEVRAWTVSVGATAPKAAAVIHTDFEKGFIRAEVISYEDFIQYKGENGAKEAGKWRLEGKDYIVQDGDVMHFRFNV 1001584.4
+    GtpBindNuclAcidBind   GtpBindNuclAcidBind fig|100226.1.peg.5016   MSLTIGIVGLPNVGKSTLFNALTKNDVLAANYPFATIEPNVGVVGVPDPRLTKLAEIFSSEKILPATVDFVDIAGIVRGASEGEGLGNKFLANIRESDAICQVIRAFKDENVVHVDGKVSPKDDIETINTELILADLQTIEKVLPRLQKESRIKKDVAPKVKAVEEAKEILEKGDTLFSQGILQGSERAELLHDLHLLTTKPFLYVFNVDEDELTDDDFKSEQRALVAPAEAIFLNAKLEADLAELDEDEALELLQSVGQDEPGLATLAHVGFRTLGLQTYLTAGPKESRAWTIKKGATAPEAAGVIHTDFQKGFIKAEVISFDDLVETGSVTEARAKGKARMEGKEYVMRDGDVVEFRFNV  100226.1
+    GtpBindNuclAcidBind   GtpBindNuclAcidBind fig|1002672.3.peg.707   MFNALTKSKNAEAANFPFCTIEPNVGVVSVPDERIEKISKIAISKKTIPTLITFVDIAGLVAGASKGEGLGNKFLSHIREVDAIVHLLRCFESDEIQNVNKTVDPVRDFEIIETELMLADLESLEKRIGKKNKNVVENEDLNKLLEQAYALLKDGKNPYSLRNDFDSKIINSASILTLKPKIIVCNTGEESIESGNQYTKLIEEHFKGEQIVNISAEIEQQITELGDSEASEFMRDLNIQETGLDRVIRSSYKALDLSTYFTAGPEETRAWTIPTVCKAPDAAEVIHTDFKKGFIKVETIAYEDFIQCKGESGARDKGKLRIEGKDYLVKDGDVLHFRFNT   1002672.3
+</pre>
+</li>
+<li>
+<pre>svc_extract -f 5,4
+</pre>
+Extract just the two columns containing the Genome ID 
+and the translation of a representative Role.
+<pre>
+    <i>get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl |  
+    get_relationship Function2Feature --to id | 
+    get_relationship Feature2Protein --to sequence | 
+    svc_genome_of -c 3 |  svc_extract -f 5,4 | head</i>
+    
+    1001584.4   MGFKCGIVGLPNVGKSTLFNALTKAGIEAANYPFCTIEPNTGVVPMPDPRLDALAEIVKPERVLPTTMEFVDIAGLVAGASKGEGLGNKFLANIRETDAIGHVVRCFENDDIVHVAGKIDPAEDIDTINTELALADLDSCERAIQRLQKRAKGGDKEAKFELSVMEKILPVLENAGMIRSIDLDKEELHAIKSYNFLTLKPTMYIANVNEDGFENNPYLDRVREIAAKEGAVVVPVCAAIESEIAELDDEEKVEFLQDLGIEEPGLNRVIRAGYALLNLQTYFTAGVKEVRAWTVSVGATAPKAAAVIHTDFEKGFIRAEVISYEDFIQYKGENGAKEAGKWRLEGKDYIVQDGDVMHFRFNV
+    100226.1    MSLTIGIVGLPNVGKSTLFNALTKNDVLAANYPFATIEPNVGVVGVPDPRLTKLAEIFSSEKILPATVDFVDIAGIVRGASEGEGLGNKFLANIRESDAICQVIRAFKDENVVHVDGKVSPKDDIETINTELILADLQTIEKVLPRLQKESRIKKDVAPKVKAVEEAKEILEKGDTLFSQGILQGSERAELLHDLHLLTTKPFLYVFNVDEDELTDDDFKSEQRALVAPAEAIFLNAKLEADLAELDEDEALELLQSVGQDEPGLATLAHVGFRTLGLQTYLTAGPKESRAWTIKKGATAPEAAGVIHTDFQKGFIKAEVISFDDLVETGSVTEARAKGKARMEGKEYVMRDGDVVEFRFNV
+    1002672.3   MFNALTKSKNAEAANFPFCTIEPNVGVVSVPDERIEKISKIAISKKTIPTLITFVDIAGLVAGASKGEGLGNKFLSHIREVDAIVHLLRCFESDEIQNVNKTVDPVRDFEIIETELMLADLESLEKRIGKKNKNVVENEDLNKLLEQAYALLKDGKNPYSLRNDFDSKIINSASILTLKPKIIVCNTGEESIESGNQYTKLIEEHFKGEQIVNISAEIEQQITELGDSEASEFMRDLNIQETGLDRVIRSSYKALDLSTYFTAGPEETRAWTIPTVCKAPDAAEVIHTDFKKGFIKVETIAYEDFIQCKGESGARDKGKLRIEGKDYLVKDGDVLHFRFNT
+    1002809.3   MALTAGIVGLPNVGKSTLFNAITKAGALAANYPFATIEPNVGSVTVPDERLDKLTELVVPKKTVPTTFEFTDIAGIVKGASTGEGLGNKFLAHIREVDAICQVVRCFEDENITHVSGTVNPIDDIEVINLELILADMESVDKRIARVAKMAKQKDKEAMVEEPILQKLKDVLEAEKPARAADLSDDEKKVIKGLHLLTIKPMLYVANVSEDEVADPSENKYVKMVQEYAAAEGAQVITVCAKIEEEISELEDDEKKEFLAELGIAESGLDQLIKASYSLLGLATYFTAGVQEVRAWTFRKGMKAPQCAGIIHSDFERGFIRAETVAYTDLVEYGSKPAAKEAGRVRAEGKEYVVQDGDVLEFLFNV
+</pre>
+</li>
+<li>
+<pre>get_entities Genome -c 1 --fields name
+</pre>
+Tack on a column containing the name (strain name) of the Genome
+<pre>
+     <i>get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl |  
+     get_relationship Function2Feature --to id | 
+     get_relationship Feature2Protein --to sequence | 
+     svc_genome_of -c 3 |  svc_extract -f 5,4 | 
+     get_entities Genome -c 1 --fields name | head</i>
+     
+     1001584.4  MGFKCGIVGLPNVGKSTLFNALTKAGIEAANYPFCTIEPNTGVVPMPDPRLDALAEIVKPERVLPTTMEFVDIAGLVAGASKGEGLGNKFLANIRETDAIGHVVRCFENDDIVHVAGKIDPAEDIDTINTELALADLDSCERAIQRLQKRAKGGDKEAKFELSVMEKILPVLENAGMIRSIDLDKEELHAIKSYNFLTLKPTMYIANVNEDGFENNPYLDRVREIAAKEGAVVVPVCAAIESEIAELDDEEKVEFLQDLGIEEPGLNRVIRAGYALLNLQTYFTAGVKEVRAWTVSVGATAPKAAAVIHTDFEKGFIRAEVISYEDFIQYKGENGAKEAGKWRLEGKDYIVQDGDVMHFRFNVAvibacterium paragallinarum AVPAR72
+     100226.1   MSLTIGIVGLPNVGKSTLFNALTKNDVLAANYPFATIEPNVGVVGVPDPRLTKLAEIFSSEKILPATVDFVDIAGIVRGASEGEGLGNKFLANIRESDAICQVIRAFKDENVVHVDGKVSPKDDIETINTELILADLQTIEKVLPRLQKESRIKKDVAPKVKAVEEAKEILEKGDTLFSQGILQGSERAELLHDLHLLTTKPFLYVFNVDEDELTDDDFKSEQRALVAPAEAIFLNAKLEADLAELDEDEALELLQSVGQDEPGLATLAHVGFRTLGLQTYLTAGPKESRAWTIKKGATAPEAAGVIHTDFQKGFIKAEVISFDDLVETGSVTEARAKGKARMEGKEYVMRDGDVVEFRFNV  Streptomyces coelicolor A3(2)
+     1002672.3  MFNALTKSKNAEAANFPFCTIEPNVGVVSVPDERIEKISKIAISKKTIPTLITFVDIAGLVAGASKGEGLGNKFLSHIREVDAIVHLLRCFESDEIQNVNKTVDPVRDFEIIETELMLADLESLEKRIGKKNKNVVENEDLNKLLEQAYALLKDGKNPYSLRNDFDSKIINSASILTLKPKIIVCNTGEESIESGNQYTKLIEEHFKGEQIVNISAEIEQQITELGDSEASEFMRDLNIQETGLDRVIRSSYKALDLSTYFTAGPEETRAWTIPTVCKAPDAAEVIHTDFKKGFIKVETIAYEDFIQCKGESGARDKGKLRIEGKDYLVKDGDVLHFRFNT   Candidatus Pelagibacter sp. IMCC9063
+</pre>
+</li>
+<li>
+<pre>svc_kmer_db --id 1 --name 3 -c 2 &gt; kmer.db
+</pre>
+Construct a simple database containing kmers and the genomes
+associated with them.
+<pre>
+    <i>get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl |  
+    get_relationship Function2Feature --to id | 
+    get_relationship Feature2Protein --to sequence | 
+    svc_genome_of -c 3 |  svc_extract -f 5,4 | 
+    get_entities Genome -c 1 --fields name | 
+    svc_kmer_db --id 1 --name 3 -c 2 &gt; kmer.db
+
+    head -15 kmer.db</i>
+{
+       "kmerSize" : 10,
+          "groupHash" : {
+                    "1496721.3" : "Butyrivibrio sp. AE3003",
+                    "1070319.3" : "Glomeribacter gigasporarum",
+                    "498211.3" : "Cellvibrio japonicus Ueda107",
+                    "1453999.3" : "Accumulibacter sp. SK-02",
+                    "1321779.3" : "Leptotrichia sp. oral taxon 215 str. W977501",
+                    "1123032.3" : "Psychrilyobacter atlanticus DSM 19335",
+                    "1235279.3" : "Bhargavaea cecembensis DSE10",
+                    "1045004.4" : "Oenococcus kitaharae DSM 17330",
+                    "1122611.3" : "Nonomuraea coxensis DSM 45129",
+                    "412965.6" : "Vesicomyosocius okutanii HA",
+                    "926549.3" : "Adhaeribacter aquaticus DSM 1639101",
+                    "272623.1" : "Lactococcus lactis subsp. lactis Il1403",
+            .
+            .
+            .
+</pre>
+</li>
+</ol>
+<p>Here is the entire command sequence formatted for copy/paste.</p>
+<pre>
+get_relationship Role2Function --to id &lt; Data/Global/rep_roles.tbl | get_relationship Function2Feature --to id | get_relationship Feature2Protein --to sequence | svc_genome_of -c 3 | svc_extract -f 5,4 | get_entities Genome -c 1 --fields name | svc_kmer_db --id 1 --name 3 -c 2 &gt; kmer.db
+</pre>
+<p>Note that we have divided the construction of a tool to build the
+simple database into two components.  The actual extraction of data
+from the ERDB is all handled using pipelines of reusable commands.
+Then, by adding a special purpose command (<i>svc_kmer_db</i>) to
+actually extract the kmers from the relevant translations, the kmer
+database can be built fairly simply.</p>
+<p>
+Once this collection of kmers has been built, you can process a stream of requests
+for closest genomes using something like</p>
+<pre>
+     svc_echo 83333.1 205921.3 1123299.3 1123304.3 | 
+     get_entities Genome -c 1 --fields name |
+     svc_contigs -c 1 --sequences | 
+     svc_kmer_hits --id 1 --name 2 --keep 10 --minHits 10 --prot kmer.db 
+</pre>
+<p>These commands perform the following steps:</p>
+<ol>
+<li> the <b>svc_echo</b> converts a list of arguments into a single-column table.</li>
+<li> the <b>get_entities</b> adds the genome name.</li>
+<li> the <b>svc_contigs</b> command looks up the contigs for a given genome, writing
+a single line (i.e., row in the output table) for each contig in an input genome.  That is,
+for every contig in input genome G, the contigs that make up G are retrieved, and
+a single output line is written for each contig (containing the genome ID, as well as the DNA sequence of the contig).</li>
+<li> Then we use <b>svc_kmer_hits</b> to find the genomes in the ERDB that have the most kmers in common
+with each of the input genomes.</li>
+</ol>
+<p>Here is the full sequence formatted for copy/paste.</p>
+<pre>
+svc_echo 83333.1 205921.3 1123299.3 1123304.3 | get_entities Genome -c 1 --fields name | svc_contigs -c 1 --sequences | svc_kmer_hits --id 1 --name 2 --keep 10 --minHits 10 --prot kmer.db
+</pre>
+<p>It is worth looking at the full output of this command sequence.</p>
+<pre>
+1123299.3       Streptococcus castoreus DSM 17536       3148    1123299.3       Streptococcus castoreus DSM 17536
+1123299.3       Streptococcus castoreus DSM 17536       639     482234.3        Streptococcus canis FSL Z3-227
+1123299.3       Streptococcus castoreus DSM 17536       568     160490.1        Streptococcus pyogenes M1 GAS
+1123299.3       Streptococcus castoreus DSM 17536       565     293653.3        Streptococcus pyogenes MGAS5005
+1123299.3       Streptococcus castoreus DSM 17536       536     160491.17       Streptococcus pyogenes str. Manfredo
+1123299.3       Streptococcus castoreus DSM 17536       417     552526.7        Streptococcus equi subsp. zooepidemicus MGCS10565
+1123299.3       Streptococcus castoreus DSM 17536       385     1348.3          Streptococcus parauberis
+1123299.3       Streptococcus castoreus DSM 17536       326     1123301.3       Streptococcus didelphis DSM 15616
+1123299.3       Streptococcus castoreus DSM 17536       224     1123304.3       Streptococcus henryi DSM 19005
+1123299.3       Streptococcus castoreus DSM 17536       158     205921.3        Streptococcus agalactiae A909
+
+1123304.3       Streptococcus henryi DSM 19005          3411    1123304.3       Streptococcus henryi DSM 19005
+1123304.3       Streptococcus henryi DSM 19005          822     1123311.3       Streptococcus orisratti DSM 15617
+1123304.3       Streptococcus henryi DSM 19005          486     1123298.3       Streptococcus caballi DSM 19004
+1123304.3       Streptococcus henryi DSM 19005          419     1123312.3       Streptococcus ovis DSM 16829
+1123304.3       Streptococcus henryi DSM 19005          402     1280690.3       Streptococcus bovis B315
+1123304.3       Streptococcus henryi DSM 19005          356     1123318.3       Streptococcus thoraltensis DSM 12221
+1123304.3       Streptococcus henryi DSM 19005          334     1123305.3       Streptococcus hyovaginalis DSM 12219
+1123304.3       Streptococcus henryi DSM 19005          283     1348.3          Streptococcus parauberis
+1123304.3       Streptococcus henryi DSM 19005          274     1123309.3       Streptococcus minor DSM 17118
+1123304.3       Streptococcus henryi DSM 19005          250     299768.3        Streptococcus thermophilus CNRZ1066
+
+205921.3        Streptococcus agalactiae A909           2576    205921.3        Streptococcus agalactiae A909
+205921.3        Streptococcus agalactiae A909           430     293653.3        Streptococcus pyogenes MGAS5005
+205921.3        Streptococcus agalactiae A909           430     160490.1        Streptococcus pyogenes M1 GAS
+205921.3        Streptococcus agalactiae A909           421     160491.17       Streptococcus pyogenes str. Manfredo
+205921.3        Streptococcus agalactiae A909           280     1123304.3       Streptococcus henryi DSM 19005
+205921.3        Streptococcus agalactiae A909           238     1123298.3       Streptococcus caballi DSM 19004
+205921.3        Streptococcus agalactiae A909           233     1123311.3       Streptococcus orisratti DSM 15617
+205921.3        Streptococcus agalactiae A909           230     1348.3          Streptococcus parauberis
+205921.3        Streptococcus agalactiae A909           205     1123318.3       Streptococcus thoraltensis DSM 12221
+205921.3        Streptococcus agalactiae A909           196     1280690.3       Streptococcus bovis B315
+
+83333.1         Escherichia coli K12                    1572    83333.1         Escherichia coli K12
+83333.1         Escherichia coli K12                    1572    316407.3        Escherichia coli W3110
+83333.1         Escherichia coli K12                    1572    511145.6        Escherichia coli str. K-12 substr. MG1655
+83333.1         Escherichia coli K12                    1360    83334.1         Escherichia coli O157:H7
+83333.1         Escherichia coli K12                    1359    300267.13       Shigella dysenteriae Sd197
+83333.1         Escherichia coli K12                    1358    198215.1        Shigella flexneri 2a str. 2457T
+83333.1         Escherichia coli K12                    1340    405955.9        Escherichia coli APEC O1
+83333.1         Escherichia coli K12                    216     290338.6        Citrobacter koseri ATCC BAA-895
+83333.1         Escherichia coli K12                    133     1006551.4       Klebsiella oxytoca KCTC 1686
+83333.1         Escherichia coli K12                    116     1028307.3       Enterobacter aerogenes KCTC 2190
+</pre>
+<p>The blank lines have been added for clarity: they do not exist in the output.</p>
+<p>In each line, the first two columns are the input genome ID and name. The third column is the number of
+kmer hits. The fourth and fifth columns are the close genome ID and name. In every case, the closest genome
+is the input genome itself, as expected. There are enough strep variants in the database that each input
+Streptococcus has a list of other Streptococcus genomes as its closest neighbors. For E Coli, some
+Shigella and others are included in the mix.</p>
+<p>The <b>svc_kmer_hits</b> script is very general-purpose. It handles protein-protein comparisons, DNA-DNA
+comparisons, and protein-DNA comparisons. You can create a kmer database of a specific subset of the
+genomes or all genomes. You can input protein sequences for features or input DNA sequences for genomes. In
+the script documentation, the incoming sequences are called <i>source sequences</i> and a set of sequences
+with the same ID and name is called a <i>source group</i>. In our example, because we were looking for
+close genomes, the source sequences were contigs and the source groups were genomes; however, thanks to
+the power of the pipeline commands, we can do much more.</p>
+ 
+</body>
+</html>
