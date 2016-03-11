@@ -45,6 +45,7 @@ Name of the DBD file to be output.
 my $cgi = CGI->new();
 # Get the parameters.
 my $fileName = $cgi->param('xmlFileName');
+warn "ErdbDbdPrint called for $fileName.\n"; ##TODO delete this line
 if (! $fileName) {
     die "No DBD specified.";
 } elsif (! -f $fileName) {
