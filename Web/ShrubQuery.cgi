@@ -98,7 +98,7 @@ eval {
     my $shrub = Shrub->new(DBD => $xmlFileName, offline => $offline);
     if ($offline) {
         # We're displaying a diagram. Get a page creator.
-        my $page = ERDBtk::PDocPage->new(dbObject => $shrub);
+        my $page = ERDBtk::PDocPage->new($cgi, dbObject => $shrub);
         # Create the body HTML.
         my $html = CGI::div({ class => 'doc' }, $page->DocPage(boxHeight => 740));
         # Output it.

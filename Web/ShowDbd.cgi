@@ -65,7 +65,7 @@ eval {
             # database.
             my $erdb = ERDBtk->new(undef, $xmlFileName);
             # We're displaying a diagram. Get a page creator.
-            my $page = ERDBtk::PDocPage->new(dbObject => $erdb);
+            my $page = ERDBtk::PDocPage->new($cgi, dbObject => $erdb);
             # Create the body HTML.
             my $html = CGI::div({ class => 'doc' }, $page->DocPage(boxHeight => 740));
             # Output it.
