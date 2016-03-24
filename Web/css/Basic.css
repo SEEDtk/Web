@@ -73,6 +73,7 @@ ol.a ol {
 
 ol {
     list-style-type: decimal;
+	overflow: hidden;
 }
 
 ol ol {

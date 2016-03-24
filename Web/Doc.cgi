@@ -49,7 +49,7 @@ my $title = $modName || 'Documentation Page';
 # Create the default output page header.
 my @header = (CGI::header() .
         CGI::start_html(-title => $title,
-                      -style => { src => '/css/Basic.css' }));
+                      -style => { src => 'css/Basic.css' }));
 # Specify a borderless body.
 push @header, CGI::start_body({ class => 'borderless' });
 # Create the default output page trailer.

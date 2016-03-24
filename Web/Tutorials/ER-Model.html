@@ -420,7 +420,7 @@ and stored in <i>reactions.implied.by.roles.in.83333.1</i>.  Here is how you che
 single-ocurrence compounds:</p>
 
 <pre>
-    single_occurence_compounds < reactions.implied.by.roles.in.83333.1
+    single_occurrence_compounds < reactions.implied.by.roles.in.83333.1
 </pre>
 
 <p>which produces a 2-column table containing reaction ids and compound ids.
@@ -433,7 +433,7 @@ names instead of their chemical formulas.</p>
     svc_reaction_formula -c 1 --names > single.occurrence.compounds.with.descriptions				 
 </pre>
 <blockquote class="alert">Copy and paste from the box below to get the above commands into your clipboard.
-<pre>single_occurence_compounds < reactions.implied.by.roles.in.83333.1 | svc_reaction_formula -c 1 > single.occurrence.compounds.with.descriptions
+<pre>single_occurrence_compounds < reactions.implied.by.roles.in.83333.1 | svc_reaction_formula -c 1 --names > single.occurrence.compounds.with.descriptions
 </pre><br /></blockquote>
 <p>The table you now have shows you the formula, but does not tell you which of the compounds in the formula
 is the singly-occurring one. The compound IDs are things like &quot;cpd23709&quot;
