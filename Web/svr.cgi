@@ -70,6 +70,7 @@ eval {
     } elsif ($action eq 'CountIntent') {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
+        $table = ucfirst $table;
         my $count = $shrub->GetCount($table, '', []);
         if ($count == 0) {
             $table .= "s";
