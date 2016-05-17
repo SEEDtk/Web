@@ -25,44 +25,57 @@ use Data::Dumper;
 
 =head1 SEEDtk Server Script
 
-This script processes a server request. It loads the appropriate module, then calls its execution
-method and outputs the result as text.
-
-The C<action> CGI parameter contains the name of the module to call. The other CGI parameters are
-passed to the execution method as a hash reference. The name of the parameter will be the hash key,
-the value will be a list of the parameter values.
-
-The execution method has the following signature.
-
-    my $output = Module::exec($shrub, \%parms);
-
-The output should be a text string, possibly a json-encoded object.
+This script processes a server request for Alexa. The C<action> is the intent name. The C<parameter> is the slot
+content. The resulting document is a plain text string.
 
 =cut
-
-## This constant contains the legal module names.
-use constant MODULES => { Genome => 1, upload=>1 };
 
 # Get the CGI query object.
 my $cgi = CGI->new();
 
-# Create the Shrub object.
-my $shrub = Shrub->new();
-# Get the module name.
-my $modName = $cgi->param('action');
-if (! $modName) {
-    die "Missing action parameter. Choose one of (" . join(", ", keys %{MODULES()}) . ").";
-} elsif (! MODULES->{$modName}) {
-    die "Invalid action parameter $modName.";
-}
-# Compute the parameters.
-my %parms = map { $_ => [$cgi->param($_)] } grep { $_ ne 'action' } $cgi->param;
-# Load the module.
-require "SVR/$modName.pm";
-my $result = eval('SVR::' . $modName . '::exec($cgi, $shrub, \%parms)');
+# This will be the result.
+my $result;
+# Get the intent name and parameter.
+my $action = $cgi->param('action');
+eval {
+    # Create the Shrub object.
+    my $shrub = Shrub->new();
+    # Process the intent.
+    if ($action eq 'GenomeIntent') {
+        my $genomeID = $cgi->param('parameter');
+        my ($genomeData) = $shrub->GetAll('Genome', 'Genome(id) = ?', [$genomeID], 'name contigs dna-size core');
+        if (! $genomeData) {
+            $result = "$genomeID does not appear in the database.";
+        } else {
+            my ($name, $contigs, $dnaSize, $core) = @$genomeData;
+            $dnaSize = int($dnaSize / 1000);
+            if ($dnaSize < 2000) {
+                $dnaSize = "$dnaSize kilobases";
+            } else {
+                $dnaSize = int($dnaSize / 1000);
+                $dnaSize = "$dnaSize megabases";
+            }
+            $result = "$genomeID is $name ";
+            if ($core) {
+                $result .= "from the core seed ";
+            }
+            $result .= "and has ";
+            if ($contigs < 2) {
+                $result .= "a single contig "; 
+            } else {
+                $result .= "$contigs contigs ";
+            }
+            $result .= "and $dnaSize";
+        }
+    } elsif ($action eq 'CountIntent') {
+        my $table = $cgi->param('parameter');
+        $table =~ s/s$//;
+        $result = "We have not implemented a count for $table yet.";
+    }
+};
 if ($@) {
-    die "Execution error: $@";
-} else {
-    print CGI::header('text/plain');
-    print $result;
+    $result = "A fatal error occurred: $@.";
 }
+print CGI::header('text/plain');
+print $result;
+
