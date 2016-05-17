@@ -70,7 +70,16 @@ eval {
     } elsif ($action eq 'CountIntent') {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
-        $result = "We have not implemented a count for $table yet.";
+        my $count = $shrub->GetCount($table, '', []);
+        if ($count == 0) {
+            $table .= "s";
+            $result = "There are no $table in the database.";
+        } elsif ($count == 0) {
+            $result = "There is one $table in the database.";
+        } else {
+            $table .= "s";
+            $result = "There are $count $table in the database.";
+        }
     }
 };
 if ($@) {
