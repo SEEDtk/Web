@@ -81,6 +81,30 @@ eval {
             $table .= "s";
             $result = "There are $count $table in the database.";
         }
+    } elsif ($action eq 'PegIntent') {
+        my $peg = $cgi->param('parameter');
+        my $pegH = $shrub->Feature2Function(0, [$peg]);
+        my $pegData = $pegH->{$peg};
+        my $pegName = $peg;
+        if ($peg =~ /^fig\|(\d+\.\d+)\.(\w+).(\d+)/) {
+            my $genome = $1;
+            $pegName = "$2 $3";
+            my ($gName) = $shrub->GetFlat('Genome', 'Genome(id) = ?', [$genome], 'name');
+            if ($gName) {
+                $pegName .= " of $gName";
+            } else {
+                $pegName .= " of $genome";
+            }
+        }
+        if (! $pegData) {
+            $result = "$pegName was not found in the database.";
+        } else {
+            my (undef, $function, $comment) = @$pegData;
+            $result = "$pegName has the function $function.";
+            if ($comment) {
+                $result = "The annotator commented $comment.";
+            }
+        }
     }
 };
 if ($@) {
