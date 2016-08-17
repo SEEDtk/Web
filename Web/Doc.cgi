@@ -318,7 +318,7 @@ sub FindPod {
     # Declare the return variable.
     my $retVal;
     # Insure the name is reasonable.
-    if ($modName =~ /^(?:\w|::)+(?:\.(?:pl|spec))?$/) {
+    if ($modName =~ /^(?:\w|::|\-)+(?:\.(?:pl|spec))?$/) {
         # Convert the module name to a path.
         $modName =~ s/::/\//g;
         # Get a list of the possible file names for our desired file.
