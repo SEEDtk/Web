@@ -102,6 +102,49 @@ set or table and a suffix of C<.lbl>.
 
 =back
 
+=head2 Notes on Fields
+
+When forming C<match> constraints, it is useful to know the names of some of the common fields in the PATRIC database.
+The complete schema can be found at L<https://github.com/PATRIC3/patric_solr>. The C<get_genomes> command accesses the
+C<genome> object, and the C<amr_genomes> command accesses the C<genome_amr> object. to look at the inndividual schema for 
+an object, go into the B<schema.xml> file of the C<conf> subdirectory.
+
+=head3 get_genomes
+
+=over 4
+
+=item genome_name
+
+the scientific name
+
+=item taxon_id
+
+the NCBI taxonomic ID
+
+=item genome_length
+
+number of base pairs
+
+=item gc_content
+
+percentage GC content
+
+=back
+
+=head3 amr_genomes
+
+=over 4
+
+=item antibiotic
+
+The name of the relevant drug.
+
+=item resistant_phenotype
+
+Either C<resistant>, C<susceptible>, or C<unknown>, indicating the genome's relationship to the drug.
+
+=back
+
 =cut
 
 my $cgi = new CGI;
