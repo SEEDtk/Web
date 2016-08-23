@@ -318,7 +318,7 @@ sub FindPod {
     # Declare the return variable.
     my $retVal;
     # Insure the name is reasonable.
-    if ($modName =~ /^(?:\w|::|\-)+(?:\.(?:pl|spec))?$/) {
+    if ($modName =~ /^(?:\w|::|\-)+(?:\.(?:pl|spec|cgi))?$/) {
         # Convert the module name to a path.
         $modName =~ s/::/\//g;
         # Get a list of the possible file names for our desired file.
@@ -329,6 +329,8 @@ sub FindPod {
             @files = map { "$_/$modName" } @FIG_Config::scripts;
         } elsif ($modName =~ /\.spec/) {
             @files = map { "$_/$modName" } @FIG_Config::libs;
+        } elsif ($modName =~ /\.cgi/) {
+            @files = ("$FIG_Config::web_dir/$modName");
         } else {
              @files = map { ("$_/$modName.pod", "$_/$modName.pm", "$_/pods/$modName.pod") } @INC;
              push @files, map { ("$_/$modName.pod", "$_/$modName.pm") } @FIG_Config::libs;
