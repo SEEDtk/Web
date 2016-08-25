@@ -53,7 +53,7 @@ The type of request. The following requests are supported.
 
 =item get_genomes
 
-Create an output set of genome IDs.
+Create an output set of genome IDs. The constraints should be on fields in the L</genome> table.
 
 =item set_ops
 
@@ -62,11 +62,19 @@ parameters are supported, but not the C<constraint>.
 
 =item amr_genomes
 
-Filter a set of genomes by anti-microbial resistance data.
+Filter a set of genomes by anti-microbial resistance data. The constraints should be on fields in the L</genome_drug>
+table.
+
+=item get_genome_table
+
+Create an output table of genome data. The constraints and display fields should be based in the L</genome> table.
+
+=item get_drug_table
+
+Create an output table of genome AMR data. The constraints and display fields should be based in the L<genome_drug> table.
+If C<from> and C<not> parameters are specified, they will be presumed to refer to genome IDs.
 
 =back
-
-=item 
 
 =item from
 
@@ -95,6 +103,11 @@ against it. An asterisk (C<*>) serves as a wild card.
 
 =back
 
+=item display
+
+The names of the fields to include in the output, specified as a comma-delimited list. This is only 
+used for table-producing commands. Note that you must specify the ID if you want the ID included.
+
 =item label
 
 Specifies a string that should be used to label the set or table. It will be put into a file with the same name as the
@@ -105,13 +118,18 @@ set or table and a suffix of C<.lbl>.
 =head2 Notes on Fields
 
 When forming C<match> constraints, it is useful to know the names of some of the common fields in the PATRIC database.
-The complete schema can be found at L<https://github.com/PATRIC3/patric_solr>. The C<get_genomes> command accesses the
-C<genome> object, and the C<amr_genomes> command accesses the C<genome_amr> object. to look at the inndividual schema for 
+The complete schema can be found at L<https://github.com/PATRIC3/patric_solr>.  To look at the inndividual schema for 
 an object, go into the B<schema.xml> file of the C<conf> subdirectory.
 
-=head3 get_genomes
+=head3 genome
+
+This corresponds to the PATRIC B<genome> object.
 
 =over 4
+
+=item genome_id
+
+the unique genome ID
 
 =item genome_name
 
@@ -131,9 +149,19 @@ percentage GC content
 
 =back
 
-=head3 amr_genomes
+=head3 genome_drug
+
+This corresponds to the PATRIC B<genome_amr> object.
 
 =over 4
+
+=item genome_id
+
+The ID of the relevant genome.
+
+=item genome_name
+
+The name of the relevant genome.
 
 =item antibiotic
 
@@ -141,7 +169,7 @@ The name of the relevant drug.
 
 =item resistant_phenotype
 
-Either C<resistant>, C<susceptible>, or C<unknown>, indicating the genome's relationship to the drug.
+Either C<Resistant>, C<Susceptible>, or an empty strign (unknown), indicating the genome's relationship to the drug.
 
 =back
 
@@ -182,6 +210,46 @@ eval {
             # Ask PATRIC for all qualifying genomes.
             $result = P3Utils::get_data($p3, genome => $constraintList, ['genome_id']);
         }
+    } elsif ($request eq 'get_genome_table') {
+        ($oh, $label) = ComputeOutputFile(tbl => $cgi, $sessionDir);
+        my $constraintList = ComputeConstraints($cgi);
+        # Get the display fields. Default to ID and name.
+        my $displayList = ComputeFields($cgi);
+        if (! scalar @$displayList) {
+            $displayList = ['genome_id', 'genome_name'];
+        }
+        # Determine whether this is an ID-based request or not.
+        if (scalar $cgi->param('from')) {
+            # Get the IDs to use.
+            my $idList = ComputeInputIds($cgi, $sessionDir);
+            # Ask PATRIC for results.
+            $result = P3Utils::get_data_keyed($p3, genome => $constraintList, $displayList, $idList, 'genome_id');
+        } else {
+            # Ask PATRIC for all qualifying genomes.
+            $result = P3Utils::get_data($p3, genome => $constraintList, $displayList);
+        }
+        # Add the headers.
+        unshift @$result, $displayList;
+    } elsif ($request eq 'get_drug_table') {
+        ($oh, $label) = ComputeOutputFile(tbl => $cgi, $sessionDir);
+        my $constraintList = ComputeConstraints($cgi);
+        # Get the display fields. Default to ID and resistance info.
+        my $displayList = ComputeFields($cgi);
+        if (! scalar @$displayList) {
+            $displayList = ['genome_id', 'antibiotic', 'resistant_phenotype'];
+        }
+        # Determine whether this is an ID-based request or not.
+        if (scalar $cgi->param('from')) {
+            # Get the IDs to use.
+            my $idList = ComputeInputIds($cgi, $sessionDir);
+            # Ask PATRIC for results.
+            $result = P3Utils::get_data_keyed($p3, genome_drug => $constraintList, $displayList, $idList, 'genome_id');
+        } else {
+            # Ask PATRIC for all qualifying genomes.
+            $result = P3Utils::get_data($p3, genome_drug => $constraintList, $displayList);
+        }
+        # Add the headers.
+        unshift @$result, $displayList;
     } elsif ($request eq 'set_ops') {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
         # Insure we have a from set.
@@ -203,8 +271,10 @@ eval {
             # Get the IDs to use.
             my $idList = ComputeInputIds($cgi, $sessionDir);
             # Ask PATRIC for results.
-            $result = P3Utils::get_data_keyed($p3, genome_drug => $constraintList, ['genome_id'], $idList, 'genome_id');
-            # $result = P3Utils::get_data_keyed($p3, genome_drug => [], ['genome_id', 'antibiotic', 'resistant_phenotype'], $idList, 'genome_id');
+            my $idResult = P3Utils::get_data_keyed($p3, genome_drug => $constraintList, ['genome_id'], $idList, 'genome_id');
+            # Merge duplicates.
+            my %found = map { $_->[0] => 1 } @$idResult;
+            $result = map { [$_] } sort keys %found;
         }
     } else {
         die "Invalid request $request.\n";
@@ -262,6 +332,14 @@ sub ComputeConstraints {
     }
     # Return the constraint list.
     return \@retVal;
+}
+
+# Return the list of fields to display.
+sub ComputeFields {
+    my ($cgi) = @_;
+    my $line = $cgi->param('display');
+    my @retVal = split /,/, $line;
+    return \@retVal; 
 }
 
 # Return a list of the IDs to use in selecting objects. This involves parsing the FROM and NOT
