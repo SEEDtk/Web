@@ -74,6 +74,19 @@ Create an output table of genome data. The constraints and display fields should
 Create an output table of genome AMR data. The constraints and display fields should be based in the L<genome_drug> table.
 If C<from> and C<not> parameters are specified, they will be presumed to refer to genome IDs.
 
+=item list_sets
+
+List all of the sets currently in the workspace.
+
+=item list_tables
+
+List all of the tables currently in the workspace.
+
+=item show_table
+
+Display the contents of the specified table. The table should be specified in the C<from> parameter. (To show a set, use
+B<set_ops> with only a C<from> parameter.)
+
 =back
 
 =item from
@@ -199,6 +212,8 @@ eval {
     my $sessionDir = "$FIG_Config::temp/$acct";
     # This will be our output file handle and label (if any).
     my ($oh, $label);
+    # This will be set to 1 if we have headers.
+    my $headers = 0;
     # Insure our directory exists.
     if (! -d $sessionDir) {
         File::Copy::Recursive::pathmk($sessionDir) or die "Could not create session directory: $!";
@@ -222,6 +237,7 @@ eval {
         }
     } elsif ($request eq 'get_genome_table') {
         ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir);
+        $headers = 1;
         my $constraintList = ComputeConstraints($cgi);
         # Get the display fields. Default to ID and name.
         my $displayList = ComputeFields($cgi);
@@ -242,6 +258,7 @@ eval {
         unshift @$result, $displayList;
     } elsif ($request eq 'get_drug_table') {
         ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir);
+        $headers = 1;
         my $constraintList = ComputeConstraints($cgi);
         # Get the display fields. Default to ID and resistance info.
         my $displayList = ComputeFields($cgi);
@@ -286,6 +303,30 @@ eval {
             my %found = map { $_->[0] => 1 } @$idResult;
             $result = [map { [$_] } sort keys %found];
         }
+    } elsif ($request eq 'list_sets') {
+        # Display information about all the sets.
+        $result = ListItems('set', $sessionDir);
+    } elsif ($request eq 'list_tables') {
+        # Display information about all the tables.
+        $result = ListItems('table', $sessionDir);
+    } elsif ($request eq 'show_table') {
+        my $name = $cgi->param('from');
+        die "No table name specified." if ! $name;
+        open(my $ih, "<$sessionDir/$name.table") || die "Could not access table $name: $!";
+        while (! eof $ih) {
+            my $line = <$ih>;
+            chomp $line;
+            my @fields = split /\t/, $line;
+            push @$result, \@fields;
+        }
+    } elsif ($request eq 'describe_set') {
+        my $name = $cgi->param('from');
+        die "No set name specified." if ! $name;
+        $result = [[ DescribeItem(set => $name, $sessionDir) ]];
+    } elsif ($request eq 'describe_table') {
+        my $name = $cgi->param('from');
+        die "No table name specified." if ! $name;
+        $result = [[ DescribeItem(table => $name, $sessionDir) ]];
     } else {
         die "Invalid request $request.\n";
     }
@@ -294,11 +335,66 @@ eval {
     if ($oh) {
         $label ||= "result set produced with no label";
         print "$label\n";
-        print scalar(@$result) . " lines output.\n";
+        my $lines = scalar(@$result) - $headers;
+        print "$lines lines output.\n";
     }
 };
 if ($@) {
     print "ERROR: $@\n";
+}
+
+# List all the items of the specified type in the workspace.
+sub ListItems {
+    my ($type, $sessionDir) = @_;
+    # Get all the files of the specified type in the workspace.
+    my $suffix = ".$type";
+    my $suffixLen = length $suffix;
+    opendir(my $dh, $sessionDir) || die "Could not open session directory: $!";
+    my @files = sort grep { substr($_,-$suffixLen) eq $suffix } readdir $dh;
+    # The descriptions will be put in here.
+    my @retVal;
+    # Loop through the files.
+    for my $file (@files) {
+        # Get the real name of the file.
+        my ($name) = split /\./, $file;
+        my $response = DescribeItem($type, $name, $sessionDir);
+        # Push the description.
+        push @retVal, $response;
+    }
+    # Return the result as a result set.
+    if (! @retVal) {
+        die "No $type items found in workspace.";
+    }
+    return [map { [$_] } @retVal];
+}
+
+# Describe a set or table.
+sub DescribeItem {
+    my ($type, $name, $sessionDir) = @_;
+    my $retVal;
+    # Get the file name.
+    my $fileName = "$sessionDir/$name.$type";
+    if (! -f $fileName) {
+        $retVal = ucfirst "$type $name does not exist.";
+    } else {
+        # Read the label (if any).
+        my $label;
+        my $labelFile = "$fileName.lbl";
+        if (open(my $lh, "<$labelFile")) {
+            $label = <$lh>;
+            chomp $label;
+        } else {
+            $label = "unlabeled";
+        }
+        # Count the lines.
+        open(my $ih, "<$fileName") || die "Could not open $type $name: $!";
+        my $lineCount = 0;
+        $lineCount++ while (<$ih>);
+        $lineCount-- if ($type eq 'table');
+        # Format the description.
+        $retVal = ucfirst "$type $name is $label and contains $lineCount records.";
+    }
+    return $retVal;
 }
 
 # Return the output file handle, or undef if there is no output to a file.
