@@ -42,7 +42,7 @@ levels are separated by an exclamation point (C<!>).
 
 =item save
 
-The name of the output. A file will be created with this name and the suffix C<.set> or C<.tbl>. Output can be in 
+The name of the output. A file will be created with this name and the suffix C<.set> or C<.table>. Output can be in 
 the form of sets or tables: a set has a single column; a table has multiple named columns, tab-delimited.
 
 =item request
@@ -100,6 +100,16 @@ separated by commas.
 Specifies a match constraint. This constraint is specified as part of the PATRIC query, and it performs a substring match for
 string fields and an exact match for numeric fields. The subparameters are (1) the field to match and (2) the value to match
 against it. An asterisk (C<*>) serves as a wild card.
+
+=item susceptible
+
+Specifies that a genome is susceptible to a drug. The subparameter is the drug name. This constraint is only allowed on
+requests against the genome_drug table.
+
+=item resistant
+
+Specifies that a genome is resistant to a drug. The subparameter is the drug name. This constraint is only allowed on
+requests against the genome_drug table.
 
 =back
 
@@ -169,7 +179,7 @@ The name of the relevant drug.
 
 =item resistant_phenotype
 
-Either C<Resistant>, C<Susceptible>, or an empty strign (unknown), indicating the genome's relationship to the drug.
+Either C<Resistant>, C<Susceptible>, or an empty string (unknown), indicating the genome's relationship to the drug.
 
 =back
 
@@ -211,7 +221,7 @@ eval {
             $result = P3Utils::get_data($p3, genome => $constraintList, ['genome_id']);
         }
     } elsif ($request eq 'get_genome_table') {
-        ($oh, $label) = ComputeOutputFile(tbl => $cgi, $sessionDir);
+        ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir);
         my $constraintList = ComputeConstraints($cgi);
         # Get the display fields. Default to ID and name.
         my $displayList = ComputeFields($cgi);
@@ -231,7 +241,7 @@ eval {
         # Add the headers.
         unshift @$result, $displayList;
     } elsif ($request eq 'get_drug_table') {
-        ($oh, $label) = ComputeOutputFile(tbl => $cgi, $sessionDir);
+        ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir);
         my $constraintList = ComputeConstraints($cgi);
         # Get the display fields. Default to ID and resistance info.
         my $displayList = ComputeFields($cgi);
@@ -274,7 +284,7 @@ eval {
             my $idResult = P3Utils::get_data_keyed($p3, genome_drug => $constraintList, ['genome_id'], $idList, 'genome_id');
             # Merge duplicates.
             my %found = map { $_->[0] => 1 } @$idResult;
-            $result = map { [$_] } sort keys %found;
+            $result = [map { [$_] } sort keys %found];
         }
     } else {
         die "Invalid request $request.\n";
@@ -282,8 +292,9 @@ eval {
     PrintResult($oh, $result);
     # Insure there is some output if we spooled the results to a file.
     if ($oh) {
-        $label ||= "result set";
+        $label ||= "result set produced with no label";
         print "$label\n";
+        print scalar(@$result) . " lines output.\n";
     }
 };
 if ($@) {
@@ -301,7 +312,9 @@ sub ComputeOutputFile {
     my $label = $cgi->param('label');
     # Only proceed if we have one.
     if ($name) {
-        # Suffix the type.
+        # Compute the display name.
+        my $display = ucfirst $type . ' ' . $name;
+        # Suffix the type to the file name.
         $name .= ".$type";
         # Open the file for output.
         open($retVal, ">$sessionDir/$name") || die "Could not open output $type: $!";
@@ -309,6 +322,9 @@ sub ComputeOutputFile {
         if ($label) {
             open(my $oh, ">$sessionDir/$name.lbl") || die "Could not open label file for $name: $!";
             print $oh "$label\n";
+            $label = "$display now contains $label.";
+        } else {
+            $label = "$display now contains the result.";
         }
     }
     return ($retVal, $label);
@@ -328,6 +344,10 @@ sub ComputeConstraints {
         # Process according to the type.
         if ($type eq 'match') {
             push @retVal, ['eq', $field, $values[0]];
+        } elsif ($type eq 'susceptible' || $type eq 'resistant') {
+            push @retVal, ['eq', 'resistant_phenotype', ucfirst $type], ['eq', 'antibiotic', $field];
+        } else {
+            die "Invalid constraint category $type.";
         }
     }
     # Return the constraint list.
