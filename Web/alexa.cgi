@@ -51,28 +51,35 @@ The type of request. The following requests are supported.
 
 =over 8
 
-=item get_genomes
-
-Create an output set of genome IDs. The constraints should be on fields in the L</genome> table.
-
-=item set_ops
-
-Create an output set by merging input sets (optionally excluding records from other sets). Here the C<from> and C<not>
-parameters are supported, but not the C<constraint>.
-
 =item amr_genomes
 
 Filter a set of genomes by anti-microbial resistance data. The constraints should be on fields in the L</genome_drug>
 table.
 
-=item get_genome_table
+=item clear
 
-Create an output table of genome data. The constraints and display fields should be based in the L</genome> table.
+Clear all items from the workspace.
+
+=item describe_set
+
+Display information about the specified set in the workspace.
+
+=item describe_table
+
+Display information about the specified table in the workspace.
 
 =item get_drug_table
 
 Create an output table of genome AMR data. The constraints and display fields should be based in the L<genome_drug> table.
 If C<from> and C<not> parameters are specified, they will be presumed to refer to genome IDs.
+
+=item get_genome_table
+
+Create an output table of genome data. The constraints and display fields should be based in the L</genome> table.
+
+=item get_genomes
+
+Create an output set of genome IDs. The constraints should be on fields in the L</genome> table.
 
 =item list_sets
 
@@ -81,6 +88,11 @@ List all of the sets currently in the workspace.
 =item list_tables
 
 List all of the tables currently in the workspace.
+
+=item set_ops
+
+Create an output set by merging input sets (optionally excluding records from other sets). Here the C<from> and C<not>
+parameters are supported, but not the C<constraint>.
 
 =item show_table
 
@@ -333,20 +345,57 @@ eval {
         my $name = $cgi->param('from');
         die "No table name specified." if ! $name;
         $result = [[ DescribeItem(table => $name, $sessionDir) ]];
+    } elsif ($request eq 'clear') {
+        my ($tbls, $sets) = ClearWorkspace($sessionDir);
+        $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " and " . CountString($sets, 'set', 'sets') . " deleted." ]];
     } else {
         die "Invalid request $request.\n";
     }
     PrintResult($oh, $result);
     # Insure there is some output if we spooled the results to a file.
     if ($oh) {
-        $label ||= "result set produced with no label";
+        $label ||= "Result set produced with no label.";
         print "$label\n";
         my $lines = scalar(@$result) - $headers;
-        print "$lines lines output.\n";
+        print CountString($lines, 'line', 'lines') . " output.\n";
     }
 };
 if ($@) {
     print "ERROR: $@\n";
+}
+
+# Erase the workspace, returning a count of the sets and tables deleted.
+sub ClearWorkspace {
+    my ($sessionDir) = @_;
+    # The output counts will go in here.
+    my %counters = (table => 0, set => 0);
+    # Get the files in the workspace.
+    opendir(my $dh, $sessionDir) || die "Could not open session directory: $!";
+    my @files = grep { $_ =~ /^[A-Z]\w*\.(?:table|set)/ } readdir $dh;
+    # Loop through them.
+    for my $file (@files) {
+        unlink "$sessionDir/$file";
+        # If the file is a table or set, count it.
+        if ($file =~ /\.(table|set)$/) {
+            $counters{$1}++;
+        }
+    }
+    # Return the delete counts.
+    return ($counters{table}, $counters{set});
+}
+
+# Display a count. The singular or plural is chosen.
+sub CountString {
+    my ($count, $singular, $plural) = @_;
+    my $retVal;
+    if ($count == 0) {
+        $retVal = "no $plural";
+    } elsif ($count == 1) {
+        $retVal = "$count $singular";
+    } else {
+        $retVal = "$count $plural";
+    }
+    return $retVal;
 }
 
 # List all the items of the specified type in the workspace.
@@ -442,16 +491,19 @@ sub ComputeConstraints {
     my @constraints = $cgi->param('constraint');
     # Loop through them, adding them to the output list.
     for my $constraint (@constraints) {
-        my ($type, $field, @values) = split /,/, $constraint;
-        # Process according to the type.
-        if ($type eq 'match') {
-            push @retVal, ['eq', $field, $values[0]];
-        } elsif ($type eq 'exclude') {
-            push @retVal, ['ne', $field, $values[0]];
-        } elsif ($type eq 'susceptible' || $type eq 'resistant') {
-            push @retVal, ['eq', 'resistant_phenotype', ucfirst $type], ['eq', 'antibiotic', $field];
-        } else {
-            die "Invalid constraint category $type.";
+        # Only process non-null constraints.
+        if ($constraint) {
+            my ($type, $field, @values) = split /,/, $constraint;
+            # Process according to the type.
+            if ($type eq 'match') {
+                push @retVal, ['eq', $field, $values[0]];
+            } elsif ($type eq 'exclude') {
+                push @retVal, ['ne', $field, $values[0]];
+            } elsif ($type eq 'susceptible' || $type eq 'resistant') {
+                push @retVal, ['eq', 'resistant_phenotype', ucfirst $type], ['eq', 'antibiotic', $field];
+            } else {
+                die "Invalid constraint category $type.";
+            }
         }
     }
     # Return the constraint list.
@@ -478,24 +530,28 @@ sub ComputeInputIds {
     my @notSets = $cgi->param('not');
     # Loop through them, filling the hash.
     for my $notSet (@notSets) {
-        my $notFile = "$sessionDir/$notSet.set";
-        open(my $ih, "<$notFile") || die "Could not open ID exclusion set $notSet: $!";
-        while (! eof $ih) {
-            my $line = <$ih>;
-            chomp $line;
-            $notIDs{$line} = 1;
+        if ($notSet) {
+            my $notFile = "$sessionDir/$notSet.set";
+            open(my $ih, "<$notFile") || die "Could not open ID exclusion set $notSet: $!";
+            while (! eof $ih) {
+                my $line = <$ih>;
+                chomp $line;
+                $notIDs{$line} = 1;
+            }
         }
     }
     # Now loop through the FROM sets, filling the output.
     my @fromSets = $cgi->param('from');
     for my $fromSet (@fromSets) {
-        my $fromFile = "$sessionDir/$fromSet.set";
-        open (my $ih, "<$fromFile") || die "Could not open ID inclusion set $fromSet: $!";
-        while (! eof $ih) {
-            my $line = <$ih>;
-            chomp $line;
-            if (! $notIDs{$line}) {
-                push @retVal, $line;
+        if ($fromSet) {
+            my $fromFile = "$sessionDir/$fromSet.set";
+            open (my $ih, "<$fromFile") || die "Could not open ID inclusion set $fromSet: $!";
+            while (! eof $ih) {
+                my $line = <$ih>;
+                chomp $line;
+                if (! $notIDs{$line}) {
+                    push @retVal, $line;
+                }
             }
         }
     }
