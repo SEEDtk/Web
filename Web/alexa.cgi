@@ -254,14 +254,15 @@ eval {
             $result = P3Utils::get_data($p3, genome => $constraintList, ['genome_id']);
         }
     } elsif ($request eq 'get_genome_table') {
-        ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir);
-        $headers = 1;
-        my $constraintList = ComputeConstraints($cgi);
         # Get the display fields. Default to ID and name.
         my $displayList = ComputeFields($cgi);
         if (! scalar @$displayList) {
             $displayList = ['genome_id', 'genome_name'];
         }
+        # Compute the output file and label.
+        ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir, $displayList);
+        $headers = 1;
+        my $constraintList = ComputeConstraints($cgi);
         # Determine whether this is an ID-based request or not.
         if (scalar $cgi->param('from')) {
             # Get the IDs to use.
@@ -275,14 +276,15 @@ eval {
         # Add the headers.
         unshift @$result, $displayList;
     } elsif ($request eq 'get_drug_table') {
-        ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir);
-        $headers = 1;
-        my $constraintList = ComputeConstraints($cgi);
         # Get the display fields. Default to ID and resistance info.
         my $displayList = ComputeFields($cgi);
         if (! scalar @$displayList) {
             $displayList = ['genome_id', 'antibiotic', 'resistant_phenotype'];
         }
+        # Compute the output file and label.
+        ($oh, $label) = ComputeOutputFile(table => $cgi, $sessionDir, $displayList);
+        $headers = 1;
+        my $constraintList = ComputeConstraints($cgi);
         # Determine whether this is an ID-based request or not.
         if (scalar $cgi->param('from')) {
             # Get the IDs to use.
@@ -454,29 +456,29 @@ sub DescribeItem {
 
 # Return the output file handle, or undef if there is no output to a file.
 sub ComputeOutputFile {
-    my ($type, $cgi, $sessionDir) = @_;
+    my ($type, $cgi, $sessionDir, $displayList) = @_;
     # This will be the return outut handle.
     my $retVal;
     # Get the set/table name.
     my $name = $cgi->param('save');
     # Get the set/table label.
     my $label = $cgi->param('label');
-    # Only proceed if we have one.
+    # Only proceed if we have a name.
     if ($name) {
         # Compute the display name.
         my $display = ucfirst $type . ' ' . $name;
+        # Compute the label to use.
+        if (! $label) {
+            $label = ComputeLabel($cgi, $displayList);
+        }
         # Suffix the type to the file name.
         $name .= ".$type";
         # Open the file for output.
         open($retVal, ">$sessionDir/$name") || die "Could not open output $type: $!";
         # Create the label.
-        if ($label) {
-            open(my $oh, ">$sessionDir/$name.lbl") || die "Could not open label file for $name: $!";
-            print $oh "$label\n";
-            $label = "$display now contains $label.";
-        } else {
-            $label = "$display now contains the result.";
-        }
+        open(my $oh, ">$sessionDir/$name.lbl") || die "Could not open label file for $name: $!";
+        print $oh "$label\n";
+        $label = "$display now contains $label.";
     }
     return ($retVal, $label);
 }
@@ -584,3 +586,99 @@ sub PrintResult {
         print $oh join("\t", @$item) . "\n";
     }
 }
+
+use constant OBJECT_TYPE =>
+        { amr_genomes => 'genomes', get_drug_table => 'genomes', get_genome_table => 'genomes',
+          get_genomes => 'genomes', set_ops => 'items' };
+use constant RETURNS_TABLE =>
+        { get_drug_table => 1, get_genome_table => 1 };
+use constant FIELD_NAME =>
+        { genomes => { genome_id => 'id', genome_name => 'name', taxon_id => 'taxonomic number', genome_length => 'size',
+                       gc_content => 'G C content', antibiotic => 'drug', resistant_phenotype => 'resistance type' },
+        };
+# Compute the label to use for an output set.
+sub ComputeLabel {
+    my ($cgi, $displayList) = @_;
+    # This will be the return value.
+    my $retVal = 'an unknown result set';
+    # Get the request type. This is the most important thing.
+    my $request = $cgi->param('request');
+    # Only proceed if the request is valid.
+    if ($request) {
+        # Determine the output object type.
+        my $type = OBJECT_TYPE->{$request};
+        my $fieldMap = FIELD_NAME->{$type};
+        # Do we have display fields?
+        my $tableFields;
+        if (RETURNS_TABLE->{$request}) {
+            # Get the display fields.
+            my @fnames = map { $fieldMap->{$_} } @$displayList;
+            $tableFields = 'the ' . CommaSplice(@fnames);
+        }
+        # Compute the source.
+        my $sourceString;
+        my @froms = grep { $_ } $cgi->param('from');
+        my @nots = grep { $_ } $cgi->param('not');
+        my $pick = $cgi->param('pick');
+        if (! @froms) {
+            $sourceString = "all $type";
+        } else {
+            if ($pick) {
+                $sourceString = "$pick $type in ";
+            } else {
+                $sourceString = "$type in ";
+            }
+            $sourceString .= CommaSplice(@froms);
+            if (@nots) {
+                $sourceString .= ' but not in ' . CommaSplice(@nots);
+            }
+        }
+        # If we have display fields, insure we have a proper connector.
+        if ($tableFields) {
+            $sourceString = "from $sourceString";
+        }
+        # Compute the filters.
+        my $filters;
+        my @constraints = grep { $_ } $cgi->param('constraint');
+        if (@constraints) {
+            my @filters;
+            for my $constraint (@constraints) {
+                my $filter;
+                my ($type, $field, $value) = split /,/, $constraint;
+                if ($type eq 'susceptible' || $type eq 'resistant') {
+                    $filter = "are $type to $field";
+                } else {
+                    $field = $fieldMap->{$field};
+                    if ($type eq 'exclude') {
+                        $filter = "do not have the $field $value";
+                    } else {
+                        $filter = "have the $field $value";
+                    }
+                }
+                push @filters, $filter;
+            }
+            $filters = 'that ' . CommaSplice(@filters);
+        }
+        my @sequence = grep { $_ } ($tableFields, $sourceString, $filters);
+        $retVal = join(' ', @sequence);
+    }
+    # Return the label.
+    return $retVal;
+}
+
+# Comma-splice a list of words together.
+sub CommaSplice {
+    my (@words) = @_;
+    my $retVal;
+    my $count = scalar @words;
+    if ($count == 1) {
+        $retVal = $words[0];
+    } elsif ($count == 2) {
+        $retVal = $words[0] . ' and ' . $words[1];
+    } else {
+        my ($last) = pop @words;
+        $retVal = join(', ', @words, "and $last"); 
+    }
+    return $retVal;
+}
+
