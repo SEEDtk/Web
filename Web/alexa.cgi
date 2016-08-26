@@ -124,6 +124,12 @@ requests against the genome_drug table.
 Specifies that a genome is resistant to a drug. The subparameter is the drug name. This constraint is only allowed on
 requests against the genome_drug table.
 
+=item exclude
+
+Specifies a don't-match constraint. This constraint is specified as part of the PATRIC query, and it performs a substring match
+for string fields and an exact match for numeric fields. Records are only accepted if they do not match. The subparameters are (1)
+the field to match and (2) the value to match against it. An asterisk (C<*>) serves as a wild card.
+
 =back
 
 =item display
@@ -440,6 +446,8 @@ sub ComputeConstraints {
         # Process according to the type.
         if ($type eq 'match') {
             push @retVal, ['eq', $field, $values[0]];
+        } elsif ($type eq 'exclude') {
+            push @retVal, ['ne', $field, $values[0]];
         } elsif ($type eq 'susceptible' || $type eq 'resistant') {
             push @retVal, ['eq', 'resistant_phenotype', ucfirst $type], ['eq', 'antibiotic', $field];
         } else {
