@@ -149,18 +149,14 @@ the field to match and (2) the value to match against it. An asterisk (C<*>) ser
 The names of the fields to include in the output, specified as a comma-delimited list. This is only 
 used for table-producing commands. Note that you must specify the ID if you want the ID included.
 
-=item label
-
-Specifies a string that should be used to label the set or table. It will be put into a file with the same name as the
-set or table and a suffix of C<.lbl>.
-
 =back
 
 =head2 Notes on Fields
 
-When forming C<match> constraints, it is useful to know the names of some of the common fields in the PATRIC database.
+When forming constraints, it is necessary to know how to name the fields in the PATRIC database.
 The complete schema can be found at L<https://github.com/PATRIC3/patric_solr>.  To look at the inndividual schema for 
-an object, go into the B<schema.xml> file of the C<conf> subdirectory.
+an object, go into the B<schema.xml> file of the C<conf> subdirectory. For the Alexa interface, we have readable
+names for each supported field. These readable names are the ones that must be suppled in the C<display> parameter.
 
 =head3 genome
 
@@ -170,23 +166,23 @@ This corresponds to the PATRIC B<genome> object.
 
 =item genome_id
 
-the unique genome ID
+the unique genome ID. Must be specified as C<id>.
 
 =item genome_name
 
-the scientific name
+the scientific name. Must be specified as C<name>.
 
 =item taxon_id
 
-the NCBI taxonomic ID
+the NCBI taxonomic ID. May be specified as C<taxon ID>, C<taxonomic number>, 
 
 =item genome_length
 
-number of base pairs
+number of base pairs. Must be specified as C<size>.
 
 =item gc_content
 
-percentage GC content
+percentage GC content. May be specified as C<gc content>, C<guanine cytosine content>, or C<G C content>.
 
 =back
 
@@ -198,23 +194,44 @@ This corresponds to the PATRIC B<genome_amr> object.
 
 =item genome_id
 
-The ID of the relevant genome.
+The ID of the relevant genome. Must be specified as C<id>.
 
 =item genome_name
 
-The name of the relevant genome.
+The name of the relevant genome. Must be specified as C<name>.
 
 =item antibiotic
 
-The name of the relevant drug.
+The name of the relevant drug. Must be specified as C<antibiotic> or C<drug>.
 
 =item resistant_phenotype
 
 Either C<Resistant>, C<Susceptible>, or an empty string (unknown), indicating the genome's relationship to the drug.
+Must be specified as C<resistance type> or C<resistance phenotype>.
 
 =back
 
 =cut
+
+## These constants define the data model.
+use constant OBJECT_TYPE =>
+        { amr_genomes => 'genomes', get_drug_table => 'genomes', get_genome_table => 'genomes',
+          get_genomes => 'genomes', set_ops => 'items' };
+use constant RETURNS_TABLE =>
+        { get_drug_table => 1, get_genome_table => 1 };
+use constant FIELD_NAME_TO_PATRIC =>
+        { genomes => { 'id' => 'genome_id', 'name' => 'genome_name', 'taxonomic number' => 'taxon_id', 'taxon id' => 'taxon_id',
+                       'taxon i d' => 'taxon_id', 'taxonomic id' => 'taxon_id', 'taxonomic i d' => 'taxon_id',
+                       'size' => 'genome_length', 'gc content' => 'gc_content', 'guanine cytosine content' => 'gc_content',
+                       'g c content' => 'gc_content', 'drug' => 'antibiotic', 'antibiotic' => 'antibiotic',
+                       'resistance type' => 'resistant_phenotype', 'resistance phenotype' => 'resistant_phenotype' },
+        };
+use constant FIELD_NAME =>
+        { genomes => { genome_id => 'id', genome_name => 'name', taxon_id => 'taxonomic number',
+                       genome_length => 'size', gc_content => 'G C content', antibiotic => 'drug',
+                       resistant_phenotype => 'resistance type' }
+        };
+
 
 my $cgi = new CGI;
 # We will put the output in here. 
@@ -255,7 +272,7 @@ eval {
         }
     } elsif ($request eq 'get_genome_table') {
         # Get the display fields. Default to ID and name.
-        my $displayList = ComputeFields($cgi);
+        my $displayList = ComputeFields(genomes => $cgi);
         if (! scalar @$displayList) {
             $displayList = ['genome_id', 'genome_name'];
         }
@@ -277,7 +294,7 @@ eval {
         unshift @$result, $displayList;
     } elsif ($request eq 'get_drug_table') {
         # Get the display fields. Default to ID and resistance info.
-        my $displayList = ComputeFields($cgi);
+        my $displayList = ComputeFields(genomes => $cgi);
         if (! scalar @$displayList) {
             $displayList = ['genome_id', 'antibiotic', 'resistant_phenotype'];
         }
@@ -457,20 +474,16 @@ sub DescribeItem {
 # Return the output file handle, or undef if there is no output to a file.
 sub ComputeOutputFile {
     my ($type, $cgi, $sessionDir, $displayList) = @_;
-    # This will be the return outut handle.
-    my $retVal;
+    # These will be the return outut handle and label.
+    my ($retVal, $label);
     # Get the set/table name.
     my $name = $cgi->param('save');
-    # Get the set/table label.
-    my $label = $cgi->param('label');
     # Only proceed if we have a name.
     if ($name) {
         # Compute the display name.
         my $display = ucfirst $type . ' ' . $name;
         # Compute the label to use.
-        if (! $label) {
-            $label = ComputeLabel($cgi, $displayList);
-        }
+        $label = ComputeLabel($cgi, $displayList);
         # Suffix the type to the file name.
         $name .= ".$type";
         # Open the file for output.
@@ -514,9 +527,19 @@ sub ComputeConstraints {
 
 # Return the list of fields to display.
 sub ComputeFields {
-    my ($cgi) = @_;
+    my ($objectType => $cgi) = @_;
+    my $fieldMap = FIELD_NAME_TO_PATRIC->{$objectType};
     my $line = $cgi->param('display');
-    my @retVal = split /,/, $line;
+    my @fields = split /,/, $line;
+    my @retVal;
+    for my $field (@fields) {
+        my $name = $fieldMap->{lc $field};
+        if (! $name) {
+            die "Invalid display field name $field.";
+        } else {
+            push @retVal, $name;
+        }
+    }
     return \@retVal; 
 }
 
@@ -587,15 +610,6 @@ sub PrintResult {
     }
 }
 
-use constant OBJECT_TYPE =>
-        { amr_genomes => 'genomes', get_drug_table => 'genomes', get_genome_table => 'genomes',
-          get_genomes => 'genomes', set_ops => 'items' };
-use constant RETURNS_TABLE =>
-        { get_drug_table => 1, get_genome_table => 1 };
-use constant FIELD_NAME =>
-        { genomes => { genome_id => 'id', genome_name => 'name', taxon_id => 'taxonomic number', genome_length => 'size',
-                       gc_content => 'G C content', antibiotic => 'drug', resistant_phenotype => 'resistance type' },
-        };
 # Compute the label to use for an output set.
 sub ComputeLabel {
     my ($cgi, $displayList) = @_;
