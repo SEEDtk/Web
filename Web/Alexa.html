@@ -17,7 +17,9 @@
     <tr>
       <td>request</td>
       <td><select name="request">
-            <option value="test">test</option>
+            <option value="task">task</option>
+            <option value="job_check">job_check</option>
+            <option value="job_purge">job_purge</option>
             <option value="amr_genomes">amr_genomes</option>
         	<option value="get_genomes">get_genomes</option>
             <option value="set_ops">set_ops</option>
@@ -237,13 +239,28 @@
       <td colspan="5"><input name="display" type="text" size="90" /></td>
     </tr>
     <tr>
-      <td>pid</td><td><input name="pid" type="text" size="36" /><td colspan="4"><center><input type="submit" />&nbsp;<input type="reset" /></center></td>
+      <td>task</td><td><select name="task">
+        <option value="test">Test</option>
+        <option value="families">Signature Families</option>
+      </select></td>
+      <td>name</td><td><input name="taskname" size="20" /></td>
+      <td>Check</td><td><input type="checkbox" name="checkjobs" /></td>
+    </tr>
+    <tr>
+      <td>parm</td><td><input name="taskparm" type="text" size="20" /></td>
+      <td>parm</td><td><input name="taskparm" type="text" size="20" /></td>
+      <td colspan="2"><input type="submit" /></td>
+    </tr>
+    <tr>
+      <td>parm</td><td><input name="taskparm" type="text" size="20" /></td>
+      <td>parm</td><td><input name="taskparm" type="text" size="20" /></td>
+      <td colspan="2"><input type="reset" /></td>
     </tr>
   </tbody>
 </table>
 
 </form>
-<div style="background-color:#ccc"><iframe name="testFrame" width="100%" height="600px"></iframe></div>
+<div style="background-color:#ccc"><iframe name="testFrame" width="100%" height="500px"></iframe></div>
 </div>
 </body>
 </html>

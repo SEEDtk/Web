@@ -101,6 +101,18 @@ parameters are supported, but not the C<constraint>.
 Display the contents of the specified table. The table should be specified in the C<from> parameter. (To show a set, use
 B<set_ops> with only a C<from> parameter.)
 
+=item task
+
+Run background task. The C<task>, C<taskname>, and C<taskparms> parameters are used for this.
+
+=item job_check
+
+Do a complete check of the job status. This overrides C<checkjobs>, which checks only for completed jobs.
+
+=item job_purge
+
+Removes all data relating to jobs with an C<informed> status.
+
 =back
 
 =item from
@@ -150,6 +162,35 @@ the field to match and (2) the value to match against it. An asterisk (C<*>) ser
 
 The names of the fields to include in the output, specified as a comma-delimited list. This is only
 used for table-producing commands. Note that you must specify the ID if you want the ID included.
+
+=item task
+
+The type of task to run in the background.
+
+=over 8
+
+=item test
+
+The test application L<AlexaTest.pl>.
+
+=item families
+
+The signature families application L<AlexaFamilies.pl>.
+
+=back
+
+=item taskname
+
+The name to give to the task.
+
+=item taskparm
+
+A parameter string to pass to the application. This option is multi-valued. Multiple parameters should be passed as
+multiple values. Command-line options should use the equals form (e.g. C<--min=10>).
+
+=item checkjobs
+
+If TRUE, then the output will be suffixed by a summary of recently-completed background jobs.
 
 =back
 
@@ -234,10 +275,11 @@ use constant FIELD_NAME =>
                        resistant_phenotype => 'resistance type' }
         };
 
-
 my $cgi = new CGI;
 # We will put the output in here.
 my $result = [];
+# This will be set if we want to check jobs.
+my $checkJobs = $cgi->param('checkjobs');;
 # Get a header.
 print CGI::header('text/plain');
 eval {
@@ -263,10 +305,34 @@ eval {
     my $request = $cgi->param('request');
     if (! $request) {
         die "No request specified.";
-    } elsif ($request eq 'test') {
-        print "Starting test job.\n";
-        my $pid = Job::Create($sessionDir, 'Test', 'AlexaTest', '--time=60');
-        print "Process ID is $pid.\n";
+    } elsif ($request eq 'task') {
+        print "Background job requested.\n";
+        my $name = $cgi->param('taskname');
+        my $script = $cgi->param('task');
+        # We will put parameters in here.
+        my @parms;
+        # This will be the command.
+        my $command;
+        if ($script eq 'families') {
+            ##TODO signature families
+        } elsif ($script eq 'test') {
+            $command = 'AlexaTest';
+            @parms = $cgi->param('taskparm');
+        } else {
+            die "Invalid background script $script.";
+        }
+        my $pid = Job::Create($sessionDir, $name, $command, @parms);
+        print "Job $name started.\n";
+    } elsif ($request eq 'job_check') {
+        # Check the background job queue.
+        my $jobList = Job::Check($sessionDir, 'complete');
+        # Suppress any after-check.
+        $checkJobs = '';
+        print join("\n", @$jobList, "");
+    } elsif ($request eq 'job_purge') {
+        my $count = Job::Purge($sessionDir);
+        my $noun = ($count ? 'jobs' : 'job');
+        print "$count $noun purged.\n";
     } elsif ($request eq 'get_genomes') {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
         my $constraintList = ComputeConstraints($cgi);
@@ -380,13 +446,22 @@ eval {
     } else {
         die "Invalid request $request.\n";
     }
-    PrintResult($oh, $result);
+    if (scalar @$result) {
+        PrintResult($oh, $result);
+    }
     # Insure there is some output if we spooled the results to a file.
     if ($oh) {
         $label ||= "Result set produced with no label.";
         print "$label\n";
         my $lines = scalar(@$result) - $headers;
         print CountString($lines, 'line', 'lines') . " output.\n";
+    }
+    # Check for job status.
+    if ($checkJobs) {
+        my $jobList = Job::Check($sessionDir);
+        if (scalar @$jobList) {
+            print join("\n", @$jobList, "");
+        }
     }
 };
 if ($@) {
