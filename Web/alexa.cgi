@@ -44,7 +44,7 @@ levels are separated by an exclamation point (C<!>).
 
 =item save
 
-The name of the output. A file will be created with this name and the suffix C<.set> or C<.table>. Output can be in 
+The name of the output. A file will be created with this name and the suffix C<.set> or C<.table>. Output can be in
 the form of sets or tables: a set has a single column; a table has multiple named columns, tab-delimited.
 
 =item request
@@ -148,7 +148,7 @@ the field to match and (2) the value to match against it. An asterisk (C<*>) ser
 
 =item display
 
-The names of the fields to include in the output, specified as a comma-delimited list. This is only 
+The names of the fields to include in the output, specified as a comma-delimited list. This is only
 used for table-producing commands. Note that you must specify the ID if you want the ID included.
 
 =back
@@ -156,7 +156,7 @@ used for table-producing commands. Note that you must specify the ID if you want
 =head2 Notes on Fields
 
 When forming constraints, it is necessary to know how to name the fields in the PATRIC database.
-The complete schema can be found at L<https://github.com/PATRIC3/patric_solr>.  To look at the inndividual schema for 
+The complete schema can be found at L<https://github.com/PATRIC3/patric_solr>.  To look at the inndividual schema for
 an object, go into the B<schema.xml> file of the C<conf> subdirectory. For the Alexa interface, we have readable
 names for each supported field. These readable names are the ones that must be suppled in the C<display> parameter.
 
@@ -176,7 +176,7 @@ the scientific name. Must be specified as C<name>.
 
 =item taxon_id
 
-the NCBI taxonomic ID. May be specified as C<taxon ID>, C<taxonomic number>, 
+the NCBI taxonomic ID. May be specified as C<taxon ID>, C<taxonomic number>,
 
 =item genome_length
 
@@ -236,12 +236,16 @@ use constant FIELD_NAME =>
 
 
 my $cgi = new CGI;
-# We will put the output in here. 
+# We will put the output in here.
 my $result = [];
 # Get a header.
 print CGI::header('text/plain');
 eval {
     my $p3 = P3DataAPI->new();
+    # Insure the default umask doesn't screw us up.
+    if (! $FIG_Config::win_mode) {
+        umask 0;
+    }
     # Compute the working directory.
     my $acct = $cgi->param('account');
     die "No account specified." if ! $acct;
@@ -261,7 +265,7 @@ eval {
         die "No request specified.";
     } elsif ($request eq 'test') {
         print "Starting test job.\n";
-        my $pid = Job::Create($sessionDir, 'Test', 'AlexaTest', '--time=5');
+        my $pid = Job::Create($sessionDir, 'Test', 'AlexaTest', '--time=60');
         print "Process ID is $pid.\n";
     } elsif ($request eq 'get_genomes') {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
@@ -546,7 +550,7 @@ sub ComputeFields {
             push @retVal, $name;
         }
     }
-    return \@retVal; 
+    return \@retVal;
 }
 
 # Return a list of the IDs to use in selecting objects. This involves parsing the FROM and NOT
@@ -697,7 +701,7 @@ sub CommaSplice {
         $retVal = $words[0] . ' and ' . $words[1];
     } else {
         my ($last) = pop @words;
-        $retVal = join(', ', @words, "and $last"); 
+        $retVal = join(', ', @words, "and $last");
     }
     return $retVal;
 }
