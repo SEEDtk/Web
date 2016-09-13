@@ -308,6 +308,7 @@ eval {
     } elsif ($request eq 'task') {
         print "Background job requested.\n";
         my $name = $cgi->param('taskname');
+        die "No task name specified." if ! $name;
         my $script = $cgi->param('task');
         # We will put parameters in here.
         my @parms;
@@ -328,11 +329,22 @@ eval {
         my $jobList = Job::Check($sessionDir, 'complete');
         # Suppress any after-check.
         $checkJobs = '';
-        print join("\n", @$jobList, "");
+        if (scalar @$jobList) {
+            print join("\n", @$jobList, "");
+        } else {
+            print "No active jobs.\n";
+        }
+
     } elsif ($request eq 'job_purge') {
         my $count = Job::Purge($sessionDir);
-        my $noun = ($count ? 'jobs' : 'job');
-        print "$count $noun purged.\n";
+        if ($count == 0) {
+            $count = "No jobs";
+        } elsif ($count == 1) {
+            $count = "One job";
+        } else {
+            $count = "$count jobs";
+        }
+        print "$count purged.\n";
     } elsif ($request eq 'get_genomes') {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
         my $constraintList = ComputeConstraints($cgi);
