@@ -306,7 +306,6 @@ eval {
     if (! $request) {
         die "No request specified.";
     } elsif ($request eq 'task') {
-        print "Background job requested.\n";
         my $name = $cgi->param('taskname');
         die "No task name specified." if ! $name;
         my $script = $cgi->param('task');
@@ -322,8 +321,14 @@ eval {
         } else {
             die "Invalid background script $script.";
         }
-        my $pid = Job::Create($sessionDir, $name, $command, @parms);
-        print "Job $name started.\n";
+        my $statusFile = Job::Create($sessionDir, $name, $command, @parms);
+        print "Status file is $statusFile.\n";
+        sleep 1;
+        if (-f $statusFile) {
+            print "Job $name started.\n";
+        } else {
+            print "Job $name is starting.\n";
+        }
     } elsif ($request eq 'job_check') {
         # Check the background job queue.
         my $jobList = Job::Check($sessionDir, 'complete');
