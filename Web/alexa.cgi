@@ -26,6 +26,8 @@ use Data::Dumper;
 use File::Copy::Recursive;
 use URI::Escape;  # uri_escape
 use CGI;
+use Job;
+
 
 =head1 New Alexa Script for PATRIC Access
 
@@ -257,6 +259,10 @@ eval {
     my $request = $cgi->param('request');
     if (! $request) {
         die "No request specified.";
+    } elsif ($request eq 'test') {
+        print "Starting test job.\n";
+        my $pid = Job::Create($sessionDir, 'Test', 'AlexaTest', '--time=5');
+        print "Process ID is $pid.\n";
     } elsif ($request eq 'get_genomes') {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
         my $constraintList = ComputeConstraints($cgi);

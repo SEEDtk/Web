@@ -236,7 +236,7 @@ eval {
                     } elsif ($line =~ /^\s*use\s+(\w+);/) {
                         # Here we have a normal use.
                         $useHash{$1} = '';
-                    } elsif ($line =~ /^[^#]+ScriptUtils::Opts\(/) {
+                    } elsif ($line =~ /^[^#]+(?:ScriptUtils::Opts|P3Utils::script_opts|ServicesUtils::get_options|Job::Start)\(/) {
                         # Here the user called ScriptUtils::Opts. We can generate a usage
                         # help dump.
                         $optCalled = 1;
