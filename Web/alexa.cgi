@@ -60,7 +60,7 @@ table. The C<from> parameter is required.
 
 =item get_drug_table
 
-Create an output table of genome AMR data. The constraints and display fields should be based in the L<genome_drug> table.
+Create an output table of genome AMR data. The constraints and display fields should be based in the L</genome_drug> table.
 If C<from> and C<not> parameters are specified, they will be presumed to refer to genome IDs.
 
 =item get_genome_table
