@@ -1,0 +1,20 @@
+{
+    "LetMembersThatAreSusceptible": " <varname> saved as those members of <varnameA> that are susceptible to <drug>",
+    "Show": " List contents of <varname>",
+    "LetTheSetGenomesFromThatNot": " <varname> saved as the set of genomes from <varnameA> that do not have the name <species>",
+    "LetItemsPickedFrom": " <varname> saved as <number> random items from <varnameA>",
+    "LetTableWithAnd": " <varname> saved as a table with columns id, <featurename> and <featurenameA> from set <varnameA>",
+    "LetTheSetGenomesFromThatNotHave": " <varname> saved as the set of genomes from <varnameA> that do not have the name <genus>",
+    "LetSignatureFamiliesThat": " There are XXX signature families that distinguish the two sets of genomes.  I have recorded them in <varname>",
+    "LetTableWithAndAnd": " <varname> saved as a table with columns id, <featurename>, <featurenameA>  and <featurenameB> from set <varnameA>",
+    "WhatSignatureFamily": " A signature family is a protein family that distinguishes two sets of genomes.  That is, all genomes from set one have genes encoding a member of the family, and none of the genomes in the second set do.",
+    "LetTheSetGenomesFromThat": " <varname> saved as the set of genomes from <varnameA> that have the name <genus>",
+    "LetTheSetGenomesFrom": " <varname> saved as the set of genomes from <varnameA> that have the name <species>",
+    "HowManyItemsAre": " there are <number> <featuretype>s in <varname>",
+    "ShowTheFirstMembers": " I have listed the requested signature families on the graphics display",
+    "WhatSignatureCluster": " A signature cluster is a group of instances of signature families that occur close to one another in a single genome.",
+    "WhatSetsHaveSaved": " what have I saved?",
+    "LetTheSetGenomes": " <varname> saved as the set of genomes with the name <genus>",
+    "LetMembersThatAre": " <varname> saved as those members of <varnameA> that are resistant to <drug>",
+    "LetTableWithFrom": " <varname> saved as a table with columns id and <featurename> from set <varnameA>"
+}

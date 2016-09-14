@@ -49,26 +49,14 @@ the form of sets or tables: a set has a single column; a table has multiple name
 
 =item request
 
-The type of request. The following requests are supported.
+The type of request. The following query-related requests are supported.
 
 =over 8
 
 =item amr_genomes
 
 Filter a set of genomes by anti-microbial resistance data. The constraints should be on fields in the L</genome_drug>
-table.
-
-=item clear
-
-Clear all items from the workspace.
-
-=item describe_set
-
-Display information about the specified set in the workspace.
-
-=item describe_table
-
-Display information about the specified table in the workspace.
+table. The C<from> parameter is required.
 
 =item get_drug_table
 
@@ -82,6 +70,24 @@ Create an output table of genome data. The constraints and display fields should
 =item get_genomes
 
 Create an output set of genome IDs. The constraints should be on fields in the L</genome> table.
+
+=back
+
+The following data management requests are supported.
+
+=over 4
+
+=item clear
+
+Clear all items from the workspace.
+
+=item describe_set
+
+Display information about the specified set in the workspace.
+
+=item describe_table
+
+Display information about the specified table in the workspace.
 
 =item list_sets
 
@@ -101,6 +107,12 @@ parameters are supported, but not the C<constraint>.
 Display the contents of the specified table. The table should be specified in the C<from> parameter. (To show a set, use
 B<set_ops> with only a C<from> parameter.)
 
+=back
+
+The following background task (job) management requests are supported.
+
+=over 4
+
 =item task
 
 Run background task. The C<task>, C<taskname>, and C<taskparms> parameters are used for this.
@@ -112,6 +124,17 @@ Do a complete check of the job status. This overrides C<checkjobs>, which checks
 =item job_purge
 
 Removes all data relating to jobs with an C<informed> status.
+
+=back
+
+Finally, there are the following miscellaneous requests.
+
+=over 4
+
+=item define
+
+Return the definition string for an intent. Uses the C<intent> parameter. The definitions are read from the C<intents.json>
+file in the C<lib> subdirectory.
 
 =back
 
@@ -212,6 +235,10 @@ multiple values. Command-line options should use the equals form (e.g. C<--min=1
 =item checkjobs
 
 If TRUE, then the output will be suffixed by a summary of recently-completed background jobs.
+
+=item intent
+
+The name of an intent for the C<define> request.
 
 =back
 
@@ -352,7 +379,6 @@ eval {
             die "Invalid background script $script.";
         }
         my $statusFile = Job::Create($sessionDir, $name, $command, @parms);
-        print "Status file is $statusFile.\n";
         sleep 1;
         if (-f $statusFile) {
             print "Job $name started.\n";
@@ -369,7 +395,6 @@ eval {
         } else {
             print "No active jobs.\n";
         }
-
     } elsif ($request eq 'job_purge') {
         my $count = Job::Purge($sessionDir);
         if ($count == 0) {
@@ -490,6 +515,16 @@ eval {
     } elsif ($request eq 'clear') {
         my ($tbls, $sets) = ClearWorkspace($sessionDir);
         $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " and " . CountString($sets, 'set', 'sets') . " deleted." ]];
+    } elsif ($request eq 'define') {
+        require SeedUtils;
+        my $definitionsH = SeedUtils::read_encoded_object("$FIG_Config::web_dir/lib/intents.json");
+        my $term = $cgi->param('intent');
+        if (! $term) {
+            die "No term specified for define.";
+        } else {
+            my $definition = $definitionsH->{$term} // "I do not understand $term.";
+            print "$definition\n";
+        }
     } else {
         die "Invalid request $request.\n";
     }

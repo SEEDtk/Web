@@ -17,21 +17,21 @@
     <tr>
       <td>request</td>
       <td><select name="request">
-            <option value="task">task</option>
-            <option value="job_check">job_check</option>
-            <option value="job_purge">job_purge</option>
             <option value="amr_genomes">amr_genomes</option>
-        	<option value="get_genomes">get_genomes</option>
-            <option value="set_ops">set_ops</option>
-            <option value="amr_genomes">genome_drug</option>
-            <option value="get_genome_table">get_genome_table</option>
-            <option value="get_drug_table">get_drug_table</option>
+            <option value="clear">clear</option>
+            <option value="define">define</option>
             <option value="describe_set">describe_set</option>
             <option value="describe_table">describe_table</option>
+            <option value="get_drug_table">get_drug_table</option>
+            <option value="get_genome_table">get_genome_table</option>
+        	<option value="get_genomes">get_genomes</option>
+            <option value="job_check">job_check</option>
+            <option value="job_purge">job_purge</option>
             <option value="list_sets">list_sets</option>
             <option value="list_tables">list_tables</option>
+            <option value="set_ops">set_ops</option>
             <option value="show_table">show_table</option>
-            <option value="clear">clear</option>
+            <option value="task">task</option>
         </select></td>
       <td>account</td>
       <td><input type="text" name="account" /></td>
@@ -239,7 +239,32 @@
       <td colspan="5"><input name="display" type="text" size="90" /></td>
     </tr>
     <tr>
+      <td>intent</td>
+      <td><select name="intent">
+        <option value="">(none)</option>
+        <option value="LetMembersThatAreSusceptible">LetMembersThatAreSusceptible</option>
+        <option value="Show">Show</option>
+        <option value="LetTheSetGenomesFromThatNot">LetTheSetGenomesFromThatNot</option>
+        <option value="LetItemsPickedFrom">LetItemsPickedFrom</option>
+        <option value="LetTableWithAnd">LetTableWithAnd</option>
+        <option value="LetTheSetGenomesFromThatNotHave">LetTheSetGenomesFromThatNotHave</option>
+        <option value="LetSignatureFamiliesThat">LetSignatureFamiliesThat</option>
+        <option value="LetTableWithAndAnd">LetTableWithAndAnd</option>
+        <option value="WhatSignatureFamily">WhatSignatureFamily</option>
+        <option value="LetTheSetGenomesFromThat">LetTheSetGenomesFromThat</option>
+        <option value="LetTheSetGenomesFrom">LetTheSetGenomesFrom</option>
+        <option value="HowManyItemsAre">HowManyItemsAre</option>
+        <option value="ShowTheFirstMembers">ShowTheFirstMembers</option>
+        <option value="WhatSignatureCluster">WhatSignatureCluster</option>
+        <option value="WhatSetsHaveSaved">WhatSetsHaveSaved</option>
+        <option value="LetTheSetGenomes">LetTheSetGenomes</option>
+        <option value="LetMembersThatAre">LetMembersThatAre</option>
+        <option value="LetTableWithFrom">LetTableWithFrom</option>
+      </select></td>
+    </tr>
+    <tr>
       <td>task</td><td><select name="task">
+        <option value="">(none)</option>
         <option value="test">Test</option>
         <option value="families">Signature Families</option>
       </select></td>
