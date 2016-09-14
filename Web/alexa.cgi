@@ -97,6 +97,14 @@ List all of the sets currently in the workspace.
 
 List all of the tables currently in the workspace.
 
+=item delete_sets
+
+Delete the sets listed in the C<from> parameter.
+
+=item delete_tables
+
+Delete the tables listed in the C<from> parameter.
+
 =item set_ops
 
 Create an output set by merging input sets (optionally excluding records from other sets). Here the C<from> and C<not>
@@ -515,6 +523,14 @@ eval {
     } elsif ($request eq 'clear') {
         my ($tbls, $sets) = ClearWorkspace($sessionDir);
         $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " and " . CountString($sets, 'set', 'sets') . " deleted." ]];
+    } elsif ($request eq "delete_tables") {
+        my @tables = grep { $_ } $cgi->param('from');
+        my $tbls = DeleteItems(table => \@tables, $sessionDir);
+        $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " deleted." ]];
+    } elsif ($request eq "delete_sets") {
+        my @sets = grep { $_ } $cgi->param('from');
+        my $sets = DeleteItems(set => \@sets, $sessionDir);
+        $result = [[ ucfirst(CountString($sets, 'set', 'sets')) . " deleted." ]];
     } elsif ($request eq 'define') {
         require SeedUtils;
         my $definitionsH = SeedUtils::read_encoded_object("$FIG_Config::web_dir/lib/intents.json");
@@ -570,6 +586,22 @@ sub ClearWorkspace {
     }
     # Return the delete counts.
     return ($counters{table}, $counters{set});
+}
+
+# Delete one or more result sets, returning a count.
+sub DeleteItems {
+    my ($type, $list, $sessionDir) = @_;
+    my $retVal = 0;
+    for my $item (@$list) {
+        my $itemName = "$sessionDir/$item.$type";
+        if (-f $itemName) {
+            unlink $itemName;
+            unlink "$itemName.label";
+            $retVal++;
+        }
+    }
+    # Return the count.
+    return $retVal;
 }
 
 # Display a count. The singular or plural is chosen.
