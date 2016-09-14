@@ -171,11 +171,32 @@ The type of task to run in the background.
 
 =item test
 
-The test application L<AlexaTest.pl>.
+The test application L<AlexaTest.pl>. For the application, you can specify the following command-line parms.
+
+=over 12
+
+=item time
+
+The number of 2-second intervals to wait.
+
+=back 
 
 =item families
 
-The signature families application L<AlexaFamilies.pl>.
+The signature families application L<AlexaSignatureFamilies.pl>. For this application, you must specify two genome sets--
+C<from> and C<not>-- and a result table (C<save>). In addition, you can specify the following command-line parms.
+
+=over 12
+
+=item minIn
+
+Minimum fraction of from-genomes that must contain a family for it to be a signature.
+
+=item maxOut
+
+Maximum fraction of the not-genomes that can contain a family for it to be a signature.
+
+=back
 
 =back
 
@@ -314,7 +335,16 @@ eval {
         # This will be the command.
         my $command;
         if ($script eq 'families') {
-            ##TODO signature families
+            $command = 'AlexaSignatureFamilies';
+            @parms = grep { $_ } $cgi->param('taskparm');
+            my @from = grep { $_ } $cgi->param('from');
+            my @not = grep { $_ } $cgi->param('not');
+            die "A single FROM set is required." if (scalar(@from) != 1);
+            die "A single NOT set is required." if (scalar(@not) != 1);
+            push @parms, @from, @not;
+            my $save = $cgi->param('save');
+            die "No result table specified." if ! $save;
+            push @parms, $save;
         } elsif ($script eq 'test') {
             $command = 'AlexaTest';
             @parms = $cgi->param('taskparm');
