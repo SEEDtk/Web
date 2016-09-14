@@ -340,7 +340,7 @@ eval {
     my $acct = $cgi->param('account');
     die "No account specified." if ! $acct;
     $acct =~ s/!/\//g;
-    my $sessionDir = "$FIG_Config::temp/$acct";
+    my $sessionDir = "$FIG_Config::alexa/$acct";
     # This will be our output file handle and label (if any).
     my ($oh, $label);
     # This will be set to 1 if we have headers.
