@@ -827,6 +827,7 @@ sub ComputeLabel {
                 my $filter;
                 my ($type, $field, $value) = split /,/, $constraint;
                 if ($type eq 'susceptible' || $type eq 'resistant') {
+                    $field = 'any drug' if ($field eq '*');
                     $filter = "are $type to $field";
                 } else {
                     $field = $fieldMap->{$field};
