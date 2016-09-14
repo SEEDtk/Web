@@ -522,7 +522,9 @@ eval {
         if (! $term) {
             die "No term specified for define.";
         } else {
+            # Note we trim leading spaces.
             my $definition = $definitionsH->{$term} // "I do not understand $term.";
+            $definition =~ s/^\s+//;
             print "$definition\n";
         }
     } else {
