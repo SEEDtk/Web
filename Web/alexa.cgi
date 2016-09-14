@@ -24,7 +24,6 @@ use P3DataAPI;
 use P3Utils;
 use Data::Dumper;
 use File::Copy::Recursive;
-use URI::Escape;  # uri_escape
 use CGI;
 use Job;
 
@@ -81,6 +80,22 @@ The following data management requests are supported.
 
 Clear all items from the workspace.
 
+=item clear_sets
+
+Delete all the sets from the workspace.
+
+=item clear_tables
+
+Delete all the tables from the workspace.
+
+=item delete_sets
+
+Delete the sets listed in the C<from> parameter.
+
+=item delete_tables
+
+Delete the tables listed in the C<from> parameter.
+
 =item describe_set
 
 Display information about the specified set in the workspace.
@@ -96,14 +111,6 @@ List all of the sets currently in the workspace.
 =item list_tables
 
 List all of the tables currently in the workspace.
-
-=item delete_sets
-
-Delete the sets listed in the C<from> parameter.
-
-=item delete_tables
-
-Delete the tables listed in the C<from> parameter.
 
 =item set_ops
 
@@ -521,8 +528,15 @@ eval {
         die "No table name specified." if ! $name;
         $result = [[ DescribeItem(table => $name, $sessionDir) ]];
     } elsif ($request eq 'clear') {
-        my ($tbls, $sets) = ClearWorkspace($sessionDir);
+        my $tbls = ClearWorkspace(table => $sessionDir);
+        my $sets = ClearWorkspace(set => $sessionDir);
         $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " and " . CountString($sets, 'set', 'sets') . " deleted." ]];
+    } elsif ($request eq 'clear_sets') {
+        my $sets = ClearWorkspace(set => $sessionDir);
+        $result = [[ ucfirst(CountString($sets, 'set', 'sets')) . " deleted." ]];
+    } elsif ($request eq 'clear_tables') {
+        my $tbls = ClearWorkspace(table => $sessionDir);
+        $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " deleted." ]];
     } elsif ($request eq "delete_tables") {
         my @tables = grep { $_ } $cgi->param('from');
         my $tbls = DeleteItems(table => \@tables, $sessionDir);
@@ -568,24 +582,28 @@ if ($@) {
     print "ERROR: $@\n";
 }
 
-# Erase the workspace, returning a count of the sets and tables deleted.
+# Erase the workspace, returning a count of the items deleted.
 sub ClearWorkspace {
-    my ($sessionDir) = @_;
-    # The output counts will go in here.
-    my %counters = (table => 0, set => 0);
+    my ($type, $sessionDir) = @_;
+    # The output count will go in here.
+    my $retVal = 0;
     # Get the files in the workspace.
     opendir(my $dh, $sessionDir) || die "Could not open session directory: $!";
-    my @files = grep { $_ =~ /^[A-Z]\w*\.(?:table|set)/ } readdir $dh;
+    my @files = grep { $_ =~ /^[A-Z]\w*\.(\w+)/ } readdir $dh;
     # Loop through them.
     for my $file (@files) {
-        unlink "$sessionDir/$file";
-        # If the file is a table or set, count it.
-        if ($file =~ /\.(table|set)$/) {
-            $counters{$1}++;
+        # Get the file type and optional suffix.
+        my ($fname, $ftype, $suffix) = split /\./, $file, 3;
+        # Only proceed if it's the proper type.
+        if ($ftype eq $type) {
+            # Delete the file.
+            unlink "$sessionDir/$file";
+            # Count it if it's the base file.
+            $retVal++ if (! $suffix);
         }
     }
-    # Return the delete counts.
-    return ($counters{table}, $counters{set});
+    # Return the delete count.
+    return $retVal;
 }
 
 # Delete one or more result sets, returning a count.
