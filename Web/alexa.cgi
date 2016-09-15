@@ -589,7 +589,7 @@ sub ClearWorkspace {
     my $retVal = 0;
     # Get the files in the workspace.
     opendir(my $dh, $sessionDir) || die "Could not open session directory: $!";
-    my @files = grep { $_ =~ /^[A-Z]\w*\.(\w+)/ } readdir $dh;
+    my @files = grep { $_ =~ /^[A-Za-z]\w*\.(\w+)/ } readdir $dh;
     # Loop through them.
     for my $file (@files) {
         # Get the file type and optional suffix.
