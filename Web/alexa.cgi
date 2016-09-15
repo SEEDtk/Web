@@ -407,8 +407,8 @@ eval {
         my @parms;
         # This will be the command.
         my $command;
-        if ($script eq 'families') {
-            $command = 'AlexaSignatureFamilies';
+        if ($script eq 'families' || $script eq 'cluster_pegs') {
+            $command = ($script eq 'families' ? 'AlexaSignatureFamilies' : 'AlexaDistinguishingClusterPeg');
             @parms = grep { $_ } $cgi->param('taskparm');
             my @from = grep { $_ } $cgi->param('from');
             my @not = grep { $_ } $cgi->param('not');
