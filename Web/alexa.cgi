@@ -236,6 +236,37 @@ Maximum fraction of the not-genomes that can contain a family for it to be a sig
 
 =back
 
+=item cluster_pegs
+
+The cluster peg search application L<AlexaDistinguishingClusterPegs.pl>. For this application, you must specify two genome sets--
+C<from> and C<not>-- and a result table (C<save>). This application produces both a result table and a result set, but they will
+have the same name. Rather than a single comparison between sets, the cluster peg application runs multiple iterations using
+subsets randomly selected from each input set. You can specify the following command-line parms.
+
+=over 12
+
+=item minIn
+
+Minimum fraction of from-genomes that must contain a family for it to be a signature.
+
+=item maxOut
+
+Maximum fraction of the not-genomes that can contain a family for it to be a signature.
+
+=item size
+
+Number of genomes to pick into each subset.
+
+=item iterations
+
+Number iterations to run.
+
+=item pegs
+
+Number of pegs to return in the output set.
+
+=back
+
 =back
 
 =item taskname
