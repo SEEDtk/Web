@@ -217,7 +217,7 @@ The test application L<AlexaTest.pl>. For the application, you can specify the f
 
 The number of 2-second intervals to wait.
 
-=back 
+=back
 
 =item families
 
@@ -264,6 +264,11 @@ Number iterations to run.
 =item pegs
 
 Number of pegs to return in the output set.
+
+=item distance
+
+Maximum base-pair distance between the midpoints of two features in order for them to be
+considered close. The default is 2000.
 
 =back
 
