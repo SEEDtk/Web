@@ -26,6 +26,8 @@ use Data::Dumper;
 use File::Copy::Recursive;
 use CGI;
 use Job;
+use LWP::UserAgent;
+use URI::Escape;
 
 
 =head1 New Alexa Script for PATRIC Access
@@ -150,6 +152,13 @@ Finally, there are the following miscellaneous requests.
 
 Return the definition string for an intent. Uses the C<intent> parameter. The definitions are read from the C<intents.json>
 file in the C<lib> subdirectory.
+
+=item show_peg
+
+Display the specified feature on the user's compare regions web page (currently
+L<http://p3.theseed.org/qa/compare_regions/fig%7C83332.12.peg.1?channel=alexa>). The feature will be from the set
+indicated by the C<from> parameter at the position indicated by the C<position> parameter. A position of C<1> will
+display the first feature, C<2> the second feature, and so forth.
 
 =back
 
@@ -593,6 +602,14 @@ eval {
             $definition =~ s/^\s+//;
             print "$definition\n";
         }
+    } elsif ($request eq 'show_peg') {
+        # Compute the input set and the position of the desired peg.
+        my $set = $cgi->param('from') || die "No input set specified.";
+        my $position = $cgi->param('position') || die "No set position specified.";
+        # Extract the desired peg.
+        my $selectedPeg = LocateId($sessionDir, $set, $position);
+        # Display it in the browser.
+        DisplayFeature($selectedPeg, $acct);
     } else {
         die "Invalid request $request.\n";
     }
@@ -952,3 +969,37 @@ sub CommaSplice {
     return $retVal;
 }
 
+# Extract a single record from a set.
+sub LocateId {
+    my ($sessionDir, $set, $position) = @_;
+    # Open the set.
+    open(my $ih, "<$sessionDir/$set.set") || die "Could not open set $set: $!";
+    my $retVal;
+    while (! eof $ih && $position > 0) {
+        my $line = <$ih>;
+        if ($position == 1) {
+            chomp $line;
+            $retVal = $line;
+        }
+        $position--;
+    }
+    # Insure we found something.
+    if (! $retVal) {
+        die "Position $position not valid for set $set.";
+    }
+    # Return the ID.
+    return $retVal;
+}
+
+# Display a feature for the specified account.
+sub DisplayFeature {
+    my ($peg, $account) = @_;
+    my $ua = LWP::UserAgent->new();
+    my $url = "http://p3.theseed.org/qa/events/notify/alexa?type=navigate&data=$peg";
+    my $response = $ua->get($url);
+    if ($response->is_success) {
+        print "Feature $peg selected.\n";
+    } else {
+        die "Error " . $response->code . " in feature $peg request: " . $response->content;
+    }
+}
