@@ -424,10 +424,8 @@ eval {
         if ($script eq 'families' || $script eq 'cluster_pegs') {
             $command = ($script eq 'families' ? 'AlexaSignatureFamilies' : 'AlexaDistinguishingClusterPeg');
             @parms = grep { $_ } $cgi->param('taskparm');
-            my @from = grep { $_ } $cgi->param('from');
-            my @not = grep { $_ } $cgi->param('not');
-            die "A single FROM set is required." if (scalar(@from) != 1);
-            die "A single NOT set is required." if (scalar(@not) != 1);
+            my @from = GetNames(from => $cgi, 1);
+            my @not = GetNames('not' => $cgi, 1);
             push @parms, @from, @not;
             my $save = $cgi->param('save');
             die "No result table specified." if ! $save;
@@ -469,9 +467,10 @@ eval {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
         my $constraintList = ComputeConstraints($cgi);
         # Determine whether this is an ID-based request or not.
-        if (scalar $cgi->param('from')) {
+        my @froms = GetNames(from => $cgi);
+        if (scalar @froms) {
             # Get the IDs to use.
-            my $idList = ComputeInputIds($cgi, $sessionDir);
+            my $idList = ComputeInputIds($cgi, $sessionDir, \@froms);
             # Ask PATRIC for results.
             $result = P3Utils::get_data_keyed($p3, genome => $constraintList, ['genome_id'], $idList, 'genome_id');
         } else {
@@ -489,9 +488,10 @@ eval {
         $headers = 1;
         my $constraintList = ComputeConstraints($cgi);
         # Determine whether this is an ID-based request or not.
-        if (scalar $cgi->param('from')) {
+        my @froms = Getnames(from => $cgi);
+        if (scalar @froms) {
             # Get the IDs to use.
-            my $idList = ComputeInputIds($cgi, $sessionDir);
+            my $idList = ComputeInputIds($cgi, $sessionDir, \@froms);
             # Ask PATRIC for results.
             $result = P3Utils::get_data_keyed($p3, genome => $constraintList, $displayList, $idList, 'genome_id');
         } else {
@@ -511,9 +511,10 @@ eval {
         $headers = 1;
         my $constraintList = ComputeConstraints($cgi);
         # Determine whether this is an ID-based request or not.
-        if (scalar $cgi->param('from')) {
+        my @froms = GetNames(from => $cgi);
+        if (scalar @froms) {
             # Get the IDs to use.
-            my $idList = ComputeInputIds($cgi, $sessionDir);
+            my $idList = ComputeInputIds($cgi, $sessionDir, \@froms);
             # Ask PATRIC for results.
             $result = P3Utils::get_data_keyed($p3, genome_drug => $constraintList, $displayList, $idList, 'genome_id');
         } else {
@@ -525,11 +526,12 @@ eval {
     } elsif ($request eq 'set_ops') {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
         # Insure we have a from set.
-        if (! scalar $cgi->param('from')) {
+        my @froms = GetNames(from => $cgi);
+        if (! scalar @froms) {
             die "set_ops requires a \"from\" parameter.";
         } else {
             # Get the IDs to use.
-            my $idList = ComputeInputIds($cgi, $sessionDir);
+            my $idList = ComputeInputIds($cgi, $sessionDir, \@froms);
             # Convert the IDs to results.
             $result = [map { [$_] } @$idList];
         }
@@ -537,11 +539,12 @@ eval {
         ($oh, $label) = ComputeOutputFile(set => $cgi, $sessionDir);
         my $constraintList = ComputeConstraints($cgi);
         # Insure we have a from set.
-        if (! scalar $cgi->param('from')) {
+        my @froms = GetNames(from => $cgi);
+        if (! scalar @froms) {
             die "amr_genomes requires a \"from\" parameter.";
         } else {
             # Get the IDs to use.
-            my $idList = ComputeInputIds($cgi, $sessionDir);
+            my $idList = ComputeInputIds($cgi, $sessionDir, \@froms);
             # Ask PATRIC for results.
             my $idResult = P3Utils::get_data_keyed($p3, genome_drug => $constraintList, ['genome_id'], $idList, 'genome_id');
             # Merge duplicates.
@@ -555,8 +558,7 @@ eval {
         # Display information about all the tables.
         $result = ListItems('table', $sessionDir);
     } elsif ($request eq 'show_table') {
-        my $name = $cgi->param('from');
-        die "No table name specified." if ! $name;
+        my ($name) = GetNames(from => $cgi, 1);
         open(my $ih, "<$sessionDir/$name.table") || die "Could not access table $name: $!";
         while (! eof $ih) {
             my $line = <$ih>;
@@ -565,12 +567,10 @@ eval {
             push @$result, \@fields;
         }
     } elsif ($request eq 'describe_set') {
-        my $name = $cgi->param('from');
-        die "No set name specified." if ! $name;
+        my ($name) = GetNames(from => $cgi, 1);
         $result = [[ DescribeItem(set => $name, $sessionDir) ]];
     } elsif ($request eq 'describe_table') {
-        my $name = $cgi->param('from');
-        die "No table name specified." if ! $name;
+        my ($name) = GetNames(from => $cgi, 1);
         $result = [[ DescribeItem(table => $name, $sessionDir) ]];
     } elsif ($request eq 'clear') {
         my $tbls = ClearWorkspace(table => $sessionDir);
@@ -583,11 +583,11 @@ eval {
         my $tbls = ClearWorkspace(table => $sessionDir);
         $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " deleted." ]];
     } elsif ($request eq "delete_tables") {
-        my @tables = grep { $_ } $cgi->param('from');
+        my @tables = GetNames(from => $cgi);
         my $tbls = DeleteItems(table => \@tables, $sessionDir);
         $result = [[ ucfirst(CountString($tbls, 'table', 'tables')) . " deleted." ]];
     } elsif ($request eq "delete_sets") {
-        my @sets = grep { $_ } $cgi->param('from');
+        my @sets = GetNames(from => $cgi);
         my $sets = DeleteItems(set => \@sets, $sessionDir);
         $result = [[ ucfirst(CountString($sets, 'set', 'sets')) . " deleted." ]];
     } elsif ($request eq 'define') {
@@ -604,7 +604,7 @@ eval {
         }
     } elsif ($request eq 'show_peg') {
         # Compute the input set and the position of the desired peg.
-        my $set = $cgi->param('from') || die "No input set specified.";
+        my $set = GetNames(from => $cgi, 1);
         my $position = $cgi->param('position') || die "No set position specified.";
         # Extract the desired peg.
         my $selectedPeg = LocateId($sessionDir, $set, $position);
@@ -816,15 +816,15 @@ sub ComputeFields {
 }
 
 # Return a list of the IDs to use in selecting objects. This involves parsing the FROM and NOT
-# parameters.
+# parameters. Note we can pass in the from list optionally.
 sub ComputeInputIds {
-    my ($cgi, $sessionDir) = @_;
+    my ($cgi, $sessionDir, $froms) = @_;
     # This will be the output ID list.
     my @retVal;
     # Create a hash of the NOT values.
     my %notIDs;
     # Get the list of NOT sets.
-    my @notSets = $cgi->param('not');
+    my @notSets = GetNames('not' => $cgi);
     # Loop through them, filling the hash.
     for my $notSet (@notSets) {
         if ($notSet) {
@@ -838,7 +838,12 @@ sub ComputeInputIds {
         }
     }
     # Now loop through the FROM sets, filling the output.
-    my @fromSets = $cgi->param('from');
+    my @fromSets;
+    if ($froms) {
+        @fromSets = @$froms;
+    } else {
+        @fromSets = GetNames(from => $cgi);
+    }
     for my $fromSet (@fromSets) {
         if ($fromSet) {
             my $fromFile = "$sessionDir/$fromSet.set";
@@ -903,8 +908,8 @@ sub ComputeLabel {
         }
         # Compute the source.
         my $sourceString;
-        my @froms = grep { $_ } $cgi->param('from');
-        my @nots = grep { $_ } $cgi->param('not');
+        my @froms = GetNames(from => $cgi);
+        my @nots = GetNames('not' => $cgi);
         my $pick = $cgi->param('pick');
         if (! @froms) {
             $sourceString = "all $type";
@@ -1002,4 +1007,20 @@ sub DisplayFeature {
     } else {
         die "Error " . $response->code . " in feature $peg request: " . $response->content;
     }
+}
+
+# Retrieve the set of FROM or NOT names. If $max is TRUE, then exactly that number of values must be specified.
+sub GetNames {
+    my ($parm, $cgi, $max) = @_;
+    my @names = grep { $_ } $cgi->param($parm);
+    my @retVal;
+    for my $name (@names) {
+        my $realName = substr(uc $name, 0, 1);
+        push @retVal, $realName;
+    }
+    if ($max && scalar(@retVal) != $max) {
+        my $valueWord = ($max == 1 ? 'value' : 'values');
+        die "Exactly $max \"$parm\" $valueWord must be specified.";
+    }
+    return @retVal;
 }
