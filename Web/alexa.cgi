@@ -279,6 +279,10 @@ Number of pegs to return in the output set.
 Maximum base-pair distance between the midpoints of two features in order for them to be
 considered close. The default is 2000.
 
+=item complex
+
+If specified, a more thorough method of selecting pegs of interest is used.
+
 =back
 
 =back
