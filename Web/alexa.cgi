@@ -608,7 +608,7 @@ eval {
         }
     } elsif ($request eq 'show_peg') {
         # Compute the input set and the position of the desired peg.
-        my $set = GetNames(from => $cgi, 1);
+        my ($set) = GetNames(from => $cgi, 1);
         my $position = $cgi->param('position') || die "No set position specified.";
         # Extract the desired peg.
         my $selectedPeg = LocateId($sessionDir, $set, $position);
