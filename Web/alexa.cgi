@@ -144,6 +144,22 @@ Removes all data relating to jobs with an C<informed> status.
 
 =back
 
+The following PATRIC workspace requests are supported.
+
+=over 4
+
+=item put_genomes
+
+Store the specified set of genome IDs in the PATRIC workspace. The C<from>, C<not>, and C<pick> options are
+supported, as in C<set_ops>. The workspace object is given the name of the set specified in C<save>.
+
+=item put_features
+
+Store the specified set of feature IDs in the PATRIC workspace. The C<from>, C<not>, and C<pick> options are
+supported, as in C<set_ops>. The workspace object is given the name of the set specified in C<save>.
+
+=back
+
 Finally, there are the following miscellaneous requests.
 
 =over 4
@@ -614,6 +630,42 @@ eval {
         my $selectedPeg = LocateId($sessionDir, $set, $position);
         # Display it in the browser.
         DisplayFeature($selectedPeg, $acct);
+    } elsif ($request eq 'put_genomes' || $request eq 'put_features') {
+        # Compute the input set.
+        my $idList = ComputeInputIds($cgi, $sessionDir);
+        # Compute the group name.
+        my $group = $cgi->param('save');
+        die "No output name specified" if ! $group;
+        $group .= ".alexa.set";
+        # Read the security token.
+        open(my $th, "<$sessionDir/.patric_token") || die "Could not open PATRIC token file: $!";
+        my $token = <$th>;
+        chomp $token;
+        # Get a workspace object.
+        require P3WorkspaceClient;
+        my $ws = P3WorkspaceClientExt->new(undef, token => $token);
+        # Format the group information.
+        my ($idType, $pathType, $groupType, $itemType);
+        if ($request eq 'put_features') {
+            $idType = "patric_id";
+            $pathType = "Feature Groups";
+            $groupType = "feature_group";
+            ##TODO translate feature IDs
+        } else {
+            $idType = "genome_id";
+            $pathType = "Genome Groups";
+            $groupType = "genome_group";
+        }
+        my $group_path = join('/', $ws->home_workspace, $pathType, $group);
+        require JSON::XS;
+        my $group_text = JSON::XS::encode_json({ id_list => { $idType => $idList } });
+        # Ask the workspace to create the group.
+        $ws->create({
+            objects => [[$group_path, $groupType, {}, $group_text]],
+            permission => 'w',
+            overwrite => 1
+        });
+        print "Group $group stored in PATRIC $pathType directory.\n";
     } else {
         die "Invalid request $request.\n";
     }
