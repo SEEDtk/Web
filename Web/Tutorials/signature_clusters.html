@@ -1,0 +1,119 @@
+<h1>Computing Signature Clusters: an Application of the Command-Line Tools</h1>
+<h2>Introduction: What is a Signature Cluster?</h2>
+In this tutorial, we show how to use a tool that we have created to
+help you locate clusters of genes that distinguish genomes from
+two designated sets of genomes.  For example, suppose that you have
+a set of genomes from a given species and a second set from different species
+in the same genus.  In this case, we might look for chromosomal clusters that occur in 
+most genomes from the specific genus, but almost never occur in genomes
+from a different species in the same genus.  This is just one of a growing set of tools
+you can use to access PATRIC data, but we think of it as extremely interesting.
+<p>
+So, the general operation we are implementing might be described as follows:
+<ol>
+<li>Define a set of closely-related genomes (usually a set of genomes
+from a single species).  Call this set <b>GS1</b>.
+<br><br>
+<li>Define a second set of genomes which will be used for comparison and
+call it <b>GS2</b>. Typically this would be a set establishing a "context".
+The usual contents of <b>GS2</b> would be genomes from the same genus,
+but different species. 
+<br><br><li>
+Then define the notion of <i>signature family</i> as a protein family in
+which all members (or almost all members) occur in all genomes in <b>GS1</b>,
+but no (or very few) genomes in <b>GS2</b>.
+<br><br><li>
+Finally, define a <i>signature cluster</i> as a set of instances of
+signature families that occur close to one another on the contigs
+of a genome in <b>GS1</b>.  Since a signature cluster contains only
+signature families, by definition it can occur in <b>GS1</b>, but only very seldom in 
+<b>GS2</b>.
+We will argue that the signature clusters are very effective for
+locating chromosomal clusters that are very local phylogentically and
+correspond to molecular machines that are quite different from those
+that include the core cellular machinery.  They are things like
+<br><br></ol>
+<ul>
+<li>virulence factors,
+<li>antibiotic fabrication mechanisms,
+<li>prophages,
+<li>special transportation cassets,
+<li> and so forth.
+</ul>
+<br>
+<h2>How to Compute Signature Clusters</h2>
+
+In this short tutorial we will compute signature clusters for
+<i>Streptococcus pyogenes</i>.  The actual computation can be done
+for any genus and species for which you have enough genomes (say,
+20 within the species and 20 from different species within the same genus).
+
+<h3> Step 1: Defining GS1 and GS2</h3>
+
+The following three lines of code create three tables encoding genome sets.
+Each row in each table will contain two fields: a genome id and a genome name.
+<pre>
+      p3-all-genomes --attr genome_name --eq 'genome_name,Streptococcus' > all.strep.genomes 
+      p3-match --col 2 pyogenes < all.strep.genomes > pyogenes
+      p3-match --col 2 pyogenes --reverse < all.strep.genomes > not.pyogenes
+</pre>
+The first command looks at all of the PATRIC genomes, keeps only
+those which have 'Streptococcus' within the <i>genome_name</i> field,
+and writes out one line for each extracted <i>Streptococcus</i> genome.
+This is actually a fairly complex incantation, so we urge you to
+try to construct the corresponding command for a different species (say,
+<i>Staphylococcus</i>).
+<p>
+Then the <i>p3-match</i> commands create a list of <i>Streptococcus pyogenes</i>
+genomes and a set of <i>Streptococcus</i> genomes that are not from the  
+<i>pyogenes</i> species. 
+<p>
+Please construct corresponding sets for <i>Staphylococcus aureus</i>
+(that is, construct the two files <b>aureus</b> and <b>not.aureus</b>).
+
+<p>
+Once you have constructed your genome sets, verify that they include what
+appear to be a reasonable collection of genomes.
+
+<h3>Computing Signature Clusters</h3>
+
+ Now that we have <b>GS1</b> and <b>GS2</b> defined, we can compute the
+signature clusters using something like
+
+<pre>
+      p3-related-by-clusters --gs1 pyogenes 
+                             --gs2 not.pyogenes  
+                             --sz1 20 
+                             --sz2 20 
+                             --min 0.8  
+                             --max 0.1  
+                             --iterations 2 
+                             --output Output
+</pre>
+Let us briefly discuss the process being requested:
+<ol>
+<li> First, we take 20 random genomes from <b>GS1</b>
+and 20 from <b>GS2</b> (these sizes are specified by <b>sz1</b> and <b>sz2</b>)
+Then, we ompute the protein families that occur in at
+least 80% of the genomes in <b>GS1</b>, but none of the genomes in
+<b>GS2</b> (the thresholds are specified by the <b>min</b> and <b>max</b>
+arguments).  These are the <i>signature families</i> that we will use to
+search for <i>signature clusters</i>.
+<li> Then we compute the desired signature clusters, base on the reandomly selected
+genome sets.
+<li>We save the clusters computed; this is called a single <i>iteration</i>.
+We redo the selection of random genomes, computation of signature families, and
+computation of signature clusters (added to a growing set), until we
+have completed the requested number of iterations (in our example, we specified "2").
+</ol>
+<p>
+Thus, we build up a collection of signature clusters recorded in the desgnated ouput
+directory.
+
+<h3>Looking at the Results</h3>
+
+To look at the computed signature clusters, use something like
+<pre>
+      p3-format-results -d Output | p3-aggregates-to-html > clusters.html
+      open clusters.html
+</pre> 
