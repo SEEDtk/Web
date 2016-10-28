@@ -114,6 +114,24 @@ directory.
 
 To look at the computed signature clusters, use something like
 <pre>
-      p3-format-results -d Output | p3-aggregates-to-html > clusters.html
+      p3-format-results -d Strep | p3-aggregates-to-html > clusters.html
       open clusters.html
 </pre> 
+
+<h2> Summary </h2>
+
+We have implemented a tool that, given two sets of genomes, will compute
+the signature clusters that occur (or tend to occur) in genomes from
+one set but not in genomes from the other. The sets of genomes are
+atken from the current release of the PATRIC database.
+<p>
+We have illustrated one intended use: finding the signature clusters
+that distinguish a species from other species within a phylogenetic
+context (the genus).
+<p>
+ 
+One can also compare arbitrary species (say, clusters in <i>Streptococcus pyogenes</i>,
+but not in <i>Streptococcus pheumoniae</i>).
+<p>
+You might also select a set of genomes with a special metabolic capability to
+be compared with a set of genomes lacking the capability.
