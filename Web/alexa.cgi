@@ -148,14 +148,9 @@ The following PATRIC workspace requests are supported.
 
 =over 4
 
-=item put_genomes
+=item put_set
 
-Store the specified set of genome IDs in the PATRIC workspace. The C<from>, C<not>, and C<pick> options are
-supported, as in C<set_ops>. The workspace object is given the name of the set specified in C<save>.
-
-=item put_features
-
-Store the specified set of feature IDs in the PATRIC workspace. The C<from>, C<not>, and C<pick> options are
+Store the specified set of IDs in the PATRIC workspace. The C<from>, C<not>, and C<pick> options are
 supported, as in C<set_ops>. The workspace object is given the name of the set specified in C<save>.
 
 =back
@@ -630,9 +625,12 @@ eval {
         my $selectedPeg = LocateId($sessionDir, $set, $position);
         # Display it in the browser.
         DisplayFeature($selectedPeg, $acct);
-    } elsif ($request eq 'put_genomes' || $request eq 'put_features') {
+    } elsif ($request eq 'put_set') {
         # Compute the input set.
         my $idList = ComputeInputIds($cgi, $sessionDir);
+        # Compute the set type.
+        my ($fromSet) = GetNames(from => $cgi);
+        my $setType = SetType($sessionDir, $fromSet);
         # Compute the group name.
         my $group = $cgi->param('save');
         die "No output name specified" if ! $group;
@@ -646,11 +644,11 @@ eval {
         my $ws = P3WorkspaceClientExt->new(undef, token => $token);
         # Format the group information.
         my ($idType, $pathType, $groupType, $itemType);
-        if ($request eq 'put_features') {
+        if ($setType eq 'features') {
             $idType = "patric_id";
             $pathType = "Feature Groups";
             $groupType = "feature_group";
-            ##TODO translate feature IDs
+            $idList = TranslateFeatures($idList)
         } else {
             $idType = "genome_id";
             $pathType = "Genome Groups";
@@ -765,9 +763,11 @@ sub ListItems {
     }
     # Return the result as a result set.
     if (! @retVal) {
-        die "No $type items found in workspace.";
+        my $typeWord = $type . 's';
+        @retVal = "No $typeWord are present for this account."
     }
-    return [map { [$_] } @retVal];
+    @retVal = map { [$_] } @retVal;
+    return \@retVal;
 }
 
 # Describe a set or table.
@@ -811,7 +811,7 @@ sub ComputeOutputFile {
         # Compute the display name.
         my $display = ucfirst $type . ' ' . $name;
         # Compute the label to use.
-        $label = ComputeLabel($cgi, $displayList);
+        $label = ComputeLabel($cgi, $displayList, $sessionDir);
         # Suffix the type to the file name.
         $name .= ".$type";
         # Open the file for output.
@@ -945,15 +945,24 @@ sub PrintResult {
 
 # Compute the label to use for an output set.
 sub ComputeLabel {
-    my ($cgi, $displayList) = @_;
+    my ($cgi, $displayList, $sessionDir) = @_;
     # This will be the return value.
     my $retVal = 'an unknown result set';
     # Get the request type. This is the most important thing.
     my $request = $cgi->param('request');
     # Only proceed if the request is valid.
     if ($request) {
+        # Get the sources.
+        my @froms = GetNames(from => $cgi);
         # Determine the output object type.
         my $type = OBJECT_TYPE->{$request};
+        # For set_ops, we take the type of the from-set.
+        if ($request eq 'set_ops') {
+            my $fromSet = $froms[0];
+            if ($fromSet) {
+                $type = SetType($sessionDir, $fromSet);
+            }
+        }
         my $fieldMap = FIELD_NAME->{$type};
         # Do we have display fields?
         my $tableFields;
@@ -964,7 +973,6 @@ sub ComputeLabel {
         }
         # Compute the source.
         my $sourceString;
-        my @froms = GetNames(from => $cgi);
         my @nots = GetNames('not' => $cgi);
         my $pick = $cgi->param('pick');
         if (! @froms) {
@@ -991,13 +999,13 @@ sub ComputeLabel {
             my @filters;
             for my $constraint (@constraints) {
                 my $filter;
-                my ($type, $field, $value) = split /,/, $constraint;
-                if ($type eq 'susceptible' || $type eq 'resistant') {
+                my ($rtype, $field, $value) = split /,/, $constraint;
+                if ($rtype eq 'susceptible' || $rtype eq 'resistant') {
                     $field = 'any drug' if ($field eq '*');
-                    $filter = "are $type to $field";
+                    $filter = "are $rtype to $field";
                 } else {
                     $field = $fieldMap->{$field};
-                    if ($type eq 'exclude') {
+                    if ($rtype eq 'exclude') {
                         $filter = "do not have the $field $value";
                     } else {
                         $filter = "have the $field $value";
@@ -1079,4 +1087,33 @@ sub GetNames {
         die "Exactly $max \"$parm\" $valueWord must be specified.";
     }
     return @retVal;
+}
+
+# Compute the type of a set from its label.
+sub SetType {
+    my ($sessionDir, $setName) = @_;
+    my $description = DescribeItem(set => $setName, $sessionDir);
+    my $retVal = "items";
+    if ($description =~ /is\s+.+\s(genomes|features)\s/) {
+        $retVal = $1;
+    }
+    return $retVal;
+}
+
+# Translate PATRIC feature IDs to real IDs.
+sub TranslateFeatures {
+    my ($idList) = @_;
+    my $api = P3DataAPI->new();
+    my @retVal;
+    while (@$idList) {
+        my @chunk = splice(@$idList, 0, 500);
+        my $qry = join(" OR ", map { "\"$_\"" } @chunk);
+        my $res = $api->solr_query("genome_feature", { q => "patric_id:($qry)", fl => "feature_id,patric_id" });
+
+        my %tmp;
+        $tmp{$_->{patric_id}} = $_->{feature_id} foreach @$res;
+
+        push(@retVal, $tmp{$_}) foreach @chunk;
+    }
+    return \@retVal;
 }
