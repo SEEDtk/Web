@@ -5,7 +5,7 @@ help you locate clusters of genes that distinguish genomes from
 two designated sets of genomes.  For example, suppose that you have
 a set of genomes from a given species and a second set from different species
 in the same genus.  In this case, we might look for chromosomal clusters that occur in
-most genomes from the specific genus, but almost never occur in genomes
+most genomes from the specific species, but almost never occur in genomes
 from a different species in the same genus.  This is just one of a growing set of tools
 you can use to access PATRIC data, but we think of it as extremely interesting.
 <p>
@@ -100,8 +100,7 @@ The first command looks at all of the PATRIC genomes, keeps only
 those which have 'Streptococcus' within the <i>genome_name</i> field,
 and writes out one line for each extracted <i>Streptococcus</i> genome.
 This is actually a fairly complex incantation, so we urge you to
-try to construct the corresponding command for a different speci
-es (say,
+try to construct the corresponding command for a different species (say,
 <i>Staphylococcus</i>).
 <p>
 Then the <i>p3-match</i> commands create a list of <i>Streptococcus pyogenes</i>
@@ -135,11 +134,11 @@ Let us briefly discuss the process being requested:
 <li> First, we take 20 random genomes from <b>GS1</b>
 and 20 from <b>GS2</b> (these sizes are specified by <b>sz1</b> and <b>sz2</b>)
 Then, we compute the protein families that occur in at
-least 80% of the genomes in <b>GS1</b>, but none of the genomes in
+least 80% of the genomes in <b>GS1</b>, but no more than 10% of the genomes in
 <b>GS2</b> (the thresholds are specified by the <b>min</b> and <b>max</b>
 arguments).  These are the <i>signature families</i> that we will use to
 search for <i>signature clusters</i>.
-<li> Then we compute the desired signature clusters, base on the reandomly selected
+<li> Then we compute the desired signature clusters, based on the randomly selected
 genome sets.
 <li>We save the clusters computed; this is called a single <i>iteration</i>.
 We redo the selection of random genomes, computation of signature families, and
@@ -185,10 +184,14 @@ If you click on a family id, you will be taken to a Patric Family Page:
 We have implemented a tool that, given two sets of genomes, will compute
 the signature clusters that occur (or tend to occur) in genomes from
 one set but not in genomes from the other. The sets of genomes are
-atken from the current release of the PATRIC database.
+taken from the current release of the PATRIC database.
 <p>
 We have illustrated one intended use: finding the signature clusters
 that distinguish a species from other species within a phylogenetic
 context (the genus).
 <p>
 
+There are others that you might try.  For example, if you wanted to find
+which EC numbers occur in clusters of signature families for <i>Streptococcus pneumonia</i>, but not in <i>Streptococcus
+pyogenes</i>, you should be able to locate these (as well as those that occur in <i>S.pyogenes</i>,
+but not in <i>S.pneumo</i>).
