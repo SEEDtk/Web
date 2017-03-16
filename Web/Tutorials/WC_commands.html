@@ -41,11 +41,8 @@ of a larger branch that actually contained a species (i.e., we could specify a
 sub-branch of a species).
 
 <p>
-To specify the species group, first make sure that your tree is rooted.  If not,
-use
-<pre>
-      root_at_midpoint < initial_tree.nwk > rooted_tree.nwk
-</pre>
+To specify the species group, first be sure your tree is rooted where you desire, otherwise an unrooted tree will automatically be rooted at the midpoint.
+
 If you wished to look at your tree, just use
 
 <pre>
@@ -61,7 +58,7 @@ of the node which is the <i>most recent common ancestor</i> of the two nodes.
 <p>
 You can use
 <pre>
-        p3-set-from_subtree G1 G2 < rooted.tree > genome.set
+        set_by_subtree G1 G2 < rooted.tree > genome.set
 </pre>
 
 to form the genome set of the genomes in the most recent common ancestor of <i>G1</i>
@@ -73,23 +70,23 @@ One of these is normally just a set derived from a subtree.  The other set may b
 the leaves in a disjoint subtree.  In this case, you would use 
 
 <pre>
-  set-from-subtree G1 G2 < rooted.tree > genome.set.1
-  set-from-subtree G3 G4 < rooted.tree > genome.set.2
+  set_by_subtree G1 G2 < rooted.tree > genome.set.1
+  set_by_subtree G3 G4 < rooted.tree > genome.set.2
 </pre>
 
 to get the two sets, and then you are ready to compute the signature clusters
 using the tools described in the first tutorial.
 <p>
 
-The next mote common way to specify the two sets is to make one of the two
+The next most common way to specify the two sets is to make one of the two
 sets the genomes in a subtree of particular interest, while the second tree
 is a larger subtree that includes the set of particular interest.  This second subtree
 forms a "context".  This context set should include all of the leaves in the larger
 subtree, except the leaves from the subtree of particular interest.  In this case, we 
 would form the two genome sets using something like
 <pre>
-  set-from-subtree G1 G2 < rooted.tree > context-genome.set
-  set-from-subtree G3 G4 < rooted.tree > subset-of-interest
+  set_by_subtree G1 G2 < rooted.tree > context-genome.set
+  set_by_subtree G3 G4 < rooted.tree > subset-of-interest
   p3-inAnotB context-genome.set context-genome.set subset-of-interest > halo.set
 </pre>
 Now one can compute the signature clusters distinguishing <i>subset-of-interest</i>
