@@ -30,6 +30,8 @@ content. The resulting document is a plain text string.
 
 =cut
 
+use constant TABLES => { Subsystem => 1, Protein => 1, Genome => 1, Feature => 1, Role => 1, Function => 1 };
+
 # Get the CGI query object.
 my $cgi = CGI->new();
 # This will be the result.
@@ -70,16 +72,20 @@ eval {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
         $table = ucfirst $table;
-        my $count = $shrub->GetCount($table, '', []);
-        warn "Count is $count.\n";
-        if ($count == 0) {
-            $table .= "s";
-            $result = "There are no $table in the database.";
-        } elsif ($count == 1) {
-            $result = "There is one $table in the database.";
+        if (! TABLES->{$table}) {
+            $result = "I don't have an object called '$table'.";
         } else {
-            $table .= "s";
-            $result = "There are $count $table in the database.";
+            my $count = $shrub->GetCount($table, '', []);
+            warn "Count is $count.\n";
+            if ($count == 0) {
+                $table .= "s";
+                $result = "There are no $table in the database.";
+            } elsif ($count == 1) {
+                $result = "There is one $table in the database.";
+            } else {
+                $table .= "s";
+                $result = "There are $count $table in the database.";
+            }
         }
     }
 };
