@@ -38,9 +38,7 @@ my $result;
 my $action = $cgi->param('action');
 eval {
     # Create the Shrub object.
-    warn "Connecting to shrub.\n";
     my $shrub = Shrub->new();
-    warn "Shrub connected.\n";
     # Process the intent.
     if ($action eq 'GenomeIntent') {
         my $genomeID = $cgi->param('parameter');
@@ -72,8 +70,8 @@ eval {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
         $table = ucfirst $table;
-        warn "Retrieving count for $table.\n";
         my $count = $shrub->GetCount($table, '', []);
+        warn "Count is $count.\n";
         if ($count == 0) {
             $table .= "s";
             $result = "There are no $table in the database.";
