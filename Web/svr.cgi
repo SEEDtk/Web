@@ -32,7 +32,7 @@ content. The resulting document is a plain text string.
 
 # Get the CGI query object.
 my $cgi = CGI->new();
-
+open(my $oh, ">>$FIG_Config::data/alexa.log");
 # This will be the result.
 my $result;
 # Get the intent name and parameter.
@@ -61,7 +61,7 @@ eval {
             }
             $result .= "and has ";
             if ($contigs < 2) {
-                $result .= "a single contig "; 
+                $result .= "a single contig ";
             } else {
                 $result .= "$contigs contigs ";
             }
@@ -71,39 +71,16 @@ eval {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
         $table = ucfirst $table;
+        print $oh "Retrieving count for $table.\n";
         my $count = $shrub->GetCount($table, '', []);
         if ($count == 0) {
             $table .= "s";
             $result = "There are no $table in the database.";
-        } elsif ($count == 0) {
+        } elsif ($count == 1) {
             $result = "There is one $table in the database.";
         } else {
             $table .= "s";
             $result = "There are $count $table in the database.";
-        }
-    } elsif ($action eq 'PegIntent') {
-        my $peg = $cgi->param('parameter');
-        my $pegH = $shrub->Feature2Function(0, [$peg]);
-        my $pegData = $pegH->{$peg};
-        my $pegName = $peg;
-        if ($peg =~ /^fig\|(\d+\.\d+)\.(\w+).(\d+)/) {
-            my $genome = $1;
-            $pegName = "$2 $3";
-            my ($gName) = $shrub->GetFlat('Genome', 'Genome(id) = ?', [$genome], 'name');
-            if ($gName) {
-                $pegName .= " of $gName";
-            } else {
-                $pegName .= " of $genome";
-            }
-        }
-        if (! $pegData) {
-            $result = "$pegName was not found in the database.";
-        } else {
-            my (undef, $function, $comment) = @$pegData;
-            $result = "$pegName has the function $function.";
-            if ($comment) {
-                $result = "The annotator commented $comment.";
-            }
         }
     }
 };
