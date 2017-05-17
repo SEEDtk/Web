@@ -30,7 +30,7 @@ content. The resulting document is a plain text string.
 
 =cut
 
-use constant TABLES => { Subsystem => 1, Protein => 1, Genome => 1, Feature => 1, Role => 1, Function => 1 };
+use constant TABLES => { Subsystem => 1, Protein => 1, Genome => 1, Feature => 1, Role => 1, Function => 1, Contig => 1 };
 
 # Get the CGI query object.
 my $cgi = CGI->new();
