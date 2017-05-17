@@ -38,7 +38,9 @@ my $result;
 my $action = $cgi->param('action');
 eval {
     # Create the Shrub object.
+    warn "Connecting to shrub.\n";
     my $shrub = Shrub->new();
+    warn "Shrub connected.\n";
     # Process the intent.
     if ($action eq 'GenomeIntent') {
         my $genomeID = $cgi->param('parameter');
@@ -70,9 +72,7 @@ eval {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
         $table = ucfirst $table;
-        open(my $oh, "$FIG_Config::data/alexa.log");
-        print $oh "Retrieving count for $table.\n";
-        close $oh;
+        warn "Retrieving count for $table.\n";
         my $count = $shrub->GetCount($table, '', []);
         if ($count == 0) {
             $table .= "s";
