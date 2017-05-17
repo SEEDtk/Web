@@ -32,7 +32,6 @@ content. The resulting document is a plain text string.
 
 # Get the CGI query object.
 my $cgi = CGI->new();
-open(my $oh, ">>$FIG_Config::data/alexa.log");
 # This will be the result.
 my $result;
 # Get the intent name and parameter.
@@ -71,7 +70,9 @@ eval {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
         $table = ucfirst $table;
+        open(my $oh, "$FIG_Config::data/alexa.log");
         print $oh "Retrieving count for $table.\n";
+        close $oh;
         my $count = $shrub->GetCount($table, '', []);
         if ($count == 0) {
             $table .= "s";
