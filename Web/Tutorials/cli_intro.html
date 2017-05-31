@@ -82,7 +82,7 @@ genome.genome_id	feature.patric_id	feature.feature_type	feature.location	feature
 282669.3	fig|282669.3.repeat.8	repeat_region	1..127	repeat region
 </pre>
 </i>
-Notice that the command returns all information about features by default. If you were only interested in the feature ids, you would specify that with the -a option.
+Notice that the command returns basic information about features by default. If you were only interested in the feature ids, you would specify that with the -a option.
 <pre>
 <b>p3-echo -t genome.genome_id 282669.3 | p3-get-genome-features -a patric_id| head 
 genome.genome_id	feature.patric_id</b>
@@ -116,6 +116,68 @@ Since this returns all feature types, it might be desirable to limit the feature
  </i>
  </pre>
 
+
+
+The feature names available for use in the --equal or the --attr arguments can be seen by using the -f option, like this:
+
+<pre>
+ <b>p3-get-genome-features -f</b>
+ <i>
+ genome_id
+ genome_name
+ taxon_id
+ sequence_id
+ accession
+ annotation
+ annotation_sort
+ feature_type
+ feature_id
+ p2_feature_id
+ alt_locus_tag
+ patric_id
+ refseq_locus_tag
+ protein_id
+ gene_id
+ gi
+ start
+ end
+ strand
+ location
+ segments
+ pos_group
+ na_length
+ aa_length
+ na_sequence
+ aa_sequence
+ aa_sequence_md5
+ gene
+ product
+ figfam_id
+ plfam_id
+ pgfam_id
+ ec
+ pathway
+ go
+ uniprotkb_accession
+ text
+ date_inserted
+ date_modified
+ public
+ owner
+ user_read
+ user_write
+ </i>
+</pre>
+
+In this example, we ask for a feature type of gene, a gene value of fars-1 and return the refseq_locus_tag, the location, the product, and the gene_id, and the gene name. Notice that the value of product for this gene is blank, it has no annotation.
+
+<pre>
+ <b>p3-echo -t genome.genome_id 6239.6 |p3-get-genome-features -e feature_type,gene -e gene,fars-1 -a refseq_locus_tag -a location -a product -a gene_id -a gene</b>
+ <i>
+ genome.genome_id	feature.refseq_locus_tag	feature.location	feature.product	feature.gene_id	feature.gene
+ 6239.6	CELE_T08B2.9	complement(<6212137..>6214575)		172311	fars-1
+</i>
+</pre>
 
 
 In this tutorial we have introduced the basics of using the Patric Command Line Interface (CLI) and how to access data relating to genomes and features.
