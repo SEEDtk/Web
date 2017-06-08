@@ -72,7 +72,7 @@ eval {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
         $table = ucfirst $table;
-        if ($table eq 'Bin') {
+        if ($table eq 'Bin' || $table eq 'Ben' || $table eq 'Thing') {
             opendir(my $dh, "$FIG_Config::data/GoodPackages") || die "Could not open GoodPackages: $!";
             my @goods = grep { $_ =~ /^\d+\.\d+$/ } readdir $dh;
             my $count = scalar @goods;
