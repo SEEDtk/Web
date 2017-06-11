@@ -17,7 +17,7 @@ genome.genome_id
 </pre>
 p3-all-genomes  takes no input and is what we call a generator; it returns the set of all genome ids in Patric.  Notice that the first line is a header identifying the columns in the table. Most p3 commands expect this header. If you were interested in certain data about the genomes, you would use the command p3-get-genome-data, which takes as input a set of genome ids, like this;
 <pre>
-<b>p3-all-genomes |p3-get-genome-data</b>
+<b>p3-all-genomes | p3-get-genome-data</b>
 <i>
 genome.genome_id	genome.genome_id	genome.genome_name	genome.taxon_id	genome.genome_status	genome.gc_content
 1390.176	1390.176	Bacillus amyloliquefaciens strain B425	1390	WGS	45.7
@@ -29,9 +29,9 @@ genome.genome_id	genome.genome_id	genome.genome_name	genome.taxon_id	genome.geno
 .
 </i>
 </pre>
-p3-all-genomes is used to generate a set of input ids that we pipe into  p3-get-genome-data, which returns a 6 column table with data about the genome; the genome_id, genome_name, taxon_id, genome_status and gc_content.  You can control which of these fields is returned with the –a argument.
+p3-all-genomes is used to generate a set of input ids that we pipe into  p3-get-genome-data, which returns a 6 column table with data about the genome; the genome_id, genome_name, taxon_id, genome_status and gc_content.  You can control which of these fields is returned with the -a argument.
 <pre>
-<b>p3-all-genomes |p3-get-genome-data -a genome_name</b>
+<b>p3-all-genomes | p3-get-genome-data -a genome_name</b>
 <i>
 genome.genome_id	genome.genome_name
 1390.176	Bacillus amyloliquefaciens strain B425
@@ -47,7 +47,7 @@ genome.genome_id	genome.genome_name
 </pre>
 If you were interested in only Streptococcus genomes, you could use the match command like this;
 <pre>
-<b>p3-all-genomes  | p3-get-genome-data -a genome_name | p3-match -c2 Streptococcus</b>
+<b>p3-all-genomes  | p3-get-genome-data -a genome_name | p3-match -c genome.genome_name Streptococcus</b>
 <i>
 genome.genome_id	genome.genome_name
 1313.7195	Streptococcus pneumoniae strain 2842STDY5753638
@@ -172,7 +172,7 @@ The feature names available for use in the --equal or the --attr arguments can b
 In this example, we ask for a feature type of gene, a gene value of fars-1 and return the refseq_locus_tag, the location, the product, and the gene_id, and the gene name. Notice that the value of product for this gene is blank, it has no annotation.
 
 <pre>
- <b>p3-echo -t genome.genome_id 6239.6 |p3-get-genome-features -e feature_type,gene -e gene,fars-1 -a refseq_locus_tag -a location -a product -a gene_id -a gene</b>
+ <b>p3-echo -t genome.genome_id 6239.6 | p3-get-genome-features -e feature_type,gene -e gene,fars-1 -a refseq_locus_tag -a location -a product -a gene_id -a gene</b>
  <i>
  genome.genome_id	feature.refseq_locus_tag	feature.location	feature.product	feature.gene_id	feature.gene
  6239.6	CELE_T08B2.9	complement(<6212137..>6214575)		172311	fars-1
