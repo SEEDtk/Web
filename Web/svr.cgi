@@ -72,7 +72,12 @@ eval {
         my $table = $cgi->param('parameter');
         $table =~ s/s$//;
         $table = ucfirst $table;
-        if (! TABLES->{$table}) {
+        if ($table eq 'Bin' || $table eq 'Ben' || $table eq 'Thing') {
+            opendir(my $dh, "$FIG_Config::data/GoodPackages") || die "Could not open GoodPackages: $!";
+            my @goods = grep { $_ =~ /^\d+\.\d+$/ } readdir $dh;
+            my $count = scalar @goods;
+            $result = "There are $count good bins in the data store.";
+        } elsif (! TABLES->{$table}) {
             $result = "I don't have an object called '$table'.";
         } else {
             my $count = $shrub->GetCount($table, '', []);
@@ -94,4 +99,3 @@ if ($@) {
 }
 print CGI::header('text/plain');
 print $result;
-
