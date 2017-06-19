@@ -18,7 +18,7 @@ PERL module name, The given document or module is then converted into HTML
 and displayed. This provides a mechanism for access to the documentation
 on the testing server.
 
-The single CGI parameter is C<module>.
+The main CGI parameter is C<module>.
 
 Several special module names give special results.
 
@@ -36,6 +36,10 @@ Display the system environment.
 
 Display a list of the available command-line scripts.
 
+=item p3
+
+Display a list of the available PATRIC-3 scripts.
+
 =back
 
 =cut
@@ -46,6 +50,9 @@ my $cgi = CGI->new();
 my $modName = $cgi->param('module');
 # Compute the page title.
 my $title = $modName || 'Documentation Page';
+if ($modName eq 'p3') {
+    $title = 'PATRIC-3 Scripts';
+}
 # Create the default output page header.
 my @header = (CGI::header() .
         CGI::start_html(-title => $title,
@@ -172,6 +179,45 @@ eval {
                 if (scalar @undoc) {
                     push @lines, CGI::p("Undocumented scripts: " . join(", ", @undoc));
                 }
+            }
+        }
+        # Close off the display.
+        push @lines, CGI::end_ul(), CGI::br({ class => 'clear' }), CGI::end_div();
+    } elsif ($modName eq 'p3') {
+        # Here the user wants a list of the p3 command-line scripts.
+        push @lines, CGI::div({ class => 'heading'}, CGI::h1("PATRIC-3 Scripts"));
+        push @lines, CGI::start_div({ id => 'Dump' });
+        my $dir = "$FIG_Config::mod_base/RASTtk/scripts";
+        # Get a hash of the scripts in this directory.
+        my $scriptHash = Env::GetScripts($dir);
+        if (! scalar keys %$scriptHash) {
+            # Here there are none.
+            push @lines, CGI::p("No documented scripts found.");
+        } else {
+            # We need to loop through the scripts, displaying them. This will be set to TRUE if we find
+            # a documented script.
+            my $doc;
+            # Sort the script names and filter for p3s.
+            my @scripts = sort { Cmp($a, $b) } grep { $_ =~ /^p3-/ } keys %$scriptHash;
+            # Do the looping.
+            for my $script (@scripts) {
+                # Get the comment.
+                my $comment = $scriptHash->{$script};
+                # Are we documented?
+                if ($comment) {
+                    # Yes. If this is the first one, start the list.
+                    if (! $doc) {
+                        push @lines, CGI::start_ol();
+                    }
+                    # Count this script and display it.
+                    push @lines, CGI::li({ class => 'item' }, CGI::a({ href => "Doc.cgi?module=$script" }, $script) .
+                            ": $comment");
+                    $doc++;
+                }
+            }
+            # If we had documented scripts, close the list.
+            if ($doc) {
+                push @lines, CGI::end_ol();
             }
         }
         # Close off the display.
