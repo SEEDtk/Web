@@ -1,0 +1,308 @@
+<h1>The P3-Scripts Interface to PATRIC</h1>
+
+<h2>What is the PATRIC Command-line Interface?</h2>
+
+<a href="https: www.patricbrc.org" target=_blank>PATRIC</a> is an integration of different types of data and software tools 
+that support research on bacterial pathogens.
+The typical biologist seeking access to the PATRIC data and tools will usually explore
+the web-based user interface.  However, there are many instances in which programatic or command-line
+interfaces are more suitable.  For users that wish command-line access to PATRIC, we provide
+the tools described in this document.  We call these tools the <i>P3-scripts</i>.  They
+are intended to run on your machine, going over the network to access the services provided by PATRIC.
+If you have not already installed a version on your machine, you should probably follow the instructions
+discussed in the next section and install a version now.
+
+<h3>Installing the P3-scripts</h3>
+
+<pre>--------------------EVOLVING NOTES -------------------</pre>
+
+<h3> What Is a PATRIC Workspace?</h3>
+
+Users of PATRIC have access to a wealth of public data that support
+interpretation of prokaryotic genomes.  The PATRIC team actively integrates newly-sequenced
+genomes, data relating to antimicrobial resistance, expression data, pathway data and subsystem data
+into an integrated framework that can be queried using either the PATRIC UI or the CLI.
+If a user whishes to integrate his data (say, 100 newly-sequenced Mycobacterium genomes) and interpret
+it using PATRIC tools, he would typically 
+<ul>
+<li>
+establish a PATRIC account, 
+<li> upload his data into a <i>PATRIC workspace</i>,
+<li> assemple and annotate his collection of genomes, producing
+annotated genomes stored in his workspace,
+<li>use PATRIC tools to study his data using comparative analysis, and
+<li>download results from his PATRIC workspace.
+</ul>
+
+Thus, a workspace looks a lot like a standard filesystem in which users can
+store, share, and study their own data.  Here is a summary of the
+operations that one can do with a <a href=http:PATRIC_workspaces target=_blank > workspace</a>.
+<br><br>
+To use private data, along with the public PATRIC data, you will need to set up a PATRIC account,
+and whenever you wish to access data in your workspace, you will need to <a href=login target=_blank>establish a session</a>
+first.
+
+<h2>Using PATRIC Apps: Assembling Reads and Annotating Genomes</h2>
+
+There are a growing number of PATRIC apps, and you will be able to use many of them via the CLI.
+To illustrate how, we show you how to assemble collections of reads into contig, and how to annotate one
+or more genomes (hundreds at a time, if you wish).
+
+<h3>Moving Data To and From Your PATRIC Workspace</h3>
+
+<h3> Assembling Reads Into Contigs </h3>
+
+The assembly app allows you to take one or more files of DNA <i>reads</i>
+and produce an output file containing DNA <i>contigs</i>.  The exact steps one would use
+to assemble reads are as follows:
+<ol>
+<li> Upload the one or more files containing reads to your workspace:
+<pre>
+  example commands following exactly what is shown in the previous section
+</pre>
+
+<li> Now use....
+</ol>
+
+<h3> Annotating Genomes</h3>
+
+<pre> This requires a dsicussion of 
+
+The PATRIC app that can be used to annotate a genome takes as input
+<ol>
+<li>a file of contigs,
+<li>the genetic code used by the organism (use "4" if you are
+annotating a <i>Mycoplasma</i> and "11", otherwise).  See
+<a LINK TO NCBI> for details.
+
+<li>The taxonomy ID you wish to assign to the genome (see <a ...> for details)
+</ol>
+
+It produces as output a <i>Genome Type Object (GTO)</i>.  This object
+contains all of the data created during the annotation.  You can download a GTO
+to your machine and then use p3-scripts to extract data from the GTO.
+Here is an example of how to download the output GTO and get a listing of
+the features identified in the annotations.
+
+</pre>
+
+<h1>Extracting Data from PATRIC</h1>
+
+You can do a great deal more with the CLI than just run PATRIC apps -- you can extract a large and 
+growing body of data that you may well find useful in studying organisms and their genomes.
+
+<h2>The Entities</h2>
+
+You can think of PATRIC as a collection of data items that describe entities of just a few types.
+<i>Genomes</i> and <i>Features</i> are the most commonly accessed types of entities.
+
+<pre> 
+
+============== Evolving Notes 
+
+</pre>
+
+The P3-scripts interface reflects an underlying ERDB.
+The initial implemenation will offer access to the following
+entities:
+<ul>
+<li>Genome
+<li>Feature
+<li>ProteinFamily
+<li>Role
+<li>Subsystem
+<li>PopSys (a row in a populated subsystem)
+<li>Drug
+</ul>
+
+<h3>Accessing Data from an Entity (set)</h3>
+
+For each entity we support something like
+<pre>
+  p3-get-Genome-data SearchFor FieldsToExtract
+
+      id is always default field
+
+</pre>
+Here <i>SearchFor</i> encodes a set of search contraints.
+<i>FieldsToExtract</i> encodes a list of desired attributes.
+For important relationships, we use things like
+<pre>
+  p3-Genome2Drug SearchFor FieldsToExtract
+</pre>
+  
+<h2>Tables, Commands, and Headers</h2>
+
+Many of the P3-scripts are commands that take a tab-separated table with column headers
+as input and produce an altered table as output.  The decision to use column headers is a
+deviation from the tools we built as SVR and SVC scripts.  It has both benefits and costs.
+For the unix commands our use of headers introduces surmountable complexities.  For example,
+we will implement <b>P3-sort</b> as a command that reads and prints the header line, and then uses
+<br>
+<pre>
+  tail ``-n+2'' | sort
+</pre>
+to print the sorted contexts of the file.  There will be P3-scripts corresponding to at
+least the following UNIX tools:
+<ul>
+<li>echo (p3-echo)
+<li>head (p3-head)
+<li>tail (p3-tail)
+<li>grep (p3-grep)
+<li>sort (p3-sort)
+<li>cut  (p3-cut)
+The Unix <i>cut</i> does not let you establish the order of the retained columns.
+p3-cut (which is a renamed version of svc_extract) will.
+
+
+<h2>Classes of Commands that Need to be Cast as P3-scripts</h2>
+
+<h3>Access to the PATRIC Workspaces</h3>
+
+We have a set of commands that support creation and maintenance of PATRIC workspaces.
+
+<h3>Running PATRIC apps and Retrieving the Ouput</h3>
+
+We support the ability to run apps and retrieve the output.
+
+<h3>Extracting, Copying, and Mining Genome Typed Objects (GTOs) </h3>
+
+<h2>Queries that Need to be Supported</h2>
+Note that some of the queries could probably best be handled using 
+code from someone else.  That would, of course, be fine with me.
+
+<ol>
+<li>Which (how many) Streptococcus genomes do we have?
+<pre>
+p3-all-genomes --equal genus,Streptococcus --count
+
+genome.count
+11475
+</pre>
+
+<li>Which Streptococcus genomes do we have?
+
+<pre>
+  p3-all-genomes --equal genus,Streptococcus --attr genome_name --attr genome_length
+
+<li>What fraction of the genomes in genus G are resistant to drug D?
+<pre>
+  p3-all-genomes --equal genome_name,Staphylococcus –count
+
+genome.count
+10634
+
+p3-drug-amr-data --equal antibiotic,methicillin --equal resistant_phenotype,resistant --equal genome_name,Staphylococcus --count
+
+genome_drug.count
+1064
+</pre>
+
+<li>What fraction of the genomes in genus X have an occurrence of role R?
+<li>What fraction of the genomes in genus X have multiple occurrences of role R?
+<li>What fraction of the genomes in the populated subsystem S are Mycobacterium genomes?
+<li>What fraction of the Mycobacterium genomes in the populated subsystem S have pegs that connect to role R?
+<li>Which subsystems are active in genome G?
+<li>Which pegs implement role X in genome G?
+<li>Which subsystems are active in fewer than 5 genomes?
+<li>How many genomes have active occurrences of subsystem S?
+<li>Which roles of subsystem S are connected to pegs?
+<li>Which protein family is peg P in?
+<pre>
+Which protein family is fig|46170.310.peg.738 in?
+
+p3-echo -t feature.feature_id "fig|46170.310.peg.738" | p3-get-feature-data --attr pgfam_id
+
+feature.feature_id feature.pgfam_id
+fig|46170.310.peg.738 PGF_00040464
+
+</pre>
+
+<li>Which roles does peg P implement?
+<pre>
+Which roles does fig|46170.310.prh.738 implement?
+
+p3-echo -t feature.feature_id "fig|46170.310.peg.738" | p3-get-feature-data --attr product
+
+feature.feature_id      feature.product
+fig|46170.310.peg.738   Putative cysteine desulfurase, associated with tRNA 4-thiouridine synthase
+</pre>
+
+<li>What drugs is genome G resistant to?
+<pre>
+What drugs is 46170.310 resistant to?
+
+p3-echo -t genome.genome_id 46170.310 | p3-genome-amr-data --equal resistant_phenotype,resistant  --attr antibiotic
+
+genome.genome_id        genome_drug.antibiotic
+46170.310       ciprofloxacin
+46170.310       erythromycin
+46170.310       gentamicin
+46170.310       methicillin
+46170.310       penicillin
+46170.310       trimethoprim/sulfamethoxazole
+/pre>
+
+<li>What genomes are resistant to drug D?
+<pre>
+What genomes are resistant to erythromycin?
+
+p3-drug-amr-data --equal antibiotic,erythromycin --equal resistant_phenotype,resistant --attr genome_id –-attr genome_name
+
+genome_drug.genome_id   genome_drug.genome_name
+1280.4920     Staphylococcus aureus P210110-35
+1280.4930     Staphylococcus aureus P210184-226
+1280.4940     Staphylococcus aureus P210369-10
+1280.4960     Staphylococcus aureus P210464-28
+1280.4970     Staphylococcus aureus P310372-198
+1280.4990     Staphylococcus aureus P311202-207
+1313.6942     Streptococcus pneumoniae P110340-157
+1313.7001     Streptococcus pneumoniae P210774-233
+
+</pre>
+
+<li>Given two pegs from the same contig on a genome, how close are they on the chromsome?
+<pre>
+     p3-echo -t f1.patric_id -t f2.patric_id "fig|1302.21.peg.966" "fig|1302.21.peg.1019" | p3-feature-gap
+ 
+     f1.patric_id    f2.patric_id    gap
+     fig|1302.21.peg.966     fig|1302.21.peg.1019    55253
+</pre>
+
+
+<li>Are pegs P1 and P2 located within 5 kb of one another on the chromosome?
+<li>Give me a fasta file of the contigs of genome G.
+<li>Give me the protein sequences for the pegs in genome G.
+<li>Given a list of genomes L, produce a list of pairs of roles that are implemented
+    by pegs (from genomes in L) that are close on the chromosome (along with a count of the number of occurrences of the pair).
+<li> Given two sets of genomes Gs1 and Gs2, list the roles implemented in genomes in Gs1, but not by
+genomes implemeted in Gs2.
+<li>What is the average length of proteins in family F, along with the standard deviation.
+<li>What genomes in list Gs have GC content values greater than 60%.
+<li>For functional roles R1 and R2, give a correlation coefficient for occurrences of pegs implementing
+these roles in the entire set of genomes.
+<li>For subsystems S1 and S2, compute the correlation coeffient of occurrences of S1 and S2
+in a list of genomes.
+<li>Compute the minimum number of unique roles in the subsystem S that are implemented by pegs.  That is
+    calculate <i>min_pegs</i>, the minimum number of pegs required for an active instance of the subsystems
+(at least so far).  Which genomes have only <i>min_pegs</i> in an active instance?
+<li>Compute the upstream and downstream regions for pegs in list pegL.
+<li>Return features from a designated list of types for a genome G -- sorted by location on the chromosome.
+<li>Given a genome G that does not occur in subsystem S, compute the minimum sets of roles needed to
+    include all of the roles that occur in at least one active role (there may be multiple ways
+    to complete an incomplete set).
+<li>Which kmers occur in one list of genomes, but not in a second set?  Here we are defining 
+signature kmers.
+<li>Which roles occur in one list of genomes, but not in a second set?  Here we are defining signature roles.
+<li>Which subsystems occur in one list of genomes, but not in a second set?  Here we are defining signature subsystems.
+<li>Compute the codon usage for pegs in a specified genome.  This requires getting the DNA sequence
+    for the genome, getting the peg translations, and tabulating the codon counts.
+<li>Given a possible frameshift (in the form of two adjacent pegs), try to "fix it".  We have a version
+of the code to do this, and it involves a Smith-Waterman algorithm.  Hopefully, we can just lift the
+existing version.
+<li>Given a genome G, get roles that may be split over multiple contigs.
+<li>Given a genome G and a close genome G', use G' to look for pegs in G1 that might span contigs.
+
+</ol>
+
+
