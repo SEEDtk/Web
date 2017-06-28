@@ -15,7 +15,10 @@ genome.genome_id
 .
 </i>
 </pre>
-p3-all-genomes  takes no input and is what we call a generator; it returns the set of all genome ids in Patric.  Notice that the first line is a header identifying the columns in the table. Most p3 commands expect this header. If you were interested in certain data about the genomes, you would use the command p3-get-genome-data, which takes as input a set of genome ids, like this;
+p3-all-genomes  takes no input and is what we call a generator; it returns the set of all genome ids in Patric.  Notice that the first line is a header identifying the columns in the table. Column headers identify the data base object, in this case the Genome object, and the specific attribute returned, in this case the genome_id, thus, genome.genome_id.  Most p3 commands expect this header. 
+<br>
+<br>
+If you were interested in certain data about the genomes, you would use the command p3-get-genome-data, which takes as input a set of genome ids, like this;
 <pre>
 <b>p3-all-genomes | p3-get-genome-data</b>
 <i>
@@ -29,7 +32,7 @@ genome.genome_id	genome.genome_id	genome.genome_name	genome.taxon_id	genome.geno
 .
 </i>
 </pre>
-p3-all-genomes is used to generate a set of input ids that we pipe into  p3-get-genome-data, which returns a 6 column table with data about the genome; the genome_id, genome_name, taxon_id, genome_status and gc_content.  You can control which of these fields is returned with the -a argument.
+p3-all-genomes is used to generate a set of input ids that we pipe into  p3-get-genome-data, which by default returns a 6 column table with data about the genome; the genome_id, genome_name, taxon_id, genome_status and gc_content.  You can control which of these fields is returned with the --attr argument (abbreviated as just -a). If you only wanted to see the genome name, you would use the following command.
 <pre>
 <b>p3-all-genomes | p3-get-genome-data -a genome_name</b>
 <i>
@@ -45,7 +48,10 @@ genome.genome_id	genome.genome_name
 .
 </i>
 </pre>
-If you were interested in only Streptococcus genomes, you could use the match command like this;
+The -a (or --attr) argument  tells a p3 command which attributes to return. In the above command, we used the -a argument to tell p3-get-genome-data to return only the genome_name. In the case of a command the acts on a single object, we can forgo the object.feature construct and just ask for the feature we want; -a genome_name.
+
+
+In the previous example, the id's of all genomes were returned. If you were interested in only Streptococcus genomes, you could use the match command. p3-match works a lot like grep, but it can used to specifically "grep", or "search"  just a column for a matching string. Here is an example;
 <pre>
 <b>p3-all-genomes  | p3-get-genome-data -a genome_name | p3-match -c genome.genome_name Streptococcus</b>
 <i>
@@ -61,12 +67,40 @@ genome.genome_id	genome.genome_name
 .
 </i>
 </pre>
-Here, we retrieved the id of all genomes in Patric, piped that output to get the name and produce a two column table, and piped that table to a command to match for the string Streptococcus in column 2, thus filtering the table to contain only Streptococcus genomes. 
+Here, we retrieved the id of all genomes in Patric, piped that output to get the name and produce a two column table, and piped that table to a command to match for the string Streptococcus in the genome.genome_name column, thus filtering the table to contain only Streptococcus genomes. 
 <br>
 There are other ways to accomplish this, but the example serves to demonstrate what we mean by creating pipelines of commands and producing tables of information. 
 <br>
 <H2> Accessing Features</H2>
-If you want to look into the features of a genome, you would use the p3-get-genome-features command. p3-genome-features takes as input a set of genome ids. The following example uses the p3-echo command to generate input for p3-get-genome-features.
+If you want to look into the features of a genome, you would use the p3-get-genome-features command. p3-genome-features takes as input a set of genome ids. Previously, we have used p3-all-genomes to start a pipeline with the id of every genome in Patric. Sometimes, you know which genomes to use and you just want to start with them. We do that with the p3-echo command.  p3-echo works a lot like the Unix echo command, but it also handles the necessity of providing the expected p3 column headers. Here is an explanation of the p3-echo command:
+
+<pre>
+	p3-echo [options] value1 value2 ... valueN
+
+	This script creates a tab-delimited output file containing the values on the command line. 
+	If a single header (--title option) is specified, then the output file is single-column. 
+	Otherwise, there is one column per header. So, for example
+
+	p3-echo --title=genome_id 83333.1 100226.1
+
+	produces
+
+	genome_id
+	83333.1
+	100226.1
+
+	However, the command
+
+	p3-echo --title=genome_id --title=name 83333.1 "Escherichia coli" 100226.1 "Streptomyces coelicolor"
+
+	produces
+
+	genome_id   name
+	83333.1     Escherichia coli
+	100226.1    Streptomyces coelicolor
+</pre>
+
+The following example uses the p3-echo command to generate input for p3-get-genome-features.
 <pre>
 <b>p3-echo -t genome.genome_id 282669.3 | p3-get-genome-features | head </b>
 <i>
@@ -169,10 +203,10 @@ The feature names available for use in the --equal or the --attr arguments can b
  </i>
 </pre>
 
-In this example, we ask for a feature type of gene, a gene value of fars-1 and return the refseq_locus_tag, the location, the product, and the gene_id, and the gene name. Notice that the value of product for this gene is blank, it has no annotation.
+In this example, we use p3-echo to start a pipeline for genome id 6239.6. we ask for feature types of gene, a gene value of fars-1 and return the refseq_locus_tag, the location, the product, and the gene_id, and the gene name. Notice that the value of product for this gene is blank, it has no annotation.
 
 <pre>
- <b>p3-echo -t genome.genome_id 6239.6 | p3-get-genome-features -e feature_type,gene -e gene,fars-1 -a refseq_locus_tag -a location -a product -a gene_id -a gene</b>
+ <b>p3-echo -t genome.genome_id 6239.6 | p3-get-genome-features --equal feature_type,gene --equal gene,fars-1 -a refseq_locus_tag -a location -a product -a gene_id -a gene</b>
  <i>
  genome.genome_id	feature.refseq_locus_tag	feature.location	feature.product	feature.gene_id	feature.gene
  6239.6	CELE_T08B2.9	complement(<6212137..>6214575)		172311	fars-1
