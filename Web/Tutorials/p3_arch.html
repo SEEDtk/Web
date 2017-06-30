@@ -65,10 +65,12 @@ to get authorized access to your workspace data. To log out again, simply use</p
 <p>If you are logged out, it will respond</p>
 <blockquote class="resp">
 You are currently logged out of PATRIC.
+
 </blockquote>
 <p>If you are logged in, you will get something like</p>
 <blockquote class="resp">
 You are logged in as rastuser25@patricbrc.org.
+
 </blockquote>
 <p>Your workspace looks like a full-blown file system, but there are three special folders.</p>
 <ul>
@@ -77,7 +79,60 @@ You are logged in as rastuser25@patricbrc.org.
 <li><b>QuickData</b> contains folders full of genomes you submitted through the CLI annotation interface.</li>
 </ul>
 
-<p>
+<p>To create a genome group, you use <b>p3-put-genome-group</b>. Say, for example, you want to examine
+streptococcus genomes that are resistant to penicillin. The following query command will get the list
+of genomes (we will discuss all query commands in more details later).</p>
+
+<pre>
+p3-drug-amr-data --eq genome_name,Streptococcus --eq resistant_phenotype,resistant --eq antibiotic,penicillin
+                 --attr genome_id --attr genome_name &gt;genomes.tbl
+</pre>
+
+<p>The command is broken into two lines for readability, but is entered as a single line. This particular
+command asks for data from the anti-microbial resistance table. Each record in this table posits a relationship
+between a genome and an antibiotic drug. The parameters do the following.</p>
+<dl>
+<dt><code>--eq genome_name,Streptococcus</code></dt>
+<dd>Only include records for Streptococcus genomes.</dd>
+<dt><code>--eq resistant_phenotype,resistant</code></dt>
+<dd>Only include records that state the genome is resistant.</dd>
+<dt><code>--eq antibiotic,penicillin</code></dt>
+<dd>Only include records that concern the antibiotic penicillin.</dd>
+<dt><code>--attr genome_id</code></dt>
+<dd>Output the genome ID.</dd>
+<dt><code>--attr genome_name</code></dt>
+<dd>Output the genome name.</dd>
+</dl>
+
+<p>When the command completes, the file <b>genomes.tbl</b> will contain around 115 lines beginning with
+the following.</p>
+
+<blockquote class="resp">
+genome_drug.genome_id   genome_drug.genome_name
+1313.7006   Streptococcus pneumoniae P310010-154
+1313.7016   Streptococcus pneumoniae P310937-212
+1313.7018   Streptococcus pneumoniae P311313-217
+760749.3    Streptococcus pneumoniae GA05248
+760763.3    Streptococcus pneumoniae GA11304
+760765.3    Streptococcus pneumoniae GA11663
+760766.3    Streptococcus pneumoniae GA11856
+760769.3    Streptococcus pneumoniae GA13338
+760771.3    Streptococcus pneumoniae GA13455
+760776.3    Streptococcus pneumoniae GA14373
+760777.3    Streptococcus pneumoniae GA14688
+
+</blockquote>
+
+<p>Now we want to create a group for these genomes called <b>resist.strep</b>. We use the following command.</p>
+
+<pre>
+p3-put-genome-group --col=1 resist.strep &lt;genomes.tbl
+</pre>
+
+<p>The <code>--col=1</code> tells the command that the genome IDs are in the first column. You can read the group back at any time
+using <b>p3-get-genome-group</b>.</p>
+
+
 
 <h2>Using PATRIC Apps: Assembling Reads and Annotating Genomes</h2>
 

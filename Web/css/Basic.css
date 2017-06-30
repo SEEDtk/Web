@@ -389,7 +389,7 @@ div.pod blockquote,
 #Dump blockquote.resp {
     font-family: Courier New, Courier, monospace;
     font-size: small;
-    whitespace: pre;
+    white-space: pre;
 }
 
 .error {
