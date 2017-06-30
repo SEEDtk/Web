@@ -9,9 +9,9 @@ body {
 }
 
 pre {
-	font-size: medium;
-	background-color: white;
-	color: black;
+        font-size: medium;
+        background-color: white;
+        color: black;
 }
 
 body.borderless {
@@ -73,7 +73,7 @@ ol.a ol {
 
 ol {
     list-style-type: decimal;
-	overflow: hidden;
+        overflow: hidden;
 }
 
 ol ol {
@@ -206,8 +206,8 @@ li {
 
 ol.notes li,
 ul.notes li {
-	padding-bottom: 3pt;
-	padding-top: 3pt;
+        padding-bottom: 3pt;
+        padding-top: 3pt;
 }
 ul.nav {
     margin: 4px auto;
@@ -373,7 +373,7 @@ div.pod tt,
     font-family: Courier New, Courier, monospace;
     font-weight: bold;
     color: #006666;
-	font-size: small;
+    font-size: small;
 }
 
 div.pod blockquote,
@@ -384,6 +384,12 @@ div.pod blockquote,
    border-color: #000;
    background-color: #ff0;
    padding: 2px;
+}
+
+#Dump blockquote.resp {
+    font-family: Courier New, Courier, monospace;
+    font-size: small;
+    whitespace: pre;
 }
 
 .error {

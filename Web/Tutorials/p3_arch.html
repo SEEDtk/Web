@@ -1,8 +1,17 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>The SEEDtk Database</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="Dump">
 <h1>The P3-Scripts Interface to PATRIC</h1>
 
 <h2>What is the PATRIC Command-line Interface?</h2>
 
-<a href="https: www.patricbrc.org" target=_blank>PATRIC</a> is an integration of different types of data and software tools 
+<a href="https: www.patricbrc.org" target=_blank>PATRIC</a> is an integration of different types of data and software tools
 that support research on bacterial pathogens.
 The typical biologist seeking access to the PATRIC data and tools will usually explore
 the web-based user interface.  However, there are many instances in which programatic or command-line
@@ -18,29 +27,57 @@ discussed in the next section and install a version now.
 
 <h3> What Is a PATRIC Workspace?</h3>
 
-Users of PATRIC have access to a wealth of public data that support
+<p>Users of PATRIC have access to a wealth of public data that support
 interpretation of prokaryotic genomes.  The PATRIC team actively integrates newly-sequenced
 genomes, data relating to antimicrobial resistance, expression data, pathway data and subsystem data
-into an integrated framework that can be queried using either the PATRIC UI or the CLI.
-If a user whishes to integrate his data (say, 100 newly-sequenced Mycobacterium genomes) and interpret
-it using PATRIC tools, he would typically 
+into an integrated framework that can be queried using either the PATRIC UI or the CLI.</p>
+
+<p>In the PATRIC UI, your workspace looks a lot like a standard file system, divided into folders full of
+data. In addition to files you upload, such as FASTA and FASTQ files, there will also be typed objects
+such as genomes, feature sets, and genome sets. The CLI allows you to move these typed objects between
+your workspace and your file system so you can manipulate them at will.</p>
+
+<p>To access your workspace, you need a PATRIC account. If you do not have one already, go to
+<a href="https://user.patricbrc.org/register">https://user.patricbrc.org/register</a> and register
+now.</p>
+
+<p>Now that you have a working user name and password, you can use the <b>p3-login</b> script to
+tell the CLI who you are. For example, if your name is <code>rastuser25</code>, you would type</p>
+
+<pre>
+    p3-login rastuser25
+</pre>
+
+<p>The script asks you for your password and places a special file on your hard drive that can be used
+to get authorized access to your workspace data. To log out again, simply use</p>
+
+<pre>
+    p3-login --logout
+</pre>
+
+
+<p>At any time, you can verify your login status using</p>
+
+<pre>
+    p3-login --status
+</pre>
+
+<p>If you are logged out, it will respond</p>
+<blockquote class="resp">
+You are currently logged out of PATRIC.
+</blockquote>
+<p>If you are logged in, you will get something like</p>
+<blockquote class="resp">
+You are logged in as rastuser25@patricbrc.org.
+</blockquote>
+<p>Your workspace looks like a full-blown file system, but there are three special folders.</p>
 <ul>
-<li>
-establish a PATRIC account, 
-<li> upload his data into a <i>PATRIC workspace</i>,
-<li> assemple and annotate his collection of genomes, producing
-annotated genomes stored in his workspace,
-<li>use PATRIC tools to study his data using comparative analysis, and
-<li>download results from his PATRIC workspace.
+<li><b>Genome Groups</b> contains named lists of genomes.</li>
+<li><b>Feature Groups</b> contains named lists of features.</li>
+<li><b>QuickData</b> contains folders full of genomes you submitted through the CLI annotation interface.</li>
 </ul>
 
-Thus, a workspace looks a lot like a standard filesystem in which users can
-store, share, and study their own data.  Here is a summary of the
-operations that one can do with a <a href=http:PATRIC_workspaces target=_blank > workspace</a>.
-<br><br>
-To use private data, along with the public PATRIC data, you will need to set up a PATRIC account,
-and whenever you wish to access data in your workspace, you will need to <a href=login target=_blank>establish a session</a>
-first.
+<p>
 
 <h2>Using PATRIC Apps: Assembling Reads and Annotating Genomes</h2>
 
@@ -66,7 +103,7 @@ to assemble reads are as follows:
 
 <h3> Annotating Genomes</h3>
 
-<pre> This requires a dsicussion of 
+<pre> This requires a dsicussion of
 
 The PATRIC app that can be used to annotate a genome takes as input
 <ol>
@@ -88,7 +125,7 @@ the features identified in the annotations.
 
 <h1>Extracting Data from PATRIC</h1>
 
-You can do a great deal more with the CLI than just run PATRIC apps -- you can extract a large and 
+You can do a great deal more with the CLI than just run PATRIC apps -- you can extract a large and
 growing body of data that you may well find useful in studying organisms and their genomes.
 
 <h2>The Entities</h2>
@@ -96,9 +133,9 @@ growing body of data that you may well find useful in studying organisms and the
 You can think of PATRIC as a collection of data items that describe entities of just a few types.
 <i>Genomes</i> and <i>Features</i> are the most commonly accessed types of entities.
 
-<pre> 
+<pre>
 
-============== Evolving Notes 
+============== Evolving Notes
 
 </pre>
 
@@ -130,7 +167,7 @@ For important relationships, we use things like
 <pre>
   p3-Genome2Drug SearchFor FieldsToExtract
 </pre>
-  
+
 <h2>Tables, Commands, and Headers</h2>
 
 Many of the P3-scripts are commands that take a tab-separated table with column headers
@@ -168,7 +205,7 @@ We support the ability to run apps and retrieve the output.
 <h3>Extracting, Copying, and Mining Genome Typed Objects (GTOs) </h3>
 
 <h2>Queries that Need to be Supported</h2>
-Note that some of the queries could probably best be handled using 
+Note that some of the queries could probably best be handled using
 code from someone else.  That would, of course, be fine with me.
 
 <ol>
@@ -187,7 +224,7 @@ genome.count
 
 <li>What fraction of the genomes in genus G are resistant to drug D?
 <pre>
-  p3-all-genomes --equal genome_name,Staphylococcus –count
+  p3-all-genomes --equal genome_name,Staphylococcus â€“count
 
 genome.count
 10634
@@ -247,7 +284,7 @@ genome.genome_id        genome_drug.antibiotic
 <pre>
 What genomes are resistant to erythromycin?
 
-p3-drug-amr-data --equal antibiotic,erythromycin --equal resistant_phenotype,resistant --attr genome_id –-attr genome_name
+p3-drug-amr-data --equal antibiotic,erythromycin --equal resistant_phenotype,resistant --attr genome_id â€“-attr genome_name
 
 genome_drug.genome_id   genome_drug.genome_name
 1280.4920     Staphylococcus aureus P210110-35
@@ -264,7 +301,7 @@ genome_drug.genome_id   genome_drug.genome_name
 <li>Given two pegs from the same contig on a genome, how close are they on the chromsome?
 <pre>
      p3-echo -t f1.patric_id -t f2.patric_id "fig|1302.21.peg.966" "fig|1302.21.peg.1019" | p3-feature-gap
- 
+
      f1.patric_id    f2.patric_id    gap
      fig|1302.21.peg.966     fig|1302.21.peg.1019    55253
 </pre>
@@ -291,7 +328,7 @@ in a list of genomes.
 <li>Given a genome G that does not occur in subsystem S, compute the minimum sets of roles needed to
     include all of the roles that occur in at least one active role (there may be multiple ways
     to complete an incomplete set).
-<li>Which kmers occur in one list of genomes, but not in a second set?  Here we are defining 
+<li>Which kmers occur in one list of genomes, but not in a second set?  Here we are defining
 signature kmers.
 <li>Which roles occur in one list of genomes, but not in a second set?  Here we are defining signature roles.
 <li>Which subsystems occur in one list of genomes, but not in a second set?  Here we are defining signature subsystems.
@@ -305,4 +342,6 @@ existing version.
 
 </ol>
 
-
+</div>
+</body>
+</html>
