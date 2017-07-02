@@ -25,7 +25,7 @@ discussed in the next section and install a version now.
 
 <pre>--------------------EVOLVING NOTES -------------------</pre>
 
-<h3> What Is a PATRIC Workspace?</h3>
+<h2> What Is a PATRIC Workspace?</h2>
 
 <p>Users of PATRIC have access to a wealth of public data that support
 interpretation of prokaryotic genomes.  The PATRIC team actively integrates newly-sequenced
@@ -37,6 +37,8 @@ data. In addition to files you upload, such as FASTA and FASTQ files, there will
 such as genomes, feature sets, and genome sets. The CLI allows you to move these typed objects between
 your workspace and your file system so you can manipulate them at will.</p>
 
+<h3>Logging In</h3>
+
 <p>To access your workspace, you need a PATRIC account. If you do not have one already, go to
 <a href="https://user.patricbrc.org/register">https://user.patricbrc.org/register</a> and register
 now.</p>
@@ -44,34 +46,43 @@ now.</p>
 <p>Now that you have a working user name and password, you can use the <b>p3-login</b> script to
 tell the CLI who you are. For example, if your name is <code>rastuser25</code>, you would type</p>
 
-<pre>
-    p3-login rastuser25
-</pre>
+<blockquote class="call">
+p3-login rastuser25
+
+</blockquote>
 
 <p>The script asks you for your password and places a special file on your hard drive that can be used
 to get authorized access to your workspace data. To log out again, simply use</p>
 
-<pre>
-    p3-login --logout
-</pre>
+<blockquote class="call">
+p3-login --logout
+
+</blockquote>
 
 
 <p>At any time, you can verify your login status using</p>
 
-<pre>
-    p3-login --status
-</pre>
+<blockquote class="call">
+p3-login --status
+
+</blockquote>
 
 <p>If you are logged out, it will respond</p>
+
 <blockquote class="resp">
 You are currently logged out of PATRIC.
 
 </blockquote>
+
 <p>If you are logged in, you will get something like</p>
+
 <blockquote class="resp">
 You are logged in as rastuser25@patricbrc.org.
 
 </blockquote>
+
+<h3>Working with Genome Groups</h3>
+
 <p>Your workspace looks like a full-blown file system, but there are three special folders.</p>
 <ul>
 <li><b>Genome Groups</b> contains named lists of genomes.</li>
@@ -80,20 +91,22 @@ You are logged in as rastuser25@patricbrc.org.
 </ul>
 
 <p>To create a genome group, you use <b>p3-put-genome-group</b>. Say, for example, you want to examine
-streptococcus genomes that are resistant to penicillin. The following query command will get the list
+Streptococcus penumoniae genomes that are resistant to penicillin. The following query command will get the list
 of genomes (we will discuss all query commands in more details later).</p>
 
-<pre>
-p3-drug-amr-data --eq genome_name,Streptococcus --eq resistant_phenotype,resistant --eq antibiotic,penicillin
-                 --attr genome_id --attr genome_name &gt;genomes.tbl
-</pre>
+<blockquote class="call">
+p3-drug-amr-data --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,resistant --eq antibiotic,penicillin --attr genome_id --attr genome_name &gt;resist.tbl
 
-<p>The command is broken into two lines for readability, but is entered as a single line. This particular
+</blockquote>
+
+<p>This particular
 command asks for data from the anti-microbial resistance table. Each record in this table posits a relationship
 between a genome and an antibiotic drug. The parameters do the following.</p>
 <dl>
-<dt><code>--eq genome_name,Streptococcus</code></dt>
-<dd>Only include records for Streptococcus genomes.</dd>
+<dt><code>--eq "genome_name,Streptococcus pneumoniae"</code></dt>
+<dd>Only include records for Streptococcus pneumoniae genomes. Because this is a string field, it does a substring match.
+A genome name including follow-on strain information (e.g. <code>Streptococcus pneumoniae strain LMG2888</code>)
+will still match.</dd>
 <dt><code>--eq resistant_phenotype,resistant</code></dt>
 <dd>Only include records that state the genome is resistant.</dd>
 <dt><code>--eq antibiotic,penicillin</code></dt>
@@ -104,7 +117,7 @@ between a genome and an antibiotic drug. The parameters do the following.</p>
 <dd>Output the genome name.</dd>
 </dl>
 
-<p>When the command completes, the file <b>genomes.tbl</b> will contain around 115 lines beginning with
+<p>When the command completes, the file <b>resist.tbl</b> will contain around 114 lines beginning with
 the following.</p>
 
 <blockquote class="resp">
@@ -125,14 +138,192 @@ genome_drug.genome_id   genome_drug.genome_name
 
 <p>Now we want to create a group for these genomes called <b>resist.strep</b>. We use the following command.</p>
 
-<pre>
-p3-put-genome-group --col=1 resist.strep &lt;genomes.tbl
-</pre>
+<blockquote class="call">
+p3-put-genome-group --col=1 resist.strep &lt;resist.tbl
+
+</blockquote>
 
 <p>The <code>--col=1</code> tells the command that the genome IDs are in the first column. You can read the group back at any time
 using <b>p3-get-genome-group</b>.</p>
 
+<blockquote class="call">
+p3-get-genome-group resist.strep
 
+</blockquote>
+
+<p>Will output</p>
+
+<blockquote class="resp">
+resist.strep.genome_id
+1313.7006
+1313.7016
+1313.7018
+760749.3
+760763.3
+760765.3
+760766.3
+760769.3
+760771.3
+
+</blockquote>
+
+<p>and so on. Note that if you want to see the names as well, you can use the <b>p3-get-genome-data</b> command to add them</p>
+
+<blockquote class="call">
+p3-get-genome-group resist.strep | p3-get-genome-data --attr genome_name
+
+</blockquote>
+
+<blockquote class="resp">
+resist.strep.genome_id  genome.genome_name
+1313.7006   Streptococcus pneumoniae P310010-154
+1313.7016   Streptococcus pneumoniae P310937-212
+1313.7018   Streptococcus pneumoniae P311313-217
+760749.3    Streptococcus pneumoniae GA05248
+760763.3    Streptococcus pneumoniae GA11304
+760765.3    Streptococcus pneumoniae GA11663
+760766.3    Streptococcus pneumoniae GA11856
+760769.3    Streptococcus pneumoniae GA13338
+760771.3    Streptococcus pneumoniae GA13455
+760776.3    Streptococcus pneumoniae GA14373
+760777.3    Streptococcus pneumoniae GA14688
+
+</blockquote>
+
+<p>Next we will ask for the genomes that are susceptible to penicillin. We use the same command as before except we put
+<code>susceptible</code> in place of <code>resistant</code>. We're going to pipe the results directly into
+<b>p3-put-genome-group</b> to store them in our workspace.</p>
+
+<blockquote class="call">
+p3-drug-amr-data --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,susceptible --eq antibiotic,penicillin --attr genome_id --attr genome_name | p3-put-genome-group weak.strep
+
+</blockquote>
+
+<h3>Working with Feature Groups</h3>
+
+<p>We want to look at features in the resistant Streptococcus pneumoniae genomes that distinguish them from the susceptible ones.
+Then we will gather those features into a feature group and store them in our workspace so we can work with them later.
+We already have our resistant group in a file called <i>resist.tbl</i>. We will use the <b>p3-get-genome-group</b>
+command to pull the susceptible genomes out of our workspace and pipe it into <b>p3-signature-families</b>, which
+counts and compares protein families.
+
+<blockquote class="call">
+p3-get-genome-group weak.strep | p3-signature-families --gs1=resist.tbl >families.tbl
+
+</blockquote>
+
+<p>The <b>p3-signature-families</b> script asks for two sets of genome IDs as input,
+specified as file names using the command-line parameters <b>--gs1</b> (interesting set) and <b>--gs2</b> (other set). The output
+contains protein families that are common in the interesting set but not in the other set. (For convenience, any genomes in the
+interesting set are removed from the other set before processing.) If a set file is not specified, it is taken from the standard
+input. In this case, that would be the other set, since there is no <b>--gs2</b> parameter. That is piped in from
+the <b>p3-get-genome-group</b> command.</p>
+
+<p>Our signature families analysis script yields four protein families, displayed in the following output.</p>
+
+<blockquote class="resp">
+counts_in_set1  counts_in_set2  family.family_id    family.product
+92  10  PGF_00112374    hypothetical protein
+92  10  PGF_00303700    hypothetical protein
+92  10  PGF_03497231    hypothetical protein
+91  10  PGF_03497236    hypothetical protein
+
+</blockquote>
+
+<p>The next step is to convert the families into feature IDs. The <b>p3-get-family-features</b> script performs that
+function. We will use the following command.</p>
+
+<blockquote class="call">
+p3-get-family-features --gFile=resist.tbl --gCol=1 --ftype=global --col=family.family_id &lt;families.tbl
+
+</blockquote>
+
+<p>The parameters work as follows.
+<dl>
+<dt>--gFile=resist.tbl</dt>
+<dd>Only features from the genomes listed in the file <i>resist.tbl</i> should be included in the output.</dd>
+<dt>--gCol=1</dt>
+<dd>The genome IDs in <i>resist.tbl</i> are in the first column.</dd>
+<dt>--ftype=global</dt>
+<dd>The family IDs in the input file are global families. (Local families and FIGfams are also supported, but
+the <b>p3-signature-families</b> script uses global families.)</dd>
+<dt>--col=family.family_id</dt>
+<dd>The protein family IDs in the input file are in a column named <code>family.family_id</code>.</dd>
+</dl>
+
+<p>The output looks something like this.</p>
+
+<blockquote class="resp">
+counts_in_set1  counts_in_set2  family.family_id    family.product  feature.patric_id   feature.feature_type    feature.location    feature.product
+92  10  PGF_00112374    hypothetical protein    fig|1313.5465.peg.1094  CDS complement(6450..9101)  hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5418.peg.2058  CDS complement(6450..9101)  hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5645.peg.1124  CDS 3518..6169  hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1069623.3.peg.450   CDS 391076..393727  hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.6729.peg.1445  CDS 32402..35053    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.6728.peg.1682  CDS complement(6420..9071)  hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.6723.peg.2045  CDS 297..2948   hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|760766.3.peg.438    CDS 293743..296403  hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.6724.peg.811   CDS 32400..35051    hypothetical protein
+
+</blockquote>
+
+<p>We didn't tell <b>p3-get-family-features</b> what attributes of the features to display, so it defaulted to ID, type,
+location, and functional assignment (product). We don't have time to examine these features in detail now, but we can put them
+in a feature group by piping them into <b>p3-put-feature-group</b> as follows.</p>
+
+<blockquote class="call">
+p3-get-family-features --gFile=resist.tbl --gCol=1 --ftype=global --col=family.family_id &lt;families.tbl | p3-put-feature-group --col=feature.patric_id resist.fids
+</blockquote>
+
+<p>In the <b>p3-put-feature-group</b> command, the <code>--col=feature.patric_id</code> parameter tells the command
+that the feature IDs are in the column with that heading, and <code>resist.fids</code> is the group name. When you
+decide to examine the features in greater detail, you can pull back the feature IDs using <b>p3-get-feature-group</b>.</p>
+
+<blockquote class="call">
+p3-get-feature-group resist.fids
+
+</blockquote>
+
+<p>The output will look something like this.</p>
+
+<blockquote class="resp">
+resist.fids.patric_id
+fig|1105121.3.peg.460
+fig|1069626.3.peg.432
+fig|1313.6771.peg.1961
+fig|1313.5503.peg.1279
+fig|1313.5634.peg.1224
+fig|1069624.3.peg.437
+fig|1069628.3.peg.451
+fig|1313.5669.peg.1163
+fig|1313.6725.peg.2115
+
+</blockquote>
+
+<p>At any time, you can get a complete list of the groups in your workspace using the <b>p3-list-genome-groups</b>
+command or the <b>p3-list-feature-groups</b> command. So, if you have been following along the above examples and
+your workspace was empty before you began, you would see the following.</p>
+
+<blockquote class="call">
+p3-list-genome-groups
+
+</blockquote>
+
+<blockquote class="resp">
+resist.strep
+weak.strep
+
+</blockquote>
+
+<blockquote class="call">
+p3-list-feature-groups
+
+</blockquote>
+
+<blockquote class="resp">
+resist.fids
+
+</blockquote>
 
 <h2>Using PATRIC Apps: Assembling Reads and Annotating Genomes</h2>
 
@@ -158,7 +349,7 @@ to assemble reads are as follows:
 
 <h3> Annotating Genomes</h3>
 
-<pre> This requires a dsicussion of
+ This requires a dsicussion of
 
 The PATRIC app that can be used to annotate a genome takes as input
 <ol>

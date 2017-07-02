@@ -390,6 +390,15 @@ div.pod blockquote,
     font-family: Courier New, Courier, monospace;
     font-size: small;
     white-space: pre;
+    overflow: auto;
+}
+
+#Dump blockquote.call {
+    font-family: Courier New, Courier, monospace;
+    font-size: small;
+    white-space: pre;
+    background-color: #fff;
+    overflow: auto;
 }
 
 .error {
