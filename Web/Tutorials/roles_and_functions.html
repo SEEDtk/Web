@@ -1,0 +1,36 @@
+<h2>Subsystems, Roles, and Functions</h2>
+
+In this section we try to convey what we mean by the
+terms <i>subsystem<i>, <i>role</i>, and <function of a gene</i>.
+This is an extremely simplified explanation.  It is given solely
+to convey the basic concepts behind our efforts to annotate 
+microbial genomes.
+
+We think of a genome as containing the designs of 
+a set of molecular machines (e.g., pathways, transport
+casettes and regulatory mechanisms).  The protein-encoding genes (PEGs)
+that occur within the genome encode components of these machines.
+Each component has an associated <i>role</i>.  The collection of roles
+that make up the design of a molecular machine are called a <i>subsystem</i>.
+Thus, each subsystem is just an inventory of the roles that make up 
+the machinery of a cell.
+<p>
+Each peg has an associated function.  Some of these functions are,
+as of now, unknown.  When a peg implements a single role (that is, the
+peg encodes a protein that implements one of the roles in a subsystem),
+we speak of the role as the <i>function of the peg</i>.
+<p>
+Pegs can implement multiple roles. When we show the function of a peg
+as <i>role1 / role2</i> we mean that the peg is multifunctional and
+separate sections of the encoded protein implement both <i>role1</i> and <i>role2</i>. 
+When a multifunctional protein implements two roles due to
+broad specificity, we write the function of the peg as <i>role1 @ role2 </i>.
+Finally, if we believe that a function is probably one of two roles,
+we write the function as <i>role1; role2</i>.  This notation easily generalizes to
+the few cases in which we believe a peg's function implements three or more roles.
+<p>
+The collection of subsystems maintained in PATRIC describe the inventories of
+roles needed to implement specific molecular machines.  For each genome
+within PATRIC we have tried to construct the set of pegs that implement
+the roles of each subsystem believed to be represented in the genome, and
+we refer to the set of pegs instantiating a subsystem as a <i>populated subsystem</i>.
