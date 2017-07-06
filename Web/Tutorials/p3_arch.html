@@ -185,25 +185,26 @@ penicillin   760777.3    Streptococcus pneumoniae GA14688
 
 </blockquote>
 
-<p>Now we want to create a group for these genomes called <b>resist.strep</b>. We use the following command.</p>
+<p>Now we want to create a group for these genomes called <b>resist_strep</b>. We use the following command.</p>
 
 <blockquote class="call">
-p3-put-genome-group --col=2 resist.strep &lt;resist.tbl
+p3-put-genome-group --col=2 resist_strep &lt;resist.tbl
 
 </blockquote>
 
-<p>The <code>--col=2</code> tells the command that the genome IDs are in the second column. You can read the group back at any time
+<p>The <code>--col=2</code> tells the command that the genome IDs are in the second column. The genome group is simply
+a set of genome IDs, so the other columns will be ignored by the command. You can read the group back at any time
 using <b>p3-get-genome-group</b>.</p>
 
 <blockquote class="call">
-p3-get-genome-group resist.strep
+p3-get-genome-group resist_strep
 
 </blockquote>
 
 <p>Will output</p>
 
 <blockquote class="resp">
-resist.strep.genome_id
+resist_strep.genome_id
 1313.7006
 1313.7016
 1313.7018
@@ -219,12 +220,12 @@ resist.strep.genome_id
 <p>and so on. Note that if you want to see the names as well, you can use the <b>p3-get-genome-data</b> command to add them</p>
 
 <blockquote class="call">
-p3-get-genome-group resist.strep | p3-get-genome-data --attr genome_name
+p3-get-genome-group resist_strep | p3-get-genome-data --attr genome_name
 
 </blockquote>
 
 <blockquote class="resp">
-resist.strep.genome_id  genome.genome_name
+resist_strep.genome_id  genome.genome_name
 1313.7006   Streptococcus pneumoniae P310010-154
 1313.7016   Streptococcus pneumoniae P310937-212
 1313.7018   Streptococcus pneumoniae P311313-217
@@ -244,19 +245,19 @@ resist.strep.genome_id  genome.genome_name
 <b>p3-put-genome-group</b> to store them in our workspace.</p>
 
 <blockquote class="call">
-p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,susceptible --attr genome_id --attr genome_name | p3-put-genome-group --col=2 weak.strep
+p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,susceptible --attr genome_id --attr genome_name | p3-put-genome-group --col=2 weak_strep
 
 </blockquote>
 
 <p>Now when you ask for the group back, you would get something like the following.
 
 <blockquote class="call">
-p3-get-genome-group weak.strep
+p3-get-genome-group weak_strep
 
 </blockquote>
 
 <blockquote class="resp">
-weak.strep.genome_id
+weak_strep.genome_id
 1313.6939
 1313.6941
 1313.6942
@@ -278,7 +279,7 @@ command to pull the susceptible genomes out of our workspace and pipe it into <b
 counts and compares protein families.
 
 <blockquote class="call">
-p3-get-genome-group weak.strep | p3-signature-families --gs1=resist.tbl >families.tbl
+p3-get-genome-group weak_strep | p3-signature-families --gs1=resist.tbl >families.tbl
 
 </blockquote>
 
@@ -342,22 +343,22 @@ location, and functional assignment (product). We don't have time to examine the
 in a feature group by piping them into <b>p3-put-feature-group</b> as follows.</p>
 
 <blockquote class="call">
-p3-get-family-features --gFile=resist.tbl --gCol=1 --ftype=global --col=family.family_id &lt;families.tbl | p3-put-feature-group --col=feature.patric_id resist.fids
+p3-get-family-features --gFile=resist.tbl --gCol=1 --ftype=global --col=family.family_id &lt;families.tbl | p3-put-feature-group --col=feature.patric_id resist_fids
 </blockquote>
 
 <p>In the <b>p3-put-feature-group</b> command, the <code>--col=feature.patric_id</code> parameter tells the command
-that the feature IDs are in the column with that heading, and <code>resist.fids</code> is the group name. When you
+that the feature IDs are in the column with that heading, and <code>resist_fids</code> is the group name. When you
 decide to examine the features in greater detail, you can pull back the feature IDs using <b>p3-get-feature-group</b>.</p>
 
 <blockquote class="call">
-p3-get-feature-group resist.fids
+p3-get-feature-group resist_fids
 
 </blockquote>
 
 <p>The output will look something like this.</p>
 
 <blockquote class="resp">
-resist.fids.patric_id
+resist_fids.patric_id
 fig|1105121.3.peg.460
 fig|1069626.3.peg.432
 fig|1313.6771.peg.1961
@@ -380,8 +381,8 @@ p3-list-genome-groups
 </blockquote>
 
 <blockquote class="resp">
-resist.strep
-weak.strep
+resist_strep
+weak_strep
 
 </blockquote>
 
@@ -391,7 +392,7 @@ p3-list-feature-groups
 </blockquote>
 
 <blockquote class="resp">
-resist.fids
+resist_fids
 
 </blockquote>
 
@@ -549,10 +550,10 @@ genome.count
 genome.count
 10634
 
-p3-drug-amr-data --equal antibiotic,methicillin --equal resistant_phenotype,resistant --equal genome_name,Staphylococcus --count
+p3-echo -t antibiotic methicillin | p3-get-drug-genomes --equal resistant_phenotype,resistant --equal genome_name,Staphylococcus --count
 
-genome_drug.count
-1064
+antibiotic   genome_drug.count
+methicillin  1064
 </pre>
 
 <li>What fraction of the genomes in genus X have an occurrence of role R?
@@ -589,7 +590,7 @@ fig|46170.310.peg.738   Putative cysteine desulfurase, associated with tRNA 4-th
 
 What drugs is 46170.310 resistant to?
 <pre>
-p3-echo -t genome.genome_id 46170.310 | p3-genome-amr-data --equal resistant_phenotype,resistant  --attr antibiotic
+p3-echo -t genome.genome_id 46170.310 | p3-get-genome-drugs --equal resistant_phenotype,resistant  --attr antibiotic
 
 genome.genome_id        genome_drug.antibiotic
 46170.310       ciprofloxacin
@@ -604,17 +605,17 @@ genome.genome_id        genome_drug.antibiotic
 
 What genomes are resistant to erythromycin?
 <pre>
-p3-drug-amr-data --equal antibiotic,erythromycin --equal resistant_phenotype,resistant --attr genome_id â€“-attr genome_name
+p3-echo -t antibiotic,erythromycin | p3-get-drug-genomes --equal resistant_phenotype,resistant --attr genome_id --attr genome_name
 
-genome_drug.genome_id   genome_drug.genome_name
-1280.4920     Staphylococcus aureus P210110-35
-1280.4930     Staphylococcus aureus P210184-226
-1280.4940     Staphylococcus aureus P210369-10
-1280.4960     Staphylococcus aureus P210464-28
-1280.4970     Staphylococcus aureus P310372-198
-1280.4990     Staphylococcus aureus P311202-207
-1313.6942     Streptococcus pneumoniae P110340-157
-1313.7001     Streptococcus pneumoniae P210774-233
+antibiotic    genome_drug.genome_id   genome_drug.genome_name
+erythromycin  1280.4920     Staphylococcus aureus P210110-35
+erythromycin  1280.4930     Staphylococcus aureus P210184-226
+erythromycin  1280.4940     Staphylococcus aureus P210369-10
+erythromycin  1280.4960     Staphylococcus aureus P210464-28
+erythromycin  1280.4970     Staphylococcus aureus P310372-198
+erythromycin  1280.4990     Staphylococcus aureus P311202-207
+erythromycin  1313.6942     Streptococcus pneumoniae P110340-157
+erythromycin  1313.7001     Streptococcus pneumoniae P210774-233
 
 </pre>
 
@@ -628,10 +629,26 @@ genome_drug.genome_id   genome_drug.genome_name
 
 
 <li>Are pegs P1 and P2 located within 5 kb of one another on the chromosome?
+<pre>
+     p3-echo -t f1.patric_id -t f2.patric_id "fig|1302.21.peg.966" "fig|1302.21.peg.1019" | p3-feature-gap
+
+     f1.patric_id    f2.patric_id    gap
+     fig|1302.21.peg.966     fig|1302.21.peg.1019    55253
+</pre>
 <li>Give me a fasta file of the contigs of genome G.
+<pre>
+    p3-genome-fasta 1302.21
+</pre>
 <li>Give me the protein sequences for the pegs in genome G.
+<pre>
+    p3-genome-fasta --protein 1302.21
+</pre>
 <li>Given a list of genomes L, produce a list of pairs of roles that are implemented
     by pegs (from genomes in L) that are close on the chromosome (along with a count of the number of occurrences of the pair).
+<pre>
+    p3-get-genome-features --attr sequence_id --attr location --attr product &lt;genomes.tbl | p3-function-to-role | p3-generate-close-roles
+
+</pre>
 <li> Given two sets of genomes Gs1 and Gs2, list the roles implemented in genomes in Gs1, but not by
 genomes implemeted in Gs2.
 <li>What is the average length of proteins in family F, along with the standard deviation.
