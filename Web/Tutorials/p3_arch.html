@@ -25,7 +25,46 @@ discussed in the next section and install a version now.
 
 <pre>--------------------EVOLVING NOTES -------------------</pre>
 
-<h2> What Is a PATRIC Workspace?</h2>
+<h2>The PATRIC Database</h2>
+<p>The main PATRIC database is organized as a series of large, heavily-indexed relational tables. From the
+perspective of the CLI, there are five main tables representing objects of interest, connected by four
+relationships.</p>
+<img src="../img/P3DB.JPG">
+<p>The five entities are as follows.</p>
+<dl>
+<dt>Genome</dt>
+<dd>Represents a genomic information for an organism or a meta-genomic sample.
+Use <b>p3-all-genomes</b> to list all of the genomes or a subset. Given a list of
+genomes,<ul>
+<li>Use <b>p3-get-genome-data</b> to retrieve data about individual genomes.</li>
+<li>Use <b>p3-get-genome-features</b> to access the features of the genomes.</li>
+<li>Use <b>p3-get-genome-contigs</b> to access the genomes' sequence data.</li>
+<li>Use <b>p3-get-genome-drugs</b> to access drug resistance data about the genomes.</li>
+</ul>
+</dd>
+<dt>Contig</dt>
+<dd>Represents one of the sequences that comprise a genome. A contig can be a chromosome,
+a plasmid, or a fragment thereof. Contig data can be accessed from genome IDs using
+<b>p3-get-genome-contigs</b>.</dd>
+<dt>Drug</dt>
+<dd>Represents an antimicrobial drug used for therapeutic treatment. This table is the
+anchor for all antimicrobial resistance data in PATRIC. Use <b>p3-all-drugs</b> to get
+a list of drugs. Use <b>p3-get-drug-genomes</b> to get resistance data relating to
+specific drugs from a list.</dd>
+<dt>Feature</dt>
+<dd>Represents a region of interest in a genome. This could be a CRISPR array, an
+RNA site, a protein encoding region, or a regulation site, among others. A feature can
+be split across multiple regions, or even multiple contigs, but never multiple genomes.
+Given a list of genome IDs, use <b>p3-get-genome-features</b> to access feature data.
+Given a list of family IDs, use <b>p3-get-family-features</b> to access the family's
+features.</dd>
+<dt>Family</dt>
+<dd>Represents a protein family, which is a group of related proteins, most frequently
+related by function and similarity. Given a list of family IDs, use <b>p3-get-family-features</b>
+to get data about the features in the family. Use <b>p3-get-feature-data</b> to get
+family information from the features themselves.</dd>
+</dl>
+<h2>What Is a PATRIC Workspace?</h2>
 
 <p>Users of PATRIC have access to a wealth of public data that support
 interpretation of prokaryotic genomes.  The PATRIC team actively integrates newly-sequenced
