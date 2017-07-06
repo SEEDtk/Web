@@ -389,52 +389,55 @@ resist.fids
 
 <h2>Using PATRIC Apps: Assembling Reads and Annotating Genomes</h2>
 
-There are a growing number of PATRIC apps, and you will be able to use many of them via the CLI.
+<p>There are a growing number of PATRIC apps, and you will be able to use many of them via the CLI.
 To illustrate how, we show you how to assemble collections of reads into contig, and how to annotate one
-or more genomes (hundreds at a time, if you wish).
+or more genomes (hundreds at a time, if you wish).</p>
 
 <h3>Moving Data To and From Your PATRIC Workspace</h3>
 
 <h3> Assembling Reads Into Contigs </h3>
 
-The assembly app allows you to take one or more files of DNA <i>reads</i>
+<p>The assembly app allows you to take one or more files of DNA <i>reads</i>
 and produce an output file containing DNA <i>contigs</i>.  The exact steps one would use
-to assemble reads are as follows:
+to assemble reads are as follows:</p>
 <ol>
 <li> Upload the one or more files containing reads to your workspace:
 <pre>
   example commands following exactly what is shown in the previous section
-</pre>
-
+</pre></li>
 <li> Now use....
+<pre>
+  more example commands
+</pre></li>
 </ol>
 
 <h3> Annotating Genomes</h3>
 
- This requires a dsicussion of
-
-The PATRIC app that can be used to annotate a genome takes as input
+<p>The PATRIC app that can be used to annotate a genome takes as input</p>
 <ol>
-<li>a file of contigs,
+<li>a file of contigs,</li>
 <li>the genetic code used by the organism (use "4" if you are
 annotating a <i>Mycoplasma</i> and "11", otherwise).  See
-<a LINK TO NCBI> for details.
-
-<li>The taxonomy ID you wish to assign to the genome (see <a ...> for details)
+<a>link to NCBI</a> for details.
+<li>The taxonomy ID you wish to assign to the genome (see <a>taxonomy thing</a> for details)</li>
 </ol>
 
-It produces as output a <i>Genome Type Object (GTO)</i>.  This object
+<p>It produces as output a <i>Genome Type Object (GTO)</i>.  This object
 contains all of the data created during the annotation.  You can download a GTO
 to your machine and then use p3-scripts to extract data from the GTO.
 Here is an example of how to download the output GTO and get a listing of
-the features identified in the annotations.
+the features identified in the annotations.</p>
 
+<pre>
+    downloading example
 </pre>
 
 <h1>Extracting Data from PATRIC</h1>
 
-You can do a great deal more with the CLI than just run PATRIC apps -- you can extract a large and
-growing body of data that you may well find useful in studying organisms and their genomes.
+<p>You can do a great deal more with the CLI than just run PATRIC apps -- you can extract a large and
+growing body of data that you may well find useful in studying organisms and their genomes. Above
+we listed the five entities that contain PATRIC data and the scripts for navigating them.
+
 
 <h2>The Entities</h2>
 
@@ -529,7 +532,7 @@ genome.count
 
 <pre>
   p3-all-genomes --equal genus,Streptococcus --attr genome_name --attr genome_length
-
+</pre>
 <li>What fraction of the genomes in genus G are resistant to drug D?
 <pre>
   p3-all-genomes --equal genome_name,Staphylococcus â€“count
@@ -574,9 +577,9 @@ fig|46170.310.peg.738   Putative cysteine desulfurase, associated with tRNA 4-th
 </pre>
 
 <li>What drugs is genome G resistant to?
-<pre>
-What drugs is 46170.310 resistant to?
 
+What drugs is 46170.310 resistant to?
+<pre>
 p3-echo -t genome.genome_id 46170.310 | p3-genome-amr-data --equal resistant_phenotype,resistant  --attr antibiotic
 
 genome.genome_id        genome_drug.antibiotic
@@ -586,12 +589,12 @@ genome.genome_id        genome_drug.antibiotic
 46170.310       methicillin
 46170.310       penicillin
 46170.310       trimethoprim/sulfamethoxazole
-/pre>
+</pre>
 
 <li>What genomes are resistant to drug D?
-<pre>
-What genomes are resistant to erythromycin?
 
+What genomes are resistant to erythromycin?
+<pre>
 p3-drug-amr-data --equal antibiotic,erythromycin --equal resistant_phenotype,resistant --attr genome_id â€“-attr genome_name
 
 genome_drug.genome_id   genome_drug.genome_name
