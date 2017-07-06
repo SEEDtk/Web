@@ -33,12 +33,13 @@ relationships.</p>
 <p>The five entities are as follows.</p>
 <dl>
 <dt>Genome</dt>
-<dd>Represents a genomic information for an organism or a meta-genomic sample.
+<dd>A genome is a set of contigs and annotations representing our best estimate of
+the DNA sequence for an organism.
 Use <b>p3-all-genomes</b> to list all of the genomes or a subset. Given a list of
 genomes,<ul>
-<li>Use <b>p3-get-genome-data</b> to retrieve data about individual genomes.</li>
+<li>Use <b>p3-get-genome-data</b> to retrieve data about the individual genomes.</li>
 <li>Use <b>p3-get-genome-features</b> to access the features of the genomes.</li>
-<li>Use <b>p3-get-genome-contigs</b> to access the genomes' sequence data.</li>
+<li>Use <b>p3-get-genome-contigs</b> to access the genomes' sequences.</li>
 <li>Use <b>p3-get-genome-drugs</b> to access drug resistance data about the genomes.</li>
 </ul>
 </dd>
@@ -53,17 +54,24 @@ a list of drugs. Use <b>p3-get-drug-genomes</b> to get resistance data relating 
 specific drugs from a list.</dd>
 <dt>Feature</dt>
 <dd>Represents a region of interest in a genome. This could be a CRISPR array, an
-RNA site, a protein encoding region, or a regulation site, among others. A feature can
+RNA site, a protein encoding region, or a regulatory site, among others. A feature can
 be split across multiple regions, or even multiple contigs, but never multiple genomes.
-Given a list of genome IDs, use <b>p3-get-genome-features</b> to access feature data.
-Given a list of family IDs, use <b>p3-get-family-features</b> to access the family's
-features.</dd>
+Given a list of genome IDs, use <b>p3-get-genome-features</b> to access the features in
+the genomes. Given a list of family IDs, use <b>p3-get-family-features</b> to access the features
+in the families. Given a list of feature IDs, use <b>p3-get-feature-data</b> to access data
+about those features.</dd>
 <dt>Family</dt>
-<dd>Represents a protein family, which is a group of related proteins, most frequently
-related by function and similarity. Given a list of family IDs, use <b>p3-get-family-features</b>
-to get data about the features in the family. Use <b>p3-get-feature-data</b> to get
-family information from the features themselves.</dd>
+<dd>Represents a protein family, which is a set of features believed to be isofunctional homologs.
+Given a list of family IDs, use <b>p3-get-family-features</b>
+to get data about the features in the family. Given a list of feature IDs, use <b>p3-get-feature-data</b> to get
+the families to which the features belong.</dd>
 </dl>
+<h2>Files and Pipelines</h2>
+
+<pre>
+---- FILL THIS IN ---
+</pre>
+
 <h2>What Is a PATRIC Workspace?</h2>
 
 <p>Users of PATRIC have access to a wealth of public data that support
@@ -73,7 +81,7 @@ into an integrated framework that can be queried using either the PATRIC UI or t
 
 <p>In the PATRIC UI, your workspace looks a lot like a standard file system, divided into folders full of
 data. In addition to files you upload, such as FASTA and FASTQ files, there will also be typed objects
-such as genomes, feature sets, and genome sets. The CLI allows you to move these typed objects between
+such as genomes, feature groups, and genome groups. The CLI allows you to move these typed objects between
 your workspace and your file system so you can manipulate them at will.</p>
 
 <h3>Logging In</h3>
@@ -130,7 +138,7 @@ You are logged in as rastuser25@patricbrc.org.
 </ul>
 
 <p>To create a genome group, you use <b>p3-put-genome-group</b>. Say, for example, you want to examine
-Streptococcus penumoniae genomes that are resistant to penicillin. The following query command will get the list
+Streptococcus penumoniae genomes that are resistant to penicillin. The following query command will return this list
 of genomes (we will discuss all query commands in more details later).</p>
 
 <blockquote class="call">
