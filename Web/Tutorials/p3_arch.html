@@ -95,13 +95,17 @@ Streptococcus penumoniae genomes that are resistant to penicillin. The following
 of genomes (we will discuss all query commands in more details later).</p>
 
 <blockquote class="call">
-p3-drug-amr-data --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,resistant --eq antibiotic,penicillin --attr genome_id --attr genome_name &gt;resist.tbl
+p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,resistant --attr genome_id --attr genome_name &gt;resist.tbl
 
 </blockquote>
 
 <p>This particular
 command asks for data from the anti-microbial resistance table. Each record in this table posits a relationship
-between a genome and an antibiotic drug. The parameters do the following.</p>
+between a genome and an antibiotic drug. We are accessing the table from the direction of taking a drug and finding
+resistant genomes. To do this, we need a file with a drug name in it. The <b>p3-echo</b> command creates this file:
+the <code>-t antibiotic</code> parameter tells it we want a one-column file with a column header of <code>antibiotic</code>.
+We put the single record <code>penicillin</code> in that column.<p>
+<p>The antibiotic file is then piped into <b>p3-get-drug-genomes</b>. Its parameters do the following.</p>
 <dl>
 <dt><code>--eq "genome_name,Streptococcus pneumoniae"</code></dt>
 <dd>Only include records for Streptococcus pneumoniae genomes. Because this is a string field, it does a substring match.
@@ -109,8 +113,6 @@ A genome name including follow-on strain information (e.g. <code>Streptococcus p
 will still match.</dd>
 <dt><code>--eq resistant_phenotype,resistant</code></dt>
 <dd>Only include records that state the genome is resistant.</dd>
-<dt><code>--eq antibiotic,penicillin</code></dt>
-<dd>Only include records that concern the antibiotic penicillin.</dd>
 <dt><code>--attr genome_id</code></dt>
 <dd>Output the genome ID.</dd>
 <dt><code>--attr genome_name</code></dt>
@@ -121,29 +123,29 @@ will still match.</dd>
 the following.</p>
 
 <blockquote class="resp">
-genome_drug.genome_id   genome_drug.genome_name
-1313.7006   Streptococcus pneumoniae P310010-154
-1313.7016   Streptococcus pneumoniae P310937-212
-1313.7018   Streptococcus pneumoniae P311313-217
-760749.3    Streptococcus pneumoniae GA05248
-760763.3    Streptococcus pneumoniae GA11304
-760765.3    Streptococcus pneumoniae GA11663
-760766.3    Streptococcus pneumoniae GA11856
-760769.3    Streptococcus pneumoniae GA13338
-760771.3    Streptococcus pneumoniae GA13455
-760776.3    Streptococcus pneumoniae GA14373
-760777.3    Streptococcus pneumoniae GA14688
+antibiotic   genome_drug.genome_id   genome_drug.genome_name
+penicillin   1313.7006   Streptococcus pneumoniae P310010-154
+penicillin   1313.7016   Streptococcus pneumoniae P310937-212
+penicillin   1313.7018   Streptococcus pneumoniae P311313-217
+penicillin   760749.3    Streptococcus pneumoniae GA05248
+penicillin   760763.3    Streptococcus pneumoniae GA11304
+penicillin   760765.3    Streptococcus pneumoniae GA11663
+penicillin   760766.3    Streptococcus pneumoniae GA11856
+penicillin   760769.3    Streptococcus pneumoniae GA13338
+penicillin   760771.3    Streptococcus pneumoniae GA13455
+penicillin   760776.3    Streptococcus pneumoniae GA14373
+penicillin   760777.3    Streptococcus pneumoniae GA14688
 
 </blockquote>
 
 <p>Now we want to create a group for these genomes called <b>resist.strep</b>. We use the following command.</p>
 
 <blockquote class="call">
-p3-put-genome-group --col=1 resist.strep &lt;resist.tbl
+p3-put-genome-group --col=2 resist.strep &lt;resist.tbl
 
 </blockquote>
 
-<p>The <code>--col=1</code> tells the command that the genome IDs are in the first column. You can read the group back at any time
+<p>The <code>--col=2</code> tells the command that the genome IDs are in the second column. You can read the group back at any time
 using <b>p3-get-genome-group</b>.</p>
 
 <blockquote class="call">
@@ -195,7 +197,28 @@ resist.strep.genome_id  genome.genome_name
 <b>p3-put-genome-group</b> to store them in our workspace.</p>
 
 <blockquote class="call">
-p3-drug-amr-data --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,susceptible --eq antibiotic,penicillin --attr genome_id --attr genome_name | p3-put-genome-group weak.strep
+p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,susceptible --attr genome_id --attr genome_name | p3-put-genome-group --col=2 weak.strep
+
+</blockquote>
+
+<p>Now when you ask for the group back, you would get something like the following.
+
+<blockquote class="call">
+p3-get-genome-group weak.strep
+
+</blockquote>
+
+<blockquote class="resp">
+weak.strep.genome_id
+1313.6939
+1313.6941
+1313.6942
+1313.6944
+1313.6947
+1313.7001
+1313.7002
+1313.7007
+1313.7009
 
 </blockquote>
 
