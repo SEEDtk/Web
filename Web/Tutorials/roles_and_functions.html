@@ -5,7 +5,7 @@ terms <i>subsystem</i>, <i>role</i>, and <function of a gene</i>.
 This is an extremely simplified explanation.  It is given solely
 to convey the basic concepts behind our efforts to annotate 
 microbial genomes.
-
+<p>
 We think of a genome as containing the designs of 
 a set of molecular machines (e.g., pathways, transport
 casettes and regulatory mechanisms).  The protein-encoding genes (PEGs)
@@ -34,3 +34,22 @@ roles needed to implement specific molecular machines.  For each genome
 within PATRIC we have tried to construct the set of pegs that implement
 the roles of each subsystem believed to be represented in the genome, and
 we refer to the set of pegs instantiating a subsystem as a <i>populated subsystem</i>.
+<p>
+There are several common queries relating to subsystems:
+<ol>
+<li> What are the names of all of the subsystems in the current release of PATRIC?
+<br><br>
+This an easy one:
+
+      p3-all_subsystems
+
+<li> Is an instance of subsystem <b>S</b> present in genome <b>G</b>?
+
+
+
+<li> Assuming that subsystem <b>S</b> is present in <b>G</b>, which protein-encoding 
+genes of <b>G</b> implement roles in <b>S</b>?
+
+
+</ol>
+
