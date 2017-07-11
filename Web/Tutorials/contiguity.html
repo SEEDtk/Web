@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>The SEEDtk Database</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="Dump">
+<h1>An Exercise Relating to Conserved Contiguity of Protein Encoding Genes (PEGS)</h1>
+
+<p>Pegs are genes of type <i>CDS</i>.  That is, they encode proteins.
+Pegs that are functionally related (e.g., enzymes from a single pathway or subunits of a
+transport cassette) tend to cluster on the chromosome.  Thus, if a genome includes pegs
+from a pathway, they often occur close to one another on the chromosome.
+When one simply looks at the genes as they occur on a chromosome, one notices these
+clusters of functionally-related pegs, and often they suggest clues to the functions of
+hypothetical proteins.</p>
+<p>To illustrate the use of p3-scripts, we will compose pipelines that allow you to incrementally
+build up tools to locate clusters of functionally-related genes.</p>
+
+<h2>The Input: a List of Pegs from a Set of Genomes</h2>
+
+<p>As input, we will start with a large set of pegs from which we will extract possible clusters.
+There are many ways one can Amass a set of pegs, but let's just select a set of genomes and take
+the set of features that occur in the genomes.  Thus, suppose you have a file containing a 2-column
+table:
+<blockquote class="resp">
+genome_id	genome_name
+1310696.14	Acinetobacter baumannii 1592897
+66976.17	Legionella pneumophila serogroup 1 strain Lp01_666
+91890.5	Legionella pneumophila subsp. pascullei strain D-7158
+316273.25	Xanthomonas campestris pv. vesicatoria str. 85-10
+186497.12	Pyrococcus furiosus DSM 3638
+1353158.3	Methanococcoides vulcani strain SLH 33
+135461.13	Bacillus subtilis subsp. subtilis strain BSD-2
+1173954.3	Vibrio parahaemolyticus O4:K12 str. K1203
+1176728.3	Escherichia coli K71
+
+</blockquote>
+
+<p>in the file <i>moderately.diverse</i>. You can clip off the second column to give you a genome group using</p>
+<blockquote class="call">
+p3-extract 1  &lt;moderately.diverse &gt;genome.group
+
+</blockquote>
+
+<p>Then</p>
+
+<blockquote class="call">
+p3-get-genome-features -e feature_type,CDS --attr sequence_id --attr location --attr product &lt;genome.group | p3-sort 1 2 &gt;pegs.tbl
+
+</blockquote>
+
+<p>takes the 1-column genome group and creates a 4-column output table of peg locations (columns 1, 2, and 3) and their
+assigned functions (column 4).</p>
+
+<p>A location in PATRIC consists of a contig sequence and a position in that contig. The contig sequence is identified by a genome ID
+(column 1 in our file <i>pegs</i>) and a sequence ID within that genome (column 2).  Both are needed because sequence IDs are not guaranteed
+to be unique across genomes. The genomes come from multiple databases using different identification schemes and the incoming sequence IDs
+are generally preserved.</p>
+
+<p>The position on the contig is represented by a leftmost position and rightmost position separated by two dots. If the feature is
+on the negative strand, the entire thing is enclosed in parentheses and preceded by the modifier <code>complement</code>. So, for example,
+<code>631..954</code> is on the positive strand from position 631 (1-based) through position 954. <code>complement(631..954)</code>
+would be on the negative strand starting at position 954 and ending at position 631.</p>
+
+<p>So now we have a four-column file <i>pegs.tbl</i> that contains location and product information. We want to work with
+the roles of the pegs rather than their functional assignments. Most of the time, a functional assignment is a single role;
+however, sometimes multiple roles are performed by one peg. For example, a product value of</p>
+<blockquote class="resp">
+Glutamate 5-kinase (EC 2.7.2.11) / RNA-binding C-terminal domain PUA
+
+</blockquote>
+<p>indicates that the protein contains two domains (at least), one of which performs the role <i>Glutamate 5-kinase</i> and
+the other which performs the role <i>RNA-binding C-terminal domain PUA</i>. We use the script <b>p3-function-to-role</b>
+to replace functions with roles.</p>
+<blockquote class="call">
+p3-function-to-role &lt;pegs.tbl &gt;peg.roles.tbl
+
+</blockquote>
+<p>So, for example, if <i>pegs.tbl</i> contained the lines</p>
+<blockquote class="resp">
+66976.17   66976.17.con.0018   583477..584547  Glutamate 5-kinase (EC 2.7.2.11) / RNA-binding C-terminal domain PUA
+66976.17   66976.17.con.0018   complement(600913..601110)  Carbon storage regulator CsrA
+
+</blockquote>
+<p>then <i>peg.roles.tbl</i> would contain</p>
+<blockquote class="resp">
+66976.17   66976.17.con.0018   583477..584547  Glutamate 5-kinase (EC 2.7.2.11)
+66976.17   66976.17.con.0018   583477..584547  RNA-binding C-terminal domain PUA
+66976.17   66976.17.con.0018   complement(600913..601110)  Carbon storage regulator CsrA
+
+</blockquote>
+<p>The role column replaces the product column, and a peg that has multiple roles occurs multiple times in the output.
+As a bonus, <b>p3-function-to-roles</b> restricts the output to roles that are known to be well-annotated. In particular,
+pegs with a function of <code>hypothetical protein</code> are eliminated.</p>
+<p>The clustering script
+<b>p3-generate-close-roles</b> looks for roles in the functional assignments that tend to occur together on the chromosome
+and outputs the pairs sorted by the number of occurrences. By default, all pairs that occur together 4 or more times are
+output. If you are working with a larger, less diverse genome set, you may want to increase this number using the command-line
+option <code>--minOcc</code>. For this example, however, the default value is sufficient.</p>
+
+<p><b>p3-generate-close-roles</b> requires that the input be sorted by genome ID and sequence ID (the first two columns).
+The <b>p3-sort</b> command does this for us.</p>
+
+<blockquote class="call">
+p3-sort 1 2 &lt;peg.roles.tbl | p3-generate-close-roles &gt;close.roles.tbl
+
+</blockquote>
+
+<p>The first few lines of the output look like this.</p>
+
+<blockquote class="resp">
+role1   role2   count
+Lead, cadmium, zinc and mercury transporting ATPase (EC 3.6.3.5) (EC 3.6.3.3)   Copper-translocating P-type ATPase (EC 3.6.3.4) 25
+Efflux ABC transporter, permease protein    Efflux ABC transporter, ATP-binding protein 13
+Cytochrome d ubiquinol oxidase subunit I (EC 1.10.3.-)  Cytochrome d ubiquinol oxidase subunit II (EC 1.10.3.-) 13
+Gamma-glutamyltranspeptidase (EC 2.3.2.2)   Glutathione hydrolase (EC 3.4.19.13)    13
+Flagellar motor rotation protein MotA   Flagellar motor rotation protein MotB   12
+RND efflux system, inner membrane transporter   RND efflux system, membrane fusion protein  12
+
+</blockquote>
+
+<p>Our next command performs a transitive closure on the pairs to group them into clusters. Each cluster is represented
+as a list of roles separated by double colons (<code>::</code>). To make the clusters easier to read, we use the command
+<b>p3-set-to-relation</b> to number the clusters and list the cluster members by number.</p>
+
+<blockquote class="call">
+p3-generate-clusters role1 role2 &lt;close.roles.tbl | p3-set-to-relation &gt;clusters.tbl
+
+</blockquote>
+<p><b>p3-generate-clusters</b> is a general-purpose script, and the parameters are the names of the columns containing the
+pair elements. The output looks like the following</p>
+
+<blockquote class="resp">
+id  element
+1   DNA-directed RNA polymerase alpha subunit (EC 2.7.7.6)
+1   DNA-directed RNA polymerase beta subunit (EC 2.7.7.6)
+1   DNA-directed RNA polymerase beta' subunit (EC 2.7.7.6)
+1   LSU ribosomal protein L10p (P0)
+1   LSU ribosomal protein L11p (L12e)
+1   LSU ribosomal protein L14p (L23e)
+1   LSU ribosomal protein L15p (L27Ae)
+1   LSU ribosomal protein L16p (L10e)
+1   LSU ribosomal protein L17p
+1   LSU ribosomal protein L18p (L5e)
+1   LSU ribosomal protein L1p (L10Ae)
+1   LSU ribosomal protein L22p (L17e)
+
+
+</blockquote>
+
+<p>The clusters are sorted from largest to smallest. Above you see the first roles in the largest cluster, which collects
+roles relating to ribosomes and RNA. The end of the file contains clusters consisting of single pairs of roles and five
+roles that cluster with themselves (in other words, the same role commonly occurs twice in a row). This is shown below.</p>
+
+<blockquote class="resp">
+262 Sulfite reductase [NADPH] flavoprotein alpha-component (EC 1.8.1.2)
+262 Sulfite reductase [NADPH] hemoprotein beta-component (EC 1.8.1.2)
+263 Exonuclease SbcD
+263 Exonuclease sbcC (EC 3.1.11.-)
+264 TonB-dependent receptor
+265 Xaa-Pro aminopeptidase (EC 3.4.11.9)
+266 RTX toxins and related Ca2+-binding proteins
+267 ATPase involved in DNA repair
+268 Efflux ABC transporter, permease/ATP-binding protein Atu2242
+
+</blockquote>
+
+<h2>An Exercise</h2>
+
+<p>We have over a hundred thousand genomes compiled in the PATRIC collection,
+and hundreds of thousands more are expected over the next few years. We suggest
+a simple exercise using this large database of genomes that we think would make an excellent class project.
+</p>
+<p>
+First, we suggest iteratively computing random sets of diverse genomes.
+Then for each set, use the pipeline described above to compute clusters of potentially
+related roles.  After amassing several thousand sets of clusters, these distinct sets
+should be merged.  This leads to a collection of role sets, and these should be
+compared with the subsystem collection.</p>
+<p>
+Then, we suggest looking for hypothetical proteins (i.e., pegs assigned an imprecise function)
+that appear to be embedded in an instance of one of the role clusters.  These form good
+beginning points if you are trying to assign new roles to  uncharacterized pegs.</p>
+
+<p>&nbsp;</p>
+</div>
+</body>
+</html>
