@@ -72,6 +72,230 @@ the families to which the features belong.</dd>
 ---- FILL THIS IN ---
 </pre>
 
+<h2>Database Script Examples</h2>
+<p>In this section we briefly discuss the main database scripts.</p>
+<dl>
+<dt>p3-all-genomes</dt>
+<dd>This script lists all genomes with various characteristics. For example,
+<blockquote class="call">
+p3-all-genomes --eq genome_name,Streptomyces
+
+</blockquote>
+would list all genomes in the genus Streptomyces. (That is, all genomes whose names start with that word.) The <code>--eq</code>
+parameter introduces an equality constraint. In PATRIC, string searches perform a substring match, which allows us to easily do
+queries of this type. The various database commands all support the <code>--eq</code> option. In addition, you can specify
+output fields using the <code>--attr</code> option. Thus,
+<blockquote class="call">
+p3-all-genomes --eq genome_name,Streptomyces --attr genome_id --attr genome_name
+
+</blockquote>
+would output both the ID and name of each genome found, as shown below.
+<blockquote class="resp">
+genome.genome_id    genome.genome_name
+284037.4    Streptomyces sporocinereus strain OsiSh-2
+67257.17    Streptomyces albus subsp. albus strain NRRL F-4371
+68042.5 Streptomyces hygroscopicus subsp. hygroscopicus strain NBRC 16556
+68042.6 Streptomyces hygroscopicus subsp. hygroscopicus strain NBRC 13472
+1395572.3   Streptomyces albulus PD-1
+68570.5 Streptomyces albulus strain NK660
+1160718.3   Streptomyces auratus AGR0001
+749414.3    Streptomyces bingchenggensis BCW-1
+66876.3 Streptomyces chattanoogensis strain NRRL ISP-5002
+249567.6    Streptomyces decoyicus strain NRRL 2666
+
+</blockquote>
+To get a complete list of the available fields, use the <code>--fields</code> option. Again, this is available for all the
+database scripts described in this section.
+<blockquote class="call">
+p3-all-genomes --fields
+
+</blockquote>
+</dd>
+<dt>p3-get-genome-data</dt>
+<dd>Given an input file of genome IDs, this script allows you to retrieve additional data and fields. For example, the
+following pipeline gets all Streptomyces genomes and then appends the genome name, number of contigs, and DNA length.
+<blockquote class="call">
+p3-all-genomes --eq genome_name,Streptomyces | p3-get-genome-data --attr genome_name --attr contigs --attr genome_length
+
+</blockquote>
+<blockquote class="resp">
+genome.genome_id    genome.genome_name  genome.contigs  genome.genome_length
+284037.4    Streptomyces sporocinereus strain OsiSh-2   125 10242506
+67257.17    Streptomyces albus subsp. albus strain NRRL F-4371  307 9246299
+68042.5 Streptomyces hygroscopicus subsp. hygroscopicus strain NBRC 16556   133 10141569
+68042.6 Streptomyces hygroscopicus subsp. hygroscopicus strain NBRC 13472   680 9464604
+1395572.3   Streptomyces albulus PD-1   425 9340057
+68570.5 Streptomyces albulus strain NK660       9372401
+1160718.3   Streptomyces auratus AGR0001    213 7825489
+749414.3    Streptomyces bingchenggensis BCW-1  0   11936683
+66876.3 Streptomyces chattanoogensis strain NRRL ISP-5002   217 9129105
+
+</blockquote>
+In actual fact, the use of <b>p3-get-genome-data</b> in the above pipeline is redundant, since <b>p3-all-genomes</b>
+supports the same command-line options. In practice, you will use <b>p3-get-genome-data</b> to process genome ID
+files created on a separate occasion or via other scripts that don't have the full power for <b>p3-all-genomes</b>.
+</dd>
+<dt>p3-get-genome-features</dt>
+<dd>Given a file of genome IDs, return data about the genome's features. So, for example, the following pipeline would
+return the ID and function (product) of each feature in the Mycoplasma genomes.
+<blockquote class="call">
+p3-all-genomes --eq genome_name,Mycoplasma | p3-get-genome-features --attr patric_id --attr product
+</blockquote>
+<blockquote class="resp">
+genome.genome_id    feature.patric_id   feature.product
+1262907.4   fig|1262907.4.repeat.1  repeat region
+1262907.4   fig|1262907.4.rna.1 SSU rRNA ## 16S rRNA, small subunit ribosomal RNA
+1262907.4   fig|1262907.4.repeat.2  repeat region
+1262907.4   fig|1262907.4.peg.1 Cysteinyl-tRNA synthetase related protein
+1262907.4   fig|1262907.4.peg.2 hypothetical protein
+1262907.4   fig|1262907.4.peg.3 hypothetical protein
+1262907.4   fig|1262907.4.peg.4 ABC transporter, ATP-binding protein
+1262907.4   fig|1262907.4.peg.5 Glycerol-3-phosphate dehydrogenase [NAD(P)+] (EC 1.1.1.94)
+1262907.4   fig|1262907.4.peg.6 BH0638 unknown conserved protein
+1262907.4   fig|1262907.4.peg.7 hypothetical protein
+
+</blockquote>
+You can use the <code>--fields</code> option to list all the fields available in a feature record. In addition, you have
+access to the usual filtering parameters-- <code>--eq</code> as well as <code>--lt</code>, <code>--gt</code>, <code>--le</code>,
+<code>--ge</code>, and <code>--ne</code>. So, for example, the following command would restrict the features to CDS features
+of at least 500 base pairs.
+<blockquote class="call">
+p3-all-genomes --eq genome_name,Mycoplasma | p3-get-genome-features --eq feature_type,CDS --ge na_length,500 --attr patric_id --attr product
+
+</blockquote>
+</dd>
+<dt>p3-get-genome-contigs</dt>
+<dd>Given a file of genome IDs, returns the contigs. The following pipeline returns all the contigs in genome 28903.66.
+<blockquote class="call">
+p3-echo -t genome_id 28903.66 | p3-get-genome-contigs --attr sequence_id --attr sequence
+
+</blockquote>
+The output will have three columns, including the genome ID, the ID of the contig, and the actual DNA sequence (which can be quite long).
+Again, use the <code>--fields</code> option to see which fields are available for output and filtering in the contig records.
+</dd>
+<dt>p3-get-genome-drugs</dt>
+<dd>Given a file of genome IDs, output the drug resistance information we have on those genomes. For many genomes, no such data is yet
+available, so it is not hard to get an empty file output from this command. The following pipeline outputs the default resistance
+data information for all the Acinetobacter genomes.
+<blockquote class="call">
+p3-all-genomes --eq genome_name,Acinetobacter | p3-get-genome-drugs
+</blockquote>
+<blockquote class="resp">
+genome.genome_id    genome_drug.genome_id   genome_drug.antibiotic  genome_drug.resistant_phenotype
+1409922.5   1409922.5   amikacin    Resistant
+1409922.5   1409922.5   gentamicin  Resistant
+1409922.5   1409922.5   tobramycin  Resistant
+1409922.5   1409922.5   imipenem    Resistant
+1409922.5   1409922.5   ceftazidime Resistant
+1409922.5   1409922.5   ceftriaxone Resistant
+1409922.5   1409922.5   aztreonam   Resistant
+1409922.5   1409922.5   ciprofloxacin   Resistant
+1409922.5   1409922.5   levofloxacin    Resistant
+1409922.5   1409922.5   tetracycline    Resistant
+1409922.5   1409922.5   cefepime    Intermediate
+1409923.3   1409923.3   amikacin    Resistant
+1409923.3   1409923.3   gentamicin  Resistant
+
+</blockquote>
+<dt>p3-all-drugs</dt>
+<dd>This script lists anti-microbial drugs from the database. Use the <code>--fields</code> option to see a list of all the
+fields you can select. The default is to simply list the antibiotic name, as shown below.
+<blockquote class="call">
+p3-all-drugs
+
+</blockquote>
+<blockquote class="resp">
+drug.antibiotic_name
+amikacin
+amoxicillin
+amoxicillin/clavulanic acid
+ampicillin
+ampicillin/sulbactam
+azithromycin
+aztreonam
+bacitracin
+capreomycin
+cefaclor
+cefazolin
+
+</blockquote>
+</dd>
+<dt>p3-get-drug-genomes</dt>
+<dd>Given a file of antibiotic names, display all the resistance data for those antibiotics. The following pipeline lists all the
+genomes resistant to at least one drug.
+<blockquote class="call">
+p3-all-drugs | p3-get-drug-genomes --attr genome_id --attr genome_name --eq resistance_phenotype,resistant
+
+</blockquote>
+<blockquote class="resp">
+drug.antibiotic_name    genome_drug.genome_id   genome_drug.genome_name
+amikacin    1304920.3   Klebsiella pneumoniae 361_1301
+amikacin    1427177.3   Mycobacterium tuberculosis XTB13-081
+amikacin    1427178.3   Mycobacterium tuberculosis XTB13-082
+amikacin    1427180.3   Mycobacterium tuberculosis XTB13-084
+amikacin    1427185.3   Mycobacterium tuberculosis XTB13-091
+amikacin    1427191.3   Mycobacterium tuberculosis XTB13-097
+amikacin    1427192.3   Mycobacterium tuberculosis XTB13-098
+amikacin    1427193.3   Mycobacterium tuberculosis XTB13-100
+amikacin    1427199.3   Mycobacterium tuberculosis XTB13-107
+amikacin    1427200.3   Mycobacterium tuberculosis XTB13-108
+amikacin    1427202.3   Mycobacterium tuberculosis XTB13-110
+amikacin    1427204.3   Mycobacterium tuberculosis XTB13-112
+amikacin    1427207.3   Mycobacterium tuberculosis XTB13-115
+
+</blockquote>
+</dd>
+<dt>p3-get-family-features</dt>
+<dd>Given a list of protein family IDs, get all the features in the families. PATRIC supports three types of protein families--
+<code>local</code>, <code>global</code>, and <code>figfam</code>. The <code>--ftype</code> parameter specifies the type of family
+desired. So, for example, the following pipeline finds the global family for the feature <i>fig|1105121.3.peg.460</i> and
+then lists the ID and product of each family member.
+<blockquote class="call">
+p3-echo -t feature_id "fig|1105121.3.peg.460" | p3-get-feature-data --attr pgfam_id | p3-get-family-features --ftype=global --attr patric_id --attr product
+
+</blockquote>
+Note that the features found are listed in the column <b>feature.patric_id</b>, while the original feature is maintained in the first
+column <b>feature_id</b>.
+<blockquote class="resp">
+feature_id  feature.pgfam_id    feature.patric_id   feature.product
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.8637.peg.2087  hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.8636.peg.1563  hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.8645.peg.110   hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.12423.peg.2037 hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1330044.3.peg.533   hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.5699.peg.1778  hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.5750.peg.307   hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.5754.peg.739   hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.5758.peg.1823  hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.5781.peg.1819  hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.5778.peg.686   hypothetical protein
+fig|1105121.3.peg.460   PGF_00112374    fig|1313.5729.peg.1554  hypothetical protein
+
+</blockquote>
+</dd>
+<dt>p3-get-feature-data</dt>
+<dd>Given a file of feature IDs, return data from those features. Again, use the <code>--fields</code> option to list
+the fields you can use for filtering and display. The following pipeline lists the function (product) and protein sequence of each peg of less
+than 300 base pairs in the genome 1105121.3.
+<blockquote class="call">
+p3-echo -t genome_id 1105121.3 | p3-get-genome-features --lt na_length,300 --eq feature_type,CDS --attr patric_id | p3-get-feature-data --attr product --attr aa_sequence
+
+</blockquote>
+<blockquote class="resp">
+genome_id   feature.patric_id   feature.product feature.aa_sequence
+1105121.3   fig|1105121.3.peg.1487  BOX elements    MKIKEQTRKLAASCSKHCFEVVDKTDEVSYIYNPRRR
+1105121.3   fig|1105121.3.peg.1508  hypothetical protein    MISTTYRNHRKRFGLRMNLIAEKVSKTLDKTFDKDVREIPTSQFYQKFVDEMGRTYSGNLILQELITVNGAYKATYIGELSSN
+1105121.3   fig|1105121.3.peg.1557  hypothetical protein    MKREVISNGNDGPSQEILIFTKQIRHWILSDQVISGKRKLFFREDTPKEILDLYENIKSKLDFAYQEVYSNNGLKKYEK
+1105121.3   fig|1105121.3.peg.1598  BOX elements    MKIKEQTRKLAAGCSKHCFEVVDRTDEVSNLHTARRR
+1105121.3   fig|1105121.3.peg.1776  hypothetical protein    MVASASASSTSTQAQEQVDKSELRALSQELDQRLKALATVSDPKIDATKAVLLDAQKAPEDSALTE
+1105121.3   fig|1105121.3.peg.10    hypothetical protein    MENLLDVIEQFLGLSDEKLEELADKNQLLRLQEEKERKNA
+1105121.3   fig|1105121.3.peg.94    BOX elements    MKIKEQTRKLAAGCSKHCFEVVDKTDEVSYIYLRQGEADAV
+1105121.3   fig|1105121.3.peg.220   Ribonucleotide reductase of class III (anaerobic), large subunit (EC 1.17.4.2)  MVKRTCGYLGNPQARPMVNGRHKEIAARVKHMNGSTIKIAGHQVTN
+1105121.3   fig|1105121.3.peg.228   LSU ribosomal protein L23p (L23Ae)  MNLYDVIKKPVITESSMAQLEAGKYVFEVDTRAHKLLIKQAVEAAFEGVKVANVNTINVKPKAKRVGRYTGFTNKTKKAIITLTADSKAIELFAAEAE
+1105121.3   fig|1105121.3.peg.230   SSU ribosomal protein S19p (S15e)   MGRSLKKGPFVDEHLMKKVEAQANDEKKKVIKTWSRRSTIFPSFIGYTIAVYDGRKHVPVYIQEDMVGHKLGEFAPTRTYKGHAADDKKTRRK
+
+</blockquote>
+</dl>
 <h2>What Is a PATRIC Workspace?</h2>
 
 <p>Users of PATRIC have access to a wealth of public data that support
