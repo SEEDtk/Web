@@ -1,0 +1,45 @@
+<h2>Using PATRIC Apps: Assembling Reads and Annotating Genomes</h2>
+
+<p>There are a growing number of PATRIC apps, and you will be able to use many of them via the CLI.
+To illustrate how, we show you how to assemble collections of reads into contig, and how to annotate one
+or more genomes (hundreds at a time, if you wish).</p>
+
+<h3>Moving Data To and From Your PATRIC Workspace</h3>
+
+<h3> Assembling Reads Into Contigs </h3>
+
+<p>The assembly app allows you to take one or more files of DNA <i>reads</i>
+and produce an output file containing DNA <i>contigs</i>.  The exact steps one would use
+to assemble reads are as follows:</p>
+<ol>
+<li> Upload the one or more files containing reads to your workspace:
+<pre>
+  example commands following exactly what is shown in the previous section
+</pre></li>
+<li> Now use....
+<pre>
+  more example commands
+</pre></li>
+</ol>
+
+<h3> Annotating Genomes</h3>
+
+<p>The PATRIC app that can be used to annotate a genome takes as input</p>
+<ol>
+<li>a file of contigs,</li>
+<li>the genetic code used by the organism (use "4" if you are
+annotating a <i>Mycoplasma</i> and "11", otherwise).  See
+<a>link to NCBI</a> for details.
+<li>The taxonomy ID you wish to assign to the genome (see <a>taxonomy thing</a> for details)</li>
+</ol>
+
+<p>It produces as output a <i>Genome Type Object (GTO)</i>.  This object
+contains all of the data created during the annotation.  You can download a GTO
+to your machine and then use p3-scripts to extract data from the GTO.
+Here is an example of how to download the output GTO and get a listing of
+the features identified in the annotations.</p>
+
+<pre>
+    downloading example
+</pre>
+

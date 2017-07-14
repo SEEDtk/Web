@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>The SEEDtk Database</title>
+<title>The PATRIC Command-Line Interface</title>
 <link href="../css/Basic.css" rel="stylesheet" type="text/css">
 </head>
 <body>
@@ -19,11 +19,7 @@ interfaces are more suitable.  For users that wish command-line access to PATRIC
 the tools described in this document.  We call these tools the <i>P3-scripts</i>.  They
 are intended to run on your machine, going over the network to access the services provided by PATRIC.
 If you have not already installed a version on your machine, you should probably follow the instructions
-discussed in the next section and install a version now.
-
-<h3>Installing the P3-scripts</h3>
-
-<pre>--------------------EVOLVING NOTES -------------------</pre>
+discussed at <a href="p3_install.html">p3_install.html</a> and install a version now.
 
 <h2>The PATRIC Database</h2>
 <p>The main PATRIC database is organized as a series of large, heavily-indexed relational tables. From the
@@ -675,138 +671,15 @@ resist_fids
 
 </blockquote>
 
-<h2>Using PATRIC Apps: Assembling Reads and Annotating Genomes</h2>
-
-<p>There are a growing number of PATRIC apps, and you will be able to use many of them via the CLI.
-To illustrate how, we show you how to assemble collections of reads into contig, and how to annotate one
-or more genomes (hundreds at a time, if you wish).</p>
-
-<h3>Moving Data To and From Your PATRIC Workspace</h3>
-
-<h3> Assembling Reads Into Contigs </h3>
-
-<p>The assembly app allows you to take one or more files of DNA <i>reads</i>
-and produce an output file containing DNA <i>contigs</i>.  The exact steps one would use
-to assemble reads are as follows:</p>
-<ol>
-<li> Upload the one or more files containing reads to your workspace:
-<pre>
-  example commands following exactly what is shown in the previous section
-</pre></li>
-<li> Now use....
-<pre>
-  more example commands
-</pre></li>
-</ol>
-
-<h3> Annotating Genomes</h3>
-
-<p>The PATRIC app that can be used to annotate a genome takes as input</p>
-<ol>
-<li>a file of contigs,</li>
-<li>the genetic code used by the organism (use "4" if you are
-annotating a <i>Mycoplasma</i> and "11", otherwise).  See
-<a>link to NCBI</a> for details.
-<li>The taxonomy ID you wish to assign to the genome (see <a>taxonomy thing</a> for details)</li>
-</ol>
-
-<p>It produces as output a <i>Genome Type Object (GTO)</i>.  This object
-contains all of the data created during the annotation.  You can download a GTO
-to your machine and then use p3-scripts to extract data from the GTO.
-Here is an example of how to download the output GTO and get a listing of
-the features identified in the annotations.</p>
+<h2>Extracting, Copying, and Mining Genome Typed Objects (GTOs) </h2>
 
 <pre>
-    downloading example
+------------- TO BE DONE -------------
 </pre>
 
-<h1>Extracting Data from PATRIC</h1>
-
-<p>You can do a great deal more with the CLI than just run PATRIC apps -- you can extract a large and
-growing body of data that you may well find useful in studying organisms and their genomes. Above
-we listed the five entities that contain PATRIC data and the scripts for navigating them.
-
-
-<h2>The Entities</h2>
-
-You can think of PATRIC as a collection of data items that describe entities of just a few types.
-<i>Genomes</i> and <i>Features</i> are the most commonly accessed types of entities.
-
-<pre>
-
-============== Evolving Notes
-
-</pre>
-
-The P3-scripts interface reflects an underlying ERDB.
-The initial implemenation will offer access to the following
-entities:
-<ul>
-<li>Genome
-<li>Feature
-<li>ProteinFamily
-<li>Role
-<li>Subsystem
-<li>PopSys (a row in a populated subsystem)
-<li>Drug
-</ul>
-
-<h3>Accessing Data from an Entity (set)</h3>
-
-For each entity we support something like
-<pre>
-  p3-get-Genome-data SearchFor FieldsToExtract
-
-      id is always default field
-
-</pre>
-Here <i>SearchFor</i> encodes a set of search contraints.
-<i>FieldsToExtract</i> encodes a list of desired attributes.
-For important relationships, we use things like
-<pre>
-  p3-Genome2Drug SearchFor FieldsToExtract
-</pre>
-
-<h2>Tables, Commands, and Headers</h2>
-
-Many of the P3-scripts are commands that take a tab-separated table with column headers
-as input and produce an altered table as output.  The decision to use column headers is a
-deviation from the tools we built as SVR and SVC scripts.  It has both benefits and costs.
-For the unix commands our use of headers introduces surmountable complexities.  For example,
-we will implement <b>P3-sort</b> as a command that reads and prints the header line, and then uses
-<br>
-<pre>
-  tail ``-n+2'' | sort
-</pre>
-to print the sorted contexts of the file.  There will be P3-scripts corresponding to at
-least the following UNIX tools:
-<ul>
-<li>echo (p3-echo)
-<li>head (p3-head)
-<li>tail (p3-tail)
-<li>grep (p3-grep)
-<li>sort (p3-sort)
-<li>cut  (p3-cut)
-</ul>
-The Unix <i>cut</i> does not let you establish the order of the retained columns.
-p3-cut (which is a renamed version of svc_extract) will.
-
-
-<h2>Classes of Commands that Need to be Cast as P3-scripts</h2>
-
-<h3>Access to the PATRIC Workspaces</h3>
-
-We have a set of commands that support creation and maintenance of PATRIC workspaces.
-
-<h3>Running PATRIC apps and Retrieving the Ouput</h3>
-
-We support the ability to run apps and retrieve the output.
-
-<h3>Extracting, Copying, and Mining Genome Typed Objects (GTOs) </h3>
-
-<h2>Queries that Need to be Supported</h2>
-Note that some of the queries could probably best be handled using
-code from someone else.  That would, of course, be fine with me.
+<h2>PATRIC Query Examples</h2>
+<p>Note that some of the queries could probably best be handled using
+code from someone else.  That would, of course, be fine with me.</p>
 
 <ol>
 <li>Which (how many) Streptococcus genomes do we have?
@@ -957,7 +830,13 @@ existing version.
 <li>Given a genome G and a close genome G', use G' to look for pegs in G1 that might span contigs.
 
 </ol>
-
+<h2>More Applications</h2>
+<p>The following documents describe more applications for the PATRIC CLI.</p>
+<ol>
+<li><a href="p3_contiguity.html">PATRIC and the Conserved Contiguity of PEGs</a></li>
+<li><a href="p3_phylogenetic.html">What Distinguishes Phylogenetic Groups?</a></li>
+<li><a href="p3_applications.html">Uploading Genomes and Assembling Reads</a></li>
+</ol>
 </div>
 </body>
 </html>

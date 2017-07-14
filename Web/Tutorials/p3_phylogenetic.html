@@ -1,7 +1,10 @@
 <h1>What Distinguishes Phylogentic Groups</h1>
 
+<!-- User has to build his own tree, we do not currently have PATRIC support that we know how to use.
+Examples are in SEEDtk/Data/TutWC/for.rebecca -->
+
 In a previous tutorial we covered how to compute <i>signature clusters</i>
-that distinguish sets of genomes (see <b>Computing Signature Clusters: 
+that distinguish sets of genomes (see <b>Computing Signature Clusters:
 an Application of the Command-Line Tools</b>).
 
 Here we show how to generate genome sets corresponding to subtrees of
@@ -20,7 +23,7 @@ Here is how it is done.
 This can be done using PATRIC.  Let's call the tree the <i>genus_tree.nwk</i>.
 Note that the Newick format was not designed to be readable.
 <p>
-You want a tree that contains representative genomes that cover the 
+You want a tree that contains representative genomes that cover the
 phylogenetic group you will use to compute signature clusters, as well
 as a few more distance genomes that act as an out-group.
 
@@ -37,7 +40,7 @@ We are going to do something a bit more general now.  We specify the species
 goup as the organisms that occur in a single subtree.  This allows us to easily
 specify a subtree and form a group containing (for example) a set of three closely
 related species.  Similarly, we could specify a subtree containing a subset
-of a larger branch that actually contained a species (i.e., we could specify a 
+of a larger branch that actually contained a species (i.e., we could specify a
 sub-branch of a species).
 
 <p>
@@ -51,7 +54,7 @@ If you wished to look at your tree, just use
 which will give you a sketch of your tree (not, beautiful, but quite functional).
 <p>
 In a rooted subtree like the ones you will use to specify sets, you can
-think of a subtree as being designated by two leaves -- one from each of the 
+think of a subtree as being designated by two leaves -- one from each of the
 subtrees that together form the desired subtree.  That is,
 by specifying two leaves, you can designate the subtree which grows out
 of the node which is the <i>most recent common ancestor</i> of the two nodes.
@@ -66,8 +69,8 @@ and <i>G2</i> (which are genome IDs occurring in two of the leaves of the tree
 defined in <i>rooted.tree</i>.
 <p>
 You need to specify two genome sets if you wish to compute <i>signature clusters</i>.
-One of these is normally just a set derived from a subtree.  The other set may be 
-the leaves in a disjoint subtree.  In this case, you would use 
+One of these is normally just a set derived from a subtree.  The other set may be
+the leaves in a disjoint subtree.  In this case, you would use
 
 <pre>
   set_by_subtree G1 G2 < rooted.tree > genome.set.1
@@ -82,7 +85,7 @@ The next most common way to specify the two sets is to make one of the two
 sets the genomes in a subtree of particular interest, while the second tree
 is a larger subtree that includes the set of particular interest.  This second subtree
 forms a "context".  This context set should include all of the leaves in the larger
-subtree, except the leaves from the subtree of particular interest.  In this case, we 
+subtree, except the leaves from the subtree of particular interest.  In this case, we
 would form the two genome sets using something like
 <pre>
   set_by_subtree G1 G2 < rooted.tree > context-genome.set
