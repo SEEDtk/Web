@@ -358,6 +358,13 @@ div.pod hr,
 #Dump hr {
    color: #CCCCCC;
    background-color: #CCCCCC;
+   display: block;
+   margin-top: 0.5em;
+   margin-bottom: 0.5em;
+   margin-left: auto;
+   margin-right: auto;
+   border-style: inset;
+   border-width: 1px;
 }
 
 
@@ -514,3 +521,4 @@ form#armyAnalysis {
     border: none;
     background-color: #FFFFFF;
 }
+

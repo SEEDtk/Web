@@ -673,13 +673,294 @@ resist_fids
 
 <h2>Extracting, Copying, and Mining Genome Typed Objects (GTOs) </h2>
 
-<pre>
-------------- TO BE DONE -------------
-</pre>
+<p>Sometimes you want to store a genome on your local hard drive. PATRIC provides a special format for encapsulating all the data
+from a genome called the <i>genome typed object</i> or <i>GTO</i>. The <b>p3-gto</b> script allows you to download one or more
+PATRIC genomes in GTO format. The following command downloads two strep genomes -- 1313.7001 and 1313.7016-- in GTO format and
+stores them in the current directory.
+<blockquote class="call">
+
+p3-gto 1313.7001 1313.7016
+</blockquote>
+
+<p>The GTO files have the same name as the genome ID with a suffix of <code>.gto</code>. So, the above command creates <b>1313.7001.gto</b>
+and <b>1313.7016</b> in the current directory. If you execute this command and look at <b>1313.7001.gto</b>, you will see something like
+the following (with large portions in the middle removed).
+
+<blockquote class="resp">
+{
+   "analysis_events" : [],
+   "scientific_name" : "Streptococcus pneumoniae P210774-233",
+   "source" : "PATRIC",
+   "source_id" : "1313.7001",
+   "id" : "1313.7001",
+   "taxonomy" : [
+      "cellular organisms",
+      "Bacteria",
+      "Terrabacteria group",
+      "Firmicutes",
+      "Bacilli",
+      "Lactobacillales",
+      "Streptococcaceae",
+      "Streptococcus",
+      "Streptococcus pneumoniae"
+   ],
+   "contigs" : [
+      {
+         "genetic_code" : "11",
+         "dna" : "gaaaggacaaaatttgtcctttctcaagcttagctgacttcaacccactacagttgacaaagagcctgttttctcaataggattgtactcaggtgagtagggaggaagaggtaaaagtttatgcccaaactcttcacacaagagttctagcttacccattctatggaatcttgcattatccataataataaccgatggtgtggttaatgttggtaagagaaatttctgaaaccatacttcaaaaaagtcgctcgtcatcgtctcttcgtaagtcattggagcgattaattcaccatttgttagacctgcaaccaaagaaatcctctgatatcttcttccagatactttgcctcttcttaactgaccttttaatgagcgaccatattctcgataaaaataagtatcgaatcctgtttcgtcaatctaaacaggtgctaggtgctttaaactattaaaattcttaagaaataaggctacttatcgccctgaatatcaaaaaagaaaggacaaaatttgtcctttctcaagcttagctgacttcaacccactacagttgacaaagagcctgttttctcaataggattgtactcaggtgagtagggaggaagaggtaaaagtttatgcccaaactcttcacacaagagttctagcttacccattctatggaatcttgcattatccataataataaccgatggtgtggttaatgttggtaagagaaatttctgaaaccatacttcaaaaaagtcgctcgtcatcgtctcttcgtaagtcattggagcgattaattcaccatttgttagacctgcaaccaaagaaatcctctgatatcttcttccagatactttgcctcttcttaactgaccttttaatgagcgaccatattctcgataaaaataagtatcgaatcctgtttcgtcaatctaaacaggtgctaggtgctttaaactattaaaattcttaagaaataaggctactttttctgggtcttgttcatagtaggtgtggttctttttttcgagtgtagcccatagctttgagcgcatagtggatggtagttggatgacagccaaattcagaagctatttcagtcaaataagcgtct",
+         "id" : "1313.7001.con.0001"
+      },
+      {
+         "id" : "1313.7001.con.0002",
+         "genetic_code" : "11",
+         "dna" : "aaagaagctgttcgaaaagtaggcgatggttatgtctttgaggagaatggagtttctcgttatatcccagccaaggatctttcagcagaaacagcagcaggcattgatagcaaactggccaagcaggaaagtttatctcataagctaggagctaagaaaactgacctcccatctagtgatcgagaattttacaataaggcttatgacttactagcaagaattcaccaagatttacttgataataaaggtcgacaagttgattttgaggctttggataacctgttggaacgactcaaggatgtctcaagtgataaagtcaagttagtggatgatattcttgccttcttagctccgattcgtcatccagaacgtttaggaaaaccaaattcgcaaattacctacactgatgatgagattcaagtagccaagttggcaggcaagtacacaacagaagacggttatatctttgatcctcgtgatataaccagtgatgagggggatgcctatgtaactccacatatgacccatagccactggattaaaaaagatagtttgtctgaagctgagagagcggcagcccaggcttatgctaaagagaaaggtttgacccctccttcgacagaccatcaggatgcaggaaatactgaggcaaaaggagcagaagctatctacaaccgcgtgaaagcagctaagaaggtgccacttgatcgtatgccttacaatcttcaatatactgtagaagtcaaaaacggtagtttaatcatacctcattatgaccattaccataacatcaaatttgagtggtttgacgaaggcctttatgaggcacctaaggggtatactcttgaggatcttttggcgactgtcaagtactatgtcgaacatccaaacgaacgtccgcattcagataatggttttggtaacgctagcgaccatgttcaaagaaacaaaaatggtcaagctgataccaatcaaacggagaaacctcagacagaaaaacctgaggaagataaggaacatgatgaagtaagtgagccaactca"
+      },
+<hr  />
+   ],
+   "ncbi_taxonomy_id" : "1313",
+   "close_genomes" : [],
+   "domain" : "Bacteria",
+   "genetic_code" : "11",
+   "features" : [
+      {
+         "type" : "repeat_region",
+         "family_assignments" : [],
+         "annotations" : [
+            [
+               "Add feature from PATRIC",
+               "PATRIC",
+               1500218027.10933,
+               ""
+            ],
+            [
+               "Set function to repeat region",
+               "PATRIC",
+               1500218027.10933,
+               ""
+            ]
+         ],
+         "aliases" : [],
+         "id" : "fig|1313.7001.repeat.1",
+         "function" : "repeat region",
+         "location" : [
+            [
+               "1313.7001.con.0001",
+               "67",
+               "+",
+               413
+            ]
+         ]
+      },
+      {
+         "location" : [
+            [
+               "1313.7001.con.0001",
+               "567",
+               "+",
+               539
+            ]
+         ],
+         "function" : "repeat region",
+         "id" : "fig|1313.7001.repeat.2",
+         "aliases" : [],
+         "annotations" : [
+            [
+               "Add feature from PATRIC",
+               "PATRIC",
+               1500218027.10944,
+               ""
+            ],
+            [
+               "Set function to repeat region",
+               "PATRIC",
+               1500218027.10944,
+               ""
+            ]
+         ],
+         "family_assignments" : [],
+         "type" : "repeat_region"
+      },
+<hr />
+   ]
+}
+</blockquote>
+<p>This is a JSON-format string, which is to say, it displays an object with fields, some of which are other objects (denoted by curly braces) or
+lists (denoted by square brackets). JSON is a standard portable data format, described in detail <a href="http://www.json.org/">here</a> and
+supported by most programming languages. Without even fully understanding the notation, you can still see in the above listing that various
+bits of key metadata (scientific name, taxonomy, ID) are present in the file, along with the ID and sequence of each contig and various pertinent
+data about each feature.</p>
+<p>You can use a minus sign (<code>-</code>) in the parameter list to specify that the genome list come from the standard input. The following
+creates GTOs for every genome in the genome group <i>weak_strep</i>.</p>
+<blockquote class="call">
+p3-get-genome-group weak_strep | p3-gto -
+
+</blockquote>
+<p>This capability can be mixed with explicit genome IDs. So the following script creates a GTO for <i>594.8</i>, all of the genomes in group
+<i>weak_strep</i>, and then genome <i>149539.441</i>.</p>
+<blockquote class="call">
+p3-get-genome-group weak_strep | p3-gto 594.8 - 149539.441
+
+</blockquote>
+<p>You can also use the <code>--outDir</code> option to specify that the output be put in a different directory. The following creates a new
+subdirectory <b>PathogenGTO</b> in the current directory and puts all the GTOs in it.</p>
+<blockquote class="call">
+p3-get-genome-group weak_strep | p3-gto --outDir=PathogenGTO 594.8 - 149539.441
+
+</blockquote>
+
+<p>You are not required to write code to manipulate GTOs. Instead, we've included some useful scripts in the PATRIC CLI. First and foremost is
+<b>p3-gto-scan</b>. For example, if you run</p>
+<blockquote class="call">
+p3-gto-scan 1313.7001.gto
+
+</blockquote>
+<p>you would see the following analysis</p>
+<blockquote class="resp">
+Processing contigs of 1313.7001.gto.
+Processing features of 1313.7001.gto.
+All done.
+contigs                52
+dna               2101113
+features             3382
+functionAnalyzed     1418
+functionRead         3382
+functionReused       1964
+roleMatch            1492
+roleProcessed        3478
+
+</blockquote>
+<p>This rather arcane output tells you several things. First, that there are 52 contigs and 2,101,113 base pairs in the genome. It has 3382 features
+containing 1418 distinct assigned functions (<i>functionAnalyzed</i>). 3382 features had assigned functions (<i>functionRead</i>). This means every
+feature had a valid functional assignment, which is usually the case. 1964 of the features had redundant functions, that is, functions also found
+earlier in the genome (<i>functionReused</i>). 3478 roles were found (<i>roleProcessed</i>) of which 1492 were distinct (<i>roleMatch</i>).</p>
+<p>If you want to see the actual roles, specify the command-line option <code>--verbose</code>.</p>
+<blockquote class="call">
+p3-gto-scan --verbose 1313.7001.gto
+
+</blockquote>
+<blockquote class="resp">
+Role name   1313.7001.gto
+(2E,6E)-farnesyl diphosphate synthase (EC 2.5.1.10) 1
+1,2-diacylglycerol 3-glucosyltransferase (EC 2.4.1.337) 1
+1,4-alpha-glucan (glycogen) branching enzyme, GH-13-type (EC 2.4.1.18)  1
+1-phosphofructokinase (EC 2.7.1.56) 1
+16S rRNA (cytidine(1402)-2'-O)-methyltransferase (EC 2.1.1.198) 1
+16S rRNA (cytosine(1402)-N(4))-methyltransferase EC 2.1.1.199)  1
+16S rRNA (cytosine(967)-C(5))-methyltransferase (EC 2.1.1.176)  1
+16S rRNA (guanine(1207)-N(2))-methyltransferase (EC 2.1.1.172)  1
+16S rRNA (guanine(527)-N(7))-methyltransferase (EC 2.1.1.170)   1
+16S rRNA (guanine(966)-N(2))-methyltransferase (EC 2.1.1.171)   1
+16S rRNA (uracil(1498)-N(3))-methyltransferase (EC 2.1.1.193)   1
+
+</blockquote>
+<p>In this table, each role name is shown along with the number of times it occurs in the genome. You can see the features as well by adding the
+<code>--features</code> command line.</p>
+<blockquote class="call">
+p3-gto-scan --verbose --features 1313.7001.gto
+
+</blockquote>
+<blockquote class="resp">
+Role name   1313.7001.gto   Features containing role
+(2E,6E)-farnesyl diphosphate synthase (EC 2.5.1.10) 1   fig|1313.7001.peg.1606
+1,2-diacylglycerol 3-glucosyltransferase (EC 2.4.1.337) 1   fig|1313.7001.peg.679
+1,4-alpha-glucan (glycogen) branching enzyme, GH-13-type (EC 2.4.1.18)  1   fig|1313.7001.peg.595
+1-phosphofructokinase (EC 2.7.1.56) 1   fig|1313.7001.peg.227
+16S rRNA (cytidine(1402)-2'-O)-methyltransferase (EC 2.1.1.198) 1   fig|1313.7001.peg.1813
+16S rRNA (cytosine(1402)-N(4))-methyltransferase EC 2.1.1.199)  1   fig|1313.7001.peg.503
+16S rRNA (cytosine(967)-C(5))-methyltransferase (EC 2.1.1.176)  1   fig|1313.7001.peg.1301
+16S rRNA (guanine(1207)-N(2))-methyltransferase (EC 2.1.1.172)  1   fig|1313.7001.peg.83
+16S rRNA (guanine(527)-N(7))-methyltransferase (EC 2.1.1.170)   1   fig|1313.7001.peg.1682
+16S rRNA (guanine(966)-N(2))-methyltransferase (EC 2.1.1.171)   1   fig|1313.7001.peg.145
+16S rRNA (uracil(1498)-N(3))-methyltransferase (EC 2.1.1.193)   1   fig|1313.7001.peg.728
+
+</blockquote>
+<p>Later on in this file you can see an example of a role that occurs in multiple features. You will note that a double colon (<code>::</code>)
+is used to separate the individual feature IDs.</p>
+<blockquote class="resp">
+6-phospho-beta-galactosidase (EC 3.2.1.85)  1   fig|1313.7001.peg.607
+6-phospho-beta-glucosidase (EC 3.2.1.86)    4   fig|1313.7001.peg.1031::fig|1313.7001.peg.1517::fig|1313.7001.peg.443::fig|1313.7001.peg.896
+6-phosphofructokinase (EC 2.7.1.11) 1   fig|1313.7001.peg.1372
+6-phosphogluconate dehydrogenase, decarboxylating (EC 1.1.1.44) 1   fig|1313.7001.peg.542
+
+</blockquote>
+<p>This is a common convention in the PATRIC CLI-- when a single column contains multiple values, we use a double colon to separate them. You can
+use the <code>--delim</code> option to change this default. Supported alternate delimiters include <code>space</code>, <code>tab</code>,
+and <code>comma</code>. For example, the following would show if you coded <code>--delim=space</code>.</p>
+<blockquote class="resp">
+6-phospho-beta-galactosidase (EC 3.2.1.85)  1   fig|1313.7001.peg.607
+6-phospho-beta-glucosidase (EC 3.2.1.86)    4   fig|1313.7001.peg.1031 fig|1313.7001.peg.1517 fig|1313.7001.peg.443 fig|1313.7001.peg.896
+6-phosphofructokinase (EC 2.7.1.11) 1   fig|1313.7001.peg.1372
+6-phosphogluconate dehydrogenase, decarboxylating (EC 1.1.1.44) 1   fig|1313.7001.peg.542
+
+</blockquote>
+<p>The true power in <b>p3-gto-scan</b> comes when you use it to compare multiple GTO files. The following command displays a summary of the
+differences between <b>1313.7001.gto</b> and <b>1313.7016.gto</b>.</p>
+<blockquote class="call">
+p3-gto-scan 1313.7001.gto 1313.7016.gto
+
+</blockquote>
+<blockquote class="resp">
+Processing contigs of 1313.7001.gto.
+Processing features of 1313.7001.gto.
+Processing contigs of 1313.7016.gto.
+Processing features of 1313.7016.gto.
+Role name   1313.7001.gto   1313.7016.gto
+2,3-butanediol dehydrogenase, R-alcohol forming, (R)- and (S)-acetoin-specific (EC 1.1.1.4) 0   1
+2-isopropylmalate synthase (EC 2.3.3.13)    1   2
+23S rRNA (adenine(2058)-N(6))-dimethyltransferase (EC 2.1.1.184) => Erm(B)  0   1
+4-hydroxybenzoate polyprenyltransferase and related prenyltransferases  0   1
+5S rRNA 2   3
+6-phospho-beta-galactosidase (EC 3.2.1.85)  1   2
+AAA superfamily ATPase  0   1
+ABC transporter amino acid-binding protein  0   1
+ABC transporter, ATP-binding protein    13  11
+ABC transporter, ATP-binding protein (cluster 3, basic aa/glutamine/opines) 3   4
+ABC transporter, permease protein (cluster 3, basic aa/glutamine/opines)    5   6
+ABC transporter, substrate-binding protein PebA (cluster 3, basic aa/glutamine/opines)  2   1
+<hr />
+weak similarity to aminoglycoside phosphotransferase    1   0
+* Features  3382    3304
+* DNA   2101113 2052306
+All done.
+contigs               110
+dna               4153419
+features             6686
+functionAnalyzed     1457
+functionRead         6686
+functionReused       5229
+roleMatch            1356
+roleMismatch          175
+roleProcessed        6877
+
+</blockquote>
+<p>Only roles that differ between the two genomes are shown (175, the number in <i>roleMismatch</i>). For each, the role name is shown followed by the
+number of occurrences in 1313.7001.gto and then the number of occurrences in 1313.7016.gto. So, we can see that <i>2-isopropylmalate synthase</i> occurs
+once in 1313.7001 but twice in 1313.7016. At the end of the role listing, feature and DNA counts are shown. We see that 1313.7016 has 78 fewer features
+and around 50,000 fewer base pairs (48,807 to be exact). 1356 roles occurred the same number of times in both genomes (<i>roleMatch</i>).</p>
+<p>You can specify as many GTO file names as you wish in the parameter list for <b>p3-gto-scan</b>. As with the single-genome case, <code>--features</code>
+causes the features to be listed in the last column. The <code>--verbose</code> option causes even the matching roles to be listed, so you can get
+counts for everything.</p>
+<p>The status and statistical messages are sent to the standard error output, and the role table to the standard output. Thus, if you redirect
+these to separate files, the direct output from <b>p3-gto-scan</b> can be used to get a convenient list of roles from the script. The file thus
+created is tab-delimited with headers, just like a normal CLI output file.</p>
+<p>The script <b>p3-gto-fasta</b> creates FASTA files from a single GTO. Three command-line options (all mutually exclusive) are supported.</p>
+<dl>
+<dt>--contig</dt>
+<dd>Output a DNA fasta for the genome's contigs. This is the default.</dd>
+<dt>--protein</dt>
+<dd>Output a protein fasta for the genome's features. Obviously, only protein-encoding features will be included.</dd>
+<dt>--feature</dt>
+<dd>Output a DNA fasta for the genome's features. All features are included.</dd>
+</dl>
+<p>You specify the name of the GTO file as the first parameter of <b>p3-gto-fasta</b>.</p>
+<blockquote class="call">
+p3-gto-fasta 1313.7001.gto >1313.7001.fna
+
+</blockquote>
 
 <h2>PATRIC Query Examples</h2>
-<p>Note that some of the queries could probably best be handled using
-code from someone else.  That would, of course, be fine with me.</p>
+<p>Note that some of the queries could be handled more efficiently using
+code from someone else.  That would, of course, be fine with us.</p>
 
 <ol>
 <li>Which (how many) Streptococcus genomes do we have?
