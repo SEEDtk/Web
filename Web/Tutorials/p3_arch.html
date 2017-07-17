@@ -9,6 +9,27 @@
 <div id="Dump">
 <h1>The P3-Scripts Interface to PATRIC</h1>
 
+<ul>
+<li><a href="#What">What is the PATRIC Command-line Interface?</a></li>
+<li><a href="#Database">The PATRIC Database</a></li>
+<li><a href="#Pipes">Files and Pipelines</a>
+    <ul>
+    <li><a href="#Echo">p3-echo</a></li>
+    </ul>
+</li>
+<li><a href="#Scripts">Database Script Examples</a></li>
+<li><a href="#Space">What is a PATRIC Workspace?</a>
+    <ul>
+    <li><a href="#Login">Logging In</a></li>
+    <li><a href="#GGroups">Working with Genome Groups</a></li>
+    <li><a href="#FGroups">Working with Feature Groups</a></li>
+    </ul>
+</li>
+<li><a href="#GTO">Extracting and Mining Genome Typed Objects (GTOs)</a></li>
+<li><a href="#Query">PATRIC Query Examples</a></li>
+<li><a href="#Apps">More Applications</a></li>
+</ul>
+<div id="What">
 <h2>What is the PATRIC Command-line Interface?</h2>
 
 <a href="https: www.patricbrc.org" target=_blank>PATRIC</a> is an integration of different types of data and software tools
@@ -20,8 +41,8 @@ the tools described in this document.  We call these tools the <i>P3-scripts</i>
 are intended to run on your machine, going over the network to access the services provided by PATRIC.
 If you have not already installed a version on your machine, you should probably follow the instructions
 discussed at <a href="p3_install.html">p3_install.html</a> and install a version now.
-
-<h2>The PATRIC Database</h2>
+</div>
+<div id="Database"><h2>The PATRIC Database</h2>
 <p>The main PATRIC database is organized as a series of large, heavily-indexed relational tables. From the
 perspective of the CLI, there are five main tables representing objects of interest, connected by four
 relationships.</p>
@@ -64,7 +85,7 @@ the families to which the features belong. There are three types of protein fami
 families which are confined to one genus, <i>global</i> families which cross the entire database, and
 <i>figfams</i>, which are computed using a different method.</dd>
 </dl>
-<h2>Files and Pipelines</h2>
+</div><div id="Pipes"><h2>Files and Pipelines</h2>
 
 <p>The PATRIC CLI operates on tab-delimited files. That is, each record is divided into fields or columns
 separated by tab characters. The first record in each file contains the name of each column. Typically,
@@ -123,7 +144,50 @@ provide p3 scripts for several of the most common needs.</p>
 <dt>p3-pick</dt>
 <dd>Randomly select a specified number of records from a file</dd>
 </dl>
-<h2>Database Script Examples</h2>
+<div id="Echo"><h3>p3-echo</h3>
+<p>The <b>p3-echo</b> command is your most important tool for creating small files that feed into pipes.
+The <code>--title</code> command-line option (abbreviated <code>-t</code>) allows you to specify the title
+for the column you are creating. Each positional parameter forms a single record with a single column.</p>
+<blockquote class="call">
+p3-echo -t genome_id 1313.7001 1313.7002 1313.7016
+
+</blockquote>
+<blockquote class="resp">
+genome_id
+1313.7001
+1313.7002
+1313.7016
+
+</blockquote>
+
+<p>You can create a multi-column file by specifying multiple titles. There will be one output column for each
+title specified. In the example below, there are three titles, so the output table is three columns. Every triple
+of parameters produces a record.</p>
+<blockquote class="call">
+p3-echo -t genome_id -t sequences -t gc_content 1313.7001  52  39.64  1313.7002  45  39.63  1313.7016  58  39.77
+
+</blockquote>
+<blockquote class="resp">
+genome_id       sequences        gc_content
+1313.7001       52      39.64
+1313.7002       45      39.63
+1313.7016       58      39.77
+
+</blockquote>
+
+<p>If a field contains special characters such as spaces or pipe symbols, use double quotes to insure the characters
+are interpreted correctly.</p>
+<blockquote class="call">
+p3-echo -t genome_id -t patric_id -t product 1313.7001 "fig|1313.7001.peg.1362" "hypothetical protein"
+
+</blockquote>
+<blockquote class="resp">
+genome_id   patric_id   product
+1313.7001   fig|1313.7001.peg.1362  hypothetical protein
+
+</blockquote>
+</div>
+</div><div id="Scripts"><h2>Database Script Examples</h2>
 <p>In this section we briefly discuss the main database scripts.</p>
 <dl>
 <dt>p3-all-genomes</dt>
@@ -347,7 +411,7 @@ genome_id   feature.patric_id   feature.product feature.aa_sequence
 
 </blockquote>
 </dl>
-<h2>What Is a PATRIC Workspace?</h2>
+</div><div id="Space"><h2>What Is a PATRIC Workspace?</h2>
 
 <p>Users of PATRIC have access to a wealth of public data that support
 interpretation of prokaryotic genomes.  The PATRIC team actively integrates newly-sequenced
@@ -359,7 +423,7 @@ data. In addition to files you upload, such as FASTA and FASTQ files, there will
 such as genomes, feature groups, and genome groups. The CLI allows you to move these typed objects between
 your workspace and your file system so you can manipulate them at will.</p>
 
-<h3>Logging In</h3>
+<div id="Login"><h3>Logging In</h3>
 
 <p>To access your workspace, you need a PATRIC account. If you do not have one already, go to
 <a href="https://user.patricbrc.org/register">https://user.patricbrc.org/register</a> and register
@@ -403,7 +467,8 @@ You are logged in as rastuser25@patricbrc.org.
 
 </blockquote>
 
-<h3>Working with Genome Groups</h3>
+</div>
+<div id="GGroups"><h3>Working with Genome Groups</h3>
 
 <p>Your workspace looks like a full-blown file system, but there are three special folders.</p>
 <ul>
@@ -545,7 +610,8 @@ weak_strep.genome_id
 
 </blockquote>
 
-<h3>Working with Feature Groups</h3>
+</div>
+<div id="FGroups"><h3>Working with Feature Groups</h3>
 
 <p>We want to look at features in the resistant Streptococcus pneumoniae genomes that distinguish them from the susceptible ones.
 Then we will gather those features into a feature group and store them in our workspace so we can work with them later.
@@ -670,8 +736,8 @@ p3-list-feature-groups
 resist_fids
 
 </blockquote>
-
-<h2>Extracting, Copying, and Mining Genome Typed Objects (GTOs) </h2>
+</div>
+</div><div id="GTO"><h2>Extracting and Mining Genome Typed Objects (GTOs)</h2>
 
 <p>Sometimes you want to store a genome on your local hard drive. PATRIC provides a special format for encapsulating all the data
 from a genome called the <i>genome typed object</i> or <i>GTO</i>. The <b>p3-gto</b> script allows you to download one or more
@@ -958,146 +1024,324 @@ p3-gto-fasta 1313.7001.gto >1313.7001.fna
 
 </blockquote>
 
-<h2>PATRIC Query Examples</h2>
-<p>Note that some of the queries could be handled more efficiently using
+</div><div id="Query"><h2>PATRIC Query Examples</h2>
+<p>This section posits some typical questions and shows how to answer them.
+Note that some of the queries could be handled more efficiently using
 code from someone else.  That would, of course, be fine with us.</p>
 
-<ol>
-<li>Which (how many) Streptococcus genomes do we have?
-<pre>
+<dl>
+<dt>How many Streptococcus genomes do we have?</dt>
+<dd>
+<blockquote class="call">
 p3-all-genomes --equal genus,Streptococcus --count
 
+</blockquote>
+
+<blockquote class="resp">
 genome.count
-11475
-</pre>
+11836
 
-<li>Which Streptococcus genomes do we have?
+</blockquote>
+Note the use of the <code>--count</code> command-line option to produce a count of the results instead of the results themselves.
+</dd>
 
-<pre>
-  p3-all-genomes --equal genus,Streptococcus --attr genome_name --attr genome_length
-</pre>
-<li>What fraction of the genomes in genus G are resistant to drug D?
-<pre>
-  p3-all-genomes --equal genome_name,Staphylococcus â€“count
+<dt>Which Streptococcus genomes do we have?</dt>
+<dd>
+<blockquote class="call">
+p3-all-genomes --equal genus,Streptococcus --attr genome_name
 
+</blockquote>
+<blockquote class="resp">
+genome.genome_id    genome.genome_name
+1302.21 Streptococcus gordonii strain DD07
+1303.76 Streptococcus oralis strain DD05
+1303.77 Streptococcus oralis strain DD14
+1303.78 Streptococcus oralis strain DD15
+1303.79 Streptococcus oralis strain DD16
+1303.80 Streptococcus oralis strain DD20
+1303.81 Streptococcus oralis strain DD21
+1303.82 Streptococcus oralis strain DD27
+1303.83 Streptococcus oralis strain DD30
+
+</blockquote>
+<b>p3-all-genomes</b> always includes the ID, so all we need for the <code>--attr</code> parameter is the name field. If you
+intend to pipe the results into another script, specify the ID field explicitly where you want it to appear.
+<blockquote class="call">
+p3-all-genomes --equal genus,Streptococcus --attr genome_name --attr genome_id
+
+</blockquote>
+<blockquote class="resp">
+genome.genome_name  genome.genome_id
+Streptococcus gordonii strain DD07  1302.21
+Streptococcus oralis strain DD05    1303.76
+Streptococcus oralis strain DD14    1303.77
+Streptococcus oralis strain DD15    1303.78
+Streptococcus oralis strain DD16    1303.79
+Streptococcus oralis strain DD20    1303.80
+Streptococcus oralis strain DD21    1303.81
+Streptococcus oralis strain DD27    1303.82
+Streptococcus oralis strain DD30    1303.83
+
+</blockquote>
+</dd>
+<dt>What fraction of the genomes in genus Staphylococcus are resistant to methicillin?</dt>
+<dd>This is a two-step process, since we need two numbers.
+<blockquote class="call">
+p3-all-genomes --equal genome_name,Staphylococcus --count
+
+</blockquote>
+We isolate the genus by doing a string match on the genome name, since equality for string fields matches if the value is a substring. We could
+also use <code>--equal genus,Staphylococcus</code> and get an equivalent result.
+<blockquote class="resp">
 genome.count
-10634
+10716
 
+</blockquote>
+To get the count of resistant genomes, we need to pipe the drug name into <b>p3-get-drug-genomes</b>. Here we don't have the option of
+using the <i>genus</i> field, since only the genome name is present in the drug-genome records, not the entire taxonomy.
+<blockquote class="call">
 p3-echo -t antibiotic methicillin | p3-get-drug-genomes --equal resistant_phenotype,resistant --equal genome_name,Staphylococcus --count
 
+</blockquote>
+<blockquote class="resp">
 antibiotic   genome_drug.count
 methicillin  1064
-</pre>
 
-<li>What fraction of the genomes in genus X have an occurrence of role R?
-<li>What fraction of the genomes in genus X have multiple occurrences of role R?
-<li>What fraction of the genomes in the populated subsystem S are Mycobacterium genomes?
-<li>What fraction of the Mycobacterium genomes in the populated subsystem S have pegs that connect to role R?
-<li>Which subsystems are active in genome G?
-<li>Which pegs implement role X in genome G?
-<li>Which subsystems are active in fewer than 5 genomes?
-<li>How many genomes have active occurrences of subsystem S?
-<li>Which roles of subsystem S are connected to pegs?
-<li>Which protein family is peg P in?
-<pre>
-Which protein family is fig|46170.310.peg.738 in?
+</blockquote>
+The answer is 1064 * 100 / 10716 or 9.93%.
+</dd>
+<dt>
+<dt>Which global protein family is fig|46170.310.peg.738 in?</dt>
+<dd>
+<blockquote class="call">
+p3-echo -t patric_id "fig|46170.310.peg.738" | p3-get-feature-data --attr pgfam_id
 
-p3-echo -t feature.feature_id "fig|46170.310.peg.738" | p3-get-feature-data --attr pgfam_id
-
-feature.feature_id feature.pgfam_id
+</blockquote>
+There are a couple of important things here. We use the <i>pgfam_id</i> field to get the global protein family. <i>plfam_id</i> would be
+the local protein family. Also, the feature ID is enclosed in double quotes on the command line so that the vertical bar doesn't confuse
+the command-line shell.
+<blockquote class="resp">
+patric_id feature.pgfam_id
 fig|46170.310.peg.738 PGF_00040464
 
-</pre>
+</blockquote>
+</dd>
+<dt>What function does fig|46170.310.peg.738 implement?</dt>
+<dd>
+The function is stored in the feature table's <i>product</i> attribute.
+<blockquote class="call">
+p3-echo -t patric_id "fig|46170.310.peg.738" | p3-get-feature-data --attr product
 
-<li>Which roles does peg P implement?
-<pre>
-Which roles does fig|46170.310.prh.738 implement?
-
-p3-echo -t feature.feature_id "fig|46170.310.peg.738" | p3-get-feature-data --attr product
-
-feature.feature_id      feature.product
+</blockquote>
+<blockquote class="resp">
+patric_id      feature.product
 fig|46170.310.peg.738   Putative cysteine desulfurase, associated with tRNA 4-thiouridine synthase
-</pre>
 
-<li>What drugs is genome G resistant to?
+</blockquote>
+Of course, you could ask this question of several features with a single pipe.
+<blockquote class="call">
+p3-echo -t patric_id "fig|46170.310.peg.738" "fig|1313.7001.peg.1189" "fig|66976.18.peg.131" | p3-get-feature-data --attr product
 
-What drugs is 46170.310 resistant to?
-<pre>
-p3-echo -t genome.genome_id 46170.310 | p3-get-genome-drugs --equal resistant_phenotype,resistant  --attr antibiotic
+</blockquote>
+<blockquote class="resp">
+patric_id   feature.product
+fig|46170.310.peg.738   Putative cysteine desulfurase, associated with tRNA 4-thiouridine synthase
+fig|1313.7001.peg.1189  IMP cyclohydrolase (EC 3.5.4.10) / Phosphoribosylaminoimidazolecarboxamide formyltransferase (EC 2.1.2.3)
+fig|66976.18.peg.131    hypothetical protein
 
-genome.genome_id        genome_drug.antibiotic
-46170.310       ciprofloxacin
-46170.310       erythromycin
-46170.310       gentamicin
-46170.310       methicillin
-46170.310       penicillin
-46170.310       trimethoprim/sulfamethoxazole
-</pre>
+</blockquote>
+The <b>p3-echo</b> command uses the <code>--title</code> command-line option to determine how many parameters to put on each output
+line. Since our example has only one title, the output file has only a single column, and it can be piped easily to <b>p3-get-feature-data</b>.
+</dd>
+<dt>What drugs is 46170.310 resistant to?</dt>
+<dd>
+The drug name is in the <i>antibiotic</i> attribute of the genome-drug table. We start with a genome ID and use <b>p3-get-genome-drugs</b>.
+<blockquote class="call">
+p3-echo -t genome_id 46170.310 | p3-get-genome-drugs --equal resistant_phenotype,resistant --attr antibiotic
 
-<li>What genomes are resistant to drug D?
+</blockquote>
+<blockquote class="resp">
+genome_id   genome_drug.antibiotic
+46170.310   ciprofloxacin
+46170.310   erythromycin
+46170.310   gentamicin
+46170.310   methicillin
+46170.310   penicillin
+46170.310   trimethoprim/sulfamethoxazole
 
-What genomes are resistant to erythromycin?
-<pre>
-p3-echo -t antibiotic,erythromycin | p3-get-drug-genomes --equal resistant_phenotype,resistant --attr genome_id --attr genome_name
+</blockquote>
+</dd>
+<dt>What genomes are resistant to erythromycin?</dt>
+<dd>Here we start with a drug name and use <b>p3-get-drug-genomes</b> to get the genome data.
+<blockquote class="call">
+p3-echo -t antibiotic erythromycin | p3-get-drug-genomes --equal resistant_phenotype,resistant --attr genome_id --attr genome_name
 
-antibiotic    genome_drug.genome_id   genome_drug.genome_name
-erythromycin  1280.4920     Staphylococcus aureus P210110-35
-erythromycin  1280.4930     Staphylococcus aureus P210184-226
-erythromycin  1280.4940     Staphylococcus aureus P210369-10
-erythromycin  1280.4960     Staphylococcus aureus P210464-28
-erythromycin  1280.4970     Staphylococcus aureus P310372-198
-erythromycin  1280.4990     Staphylococcus aureus P311202-207
-erythromycin  1313.6942     Streptococcus pneumoniae P110340-157
-erythromycin  1313.7001     Streptococcus pneumoniae P210774-233
+</blockquote>
+<blockquote class="resp">
+antibiotic  genome_drug.genome_id   genome_drug.genome_name
+erythromycin    1280.4920   Staphylococcus aureus P210110-35
+erythromycin    1280.4930   Staphylococcus aureus P210184-226
+erythromycin    1280.4940   Staphylococcus aureus P210369-10
+erythromycin    1280.4960   Staphylococcus aureus P210464-28
+erythromycin    1280.4970   Staphylococcus aureus P310372-198
+erythromycin    1280.4990   Staphylococcus aureus P311202-207
+erythromycin    1313.6942   Streptococcus pneumoniae P110340-157
+erythromycin    1313.7001   Streptococcus pneumoniae P210774-233
+erythromycin    1313.7002   Streptococcus pneumoniae P210824-213
+erythromycin    1313.7006   Streptococcus pneumoniae P310010-154
+erythromycin    1313.7013   Streptococcus pneumoniae P310795-191
 
-</pre>
+</blockquote>
+</dd>
+<dt>How close are fig|1302.21.peg.966 and fig|1302.21.peg.1019 on the chromosome?</dt>
+<dd>The script <b>p3-get-feature-gap</b> gives us this information. Since it expects two feature IDs
+on the same input line, we use a <b>p3-echo</b> with two titles to put its two parameters on a single line.
+<blockquote class="call">
+p3-echo -t f1.patric_id -t f2.patric_id "fig|1302.21.peg.966" "fig|1302.21.peg.1019" | p3-feature-gap
 
-<li>Given two pegs from the same contig on a genome, how close are they on the chromsome?
-<pre>
-     p3-echo -t f1.patric_id -t f2.patric_id "fig|1302.21.peg.966" "fig|1302.21.peg.1019" | p3-feature-gap
+</blockquote>
+<blockquote class="resp">
+f1.patric_id    f2.patric_id    gap
+fig|1302.21.peg.966 fig|1302.21.peg.1019    55253
 
-     f1.patric_id    f2.patric_id    gap
-     fig|1302.21.peg.966     fig|1302.21.peg.1019    55253
-</pre>
+</blockquote>
+Note that if the features are on different contigs, we get an insanely high number.
+<blockquote class="call">
+p3-echo -t f1.patric_id -t f2.patric_id "fig|1313.7001.peg.1159" "fig|1313.7001.peg.1384" | p3-feature-gap
 
+</blockquote>
+<blockquote class="resp">
+f1.patric_id    f2.patric_id    gap
+fig|1313.7001.peg.1159  fig|1313.7001.peg.1384  2000000000
 
-<li>Are pegs P1 and P2 located within 5 kb of one another on the chromosome?
-<pre>
-     p3-echo -t f1.patric_id -t f2.patric_id "fig|1302.21.peg.966" "fig|1302.21.peg.1019" | p3-feature-gap
+</blockquote>
+This makes it easier to simply compare the distance outputs from <b>p3-feature-gap</b>.
+</dd>
+<dt>Give me a fasta file of the contigs of genome 1302.21</dt>
+<dd>
+<blockquote class="call">
+p3-genome-fasta 1302.21
 
-     f1.patric_id    f2.patric_id    gap
-     fig|1302.21.peg.966     fig|1302.21.peg.1019    55253
-</pre>
-<li>Give me a fasta file of the contigs of genome G.
-<pre>
-    p3-genome-fasta 1302.21
-</pre>
-<li>Give me the protein sequences for the pegs in genome G.
-<pre>
-    p3-genome-fasta --protein 1302.21
-</pre>
-<li>Given a list of genomes L, produce a list of pairs of roles that are implemented
-    by pegs (from genomes in L) that are close on the chromosome (along with a count of the number of occurrences of the pair).
-<pre>
-    p3-get-genome-features --attr sequence_id --attr location --attr product &lt;genomes.tbl | p3-function-to-role | p3-generate-close-roles
+</blockquote>
+<blockquote class="resp">
+>1302.21.con.0001 contig
+agctcagttggtagtagcgcatgactgttaatcatgatgtcgtaggttcgagtcctactg
+ccggagttatatctataagtaagacaagaaattcttgtctttttatatttattgtgtttt
+tgcaatttaatttttaagttcttatttaataaaaagcttgaagattattcttcaagcttt
+ttatgtttattaaagaatgcttcatagagggctttaatagctgctttttcttgttcagag
+tttactacgagcatgatagaaacttcgctagatccttgagagatcatttgaatattaatt
+ttgctgtctgatagagcctttgtagccgtagcagtcagaccgatatgacttttcatttgc
 
-</pre>
+</blockquote>
+</dd>
+<dt>Give me the protein sequences for the pegs in genome 1302.21.</dt>
+<dd>
+<blockquote class="call">
+p3-genome-fasta --protein 1302.21
+
+</blockquote>
+<blockquote class="resp">
+>fig|1302.21.peg.966 putative Zn-dependent protease
+MRFLLNLFRFIWRMFWRLVWAGIVAFIILVSVLYLTNPSQTGLTAVRQAVQTAVNQLDTF
+LDQQGIHTGLGQNVQNLGEHLTDQHVASSDGARWENARATVYIETENSTFRAAYQEAIKS
+WNATGAFTFQLVEDKSQANIIATEMNDSTITAAGEAESQTNVLTKRFTKVTVRLNAYYLL
+NNYYGYSHERIVNTASHELGHAIGLDHNESESVMQSAGSFYSIQPIDIQAVKELYQD
+>fig|1302.21.peg.969 Putative metallopeptidase (Zinc) SprT family
+MNLNEYIKQVSLEDFGWEFRHQAFWNKRLRTTGGRFFPKDGHLDFNPKIYETFGLETFRK
+IVRHELAHYHLYYQGKGYRHKDRDFKELLKQVGGLRYAPGLPAKKLKLHYQCRSCCTDFY
+RQRRIEIKKYRCGRCKGKLRLLKQER
+
+</blockquote>
+</dd>
+<dt>Given a list of genomes, produce a list of pairs of roles that are implemented
+by pegs that are close on the chromosome, sorted by number of occurrences.</dt>
+<dd>Here we assume our list of genomes is in the file <b>genomes.tbl</b>. The content of this file is shown below.
+<blockquote class="call">
+genome_id
+1310696.14
+66976.17
+91890.5
+316273.25
+186497.12
+1353158.3
+135461.13
+1173954.3
+1176728.3
+
+</blockquote>
+We use <b>p3-get-genome-features</b> to get the feature and location data, <b>p3-function-to-role</b> to convert the functions
+to roles, and <b>p3-generate-close-roles</b> to compute the physically close roles. Because we only want protein-encoding genes
+(pegs), we filter the genome features by type. (If we didn't do this, the output would start with a whole bunch of
+generic roles involving ribosomes and CRISPR repeats.)
+<blockquote class="call">
+p3-get-genome-features --eq feature_type,CDS --attr sequence_id --attr location --attr product &lt;genomes.tbl | p3-function-to-role | p3-generate-close-roles
+
+</blockquote>
+<blockquote class="resp">
+role1   role2   count
+Transposase, IS3/IS911 family   Mobile element protein  33
+Mobile element protein  Mobile element protein  29
+Lead, cadmium, zinc and mercury transporting ATPase (EC 3.6.3.3) (EC 3.6.3.5)   Copper-translocating P-type ATPase (EC 3.6.3.4) 25
+Potassium efflux system KefA protein    Small-conductance mechanosensitive channel  13
+Cobalt-zinc-cadmium resistance protein CzcA Cation efflux system protein CusA   13
+Gamma-glutamyltranspeptidase (EC 2.3.2.2)   Glutathione hydrolase (EC 3.4.19.13)    13
+Efflux ABC transporter, ATP-binding protein Efflux ABC transporter, permease protein    11
+
+</blockquote>
+Note that the occurrence counts are shown in the last column of the output.
+</dd>
+<dt>What genomes in a list have GC content values greater than 60%.</dt>
+<dd>
+For this exercise we will use the <b>genomes.tbl</b> file as input.
+<blockquote class="call">
+genome_id
+1310696.14
+66976.17
+91890.5
+316273.25
+186497.12
+1353158.3
+135461.13
+1173954.3
+1176728.3
+
+</blockquote>
+The GC content percentage is found in the <i>gc_content</i> attribute, as shown in the example below.
+<blockquote class="call">
+ p3-get-genome-data --attr gc_content --attr genome_name &lt;genomes.tbl
+
+</blockquote>
+<blockquote class="call">
+genome_id   genome.gc_content   genome.genome_name
+66976.17    38.28   Legionella pneumophila serogroup 1 strain Lp01_666
+91890.5 38.19   Legionella pneumophila subsp. pascullei strain D-7158
+316273.25   64.56   Xanthomonas campestris pv. vesicatoria str. 85-10
+186497.12   40.8    Pyrococcus furiosus DSM 3638
+1353158.3   43.41   Methanococcoides vulcani strain SLH 33
+135461.13   43.88   Bacillus subtilis subsp. subtilis strain BSD-2
+1173954.3   45.1    Vibrio parahaemolyticus O4:K12 str. K1203
+1176728.3   50.67   Escherichia coli K71
+
+</blockquote>
+To get ONLY the genomes with a GC content over 60%, we use the <code>--gt</code> parameter to filter for
+specific values of that field.
+<blockquote class="call">
+ p3-get-genome-data --attr gc_content --attr genome_name --gt gc_content,60 &lt;genomes.tbl
+
+</blockquote>
+<blockquote class="call">
+genome_id   genome.gc_content   genome.genome_name
+316273.25   64.56   Xanthomonas campestris pv. vesicatoria str. 85-10
+
+</blockquote>
+</dd>
+</dl>
+<ol>
 <li> Given two sets of genomes Gs1 and Gs2, list the roles implemented in genomes in Gs1, but not by
-genomes implemeted in Gs2.
+genomes in Gs2.
 <li>What is the average length of proteins in family F, along with the standard deviation.
-<li>What genomes in list Gs have GC content values greater than 60%.
-<li>For functional roles R1 and R2, give a correlation coefficient for occurrences of pegs implementing
-these roles in the entire set of genomes.
-<li>For subsystems S1 and S2, compute the correlation coeffient of occurrences of S1 and S2
-in a list of genomes.
-<li>Compute the minimum number of unique roles in the subsystem S that are implemented by pegs.  That is
-    calculate <i>min_pegs</i>, the minimum number of pegs required for an active instance of the subsystems
-(at least so far).  Which genomes have only <i>min_pegs</i> in an active instance?
 <li>Compute the upstream and downstream regions for pegs in list pegL.
 <li>Return features from a designated list of types for a genome G -- sorted by location on the chromosome.
-<li>Given a genome G that does not occur in subsystem S, compute the minimum sets of roles needed to
-    include all of the roles that occur in at least one active role (there may be multiple ways
-    to complete an incomplete set).
 <li>Which kmers occur in one list of genomes, but not in a second set?  Here we are defining
 signature kmers.
 <li>Which roles occur in one list of genomes, but not in a second set?  Here we are defining signature roles.
@@ -1111,13 +1355,14 @@ existing version.
 <li>Given a genome G and a close genome G', use G' to look for pegs in G1 that might span contigs.
 
 </ol>
-<h2>More Applications</h2>
+</div><div id="Apps"><h2>More Applications</h2>
 <p>The following documents describe more applications for the PATRIC CLI.</p>
 <ol>
 <li><a href="p3_contiguity.html">PATRIC and the Conserved Contiguity of PEGs</a></li>
 <li><a href="p3_phylogenetic.html">What Distinguishes Phylogenetic Groups?</a></li>
 <li><a href="p3_applications.html">Uploading Genomes and Assembling Reads</a></li>
 </ol>
+</div>
 </div>
 </body>
 </html>
