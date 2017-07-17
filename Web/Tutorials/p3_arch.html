@@ -1335,10 +1335,83 @@ genome_id   genome.gc_content   genome.genome_name
 
 </blockquote>
 </dd>
+<dt>What roles are found in Vibrio campbellii but not Vibrio alginolyticus?</dt>
+<dd>To answer this question, we need a file of roles from Vibrio alginolyticus and use it to filter out roles from
+Vibrio campbellii. The following pipe gets all the roles from Vibrio alginolyticus genomes and puts them in the file <b>cRoles.tbl</b>.
+<blockquote class="call">
+p3-all-genomes --eq "genome_name,Vibrio alginolyticus" | p3-get-genome-features --attr product | p3-function-to-role | p3-sort --count feature.role &gt;aRoles.tbl
+
+</blockquote>
+There are a lot of pieces to this pipe. First, <b>p3-all-genomes</b> gets all the genome IDs for Vibrio alginolyticus. Then <b>p3-get-genome-features</b>
+finds all the features for those genomes and outputs the functional assignment (product). <b>p3-function-to-role</b> converts the functions to roles and
+eliminates the hypotheticals. Finally, <b>p3-sort</b> with the <code>--count</code> option counts the number of occurrences of each role. It takes a while,
+but the output looks something like this.
+<blockquote class="resp">
+feature.role    count
+(2E,6E)-farnesyl diphosphate synthase (EC 2.5.1.10) 34
+(3R)-hydroxymyristoyl-[ACP] dehydratase (EC 4.2.1.-)    34
+1,4-alpha-glucan (glycogen) branching enzyme, GH-13-type (EC 2.4.1.18)  37
+1,4-alpha-glucan branching enzyme (EC 2.4.1.18) 34
+1,4-dihydroxy-2-naphthoate polyprenyltransferase (EC 2.5.1.74)  34
+1,4-dihydroxy-2-naphthoyl-CoA hydrolase (EC 3.1.2.28) in menaquinone biosynthesis   34
+1,6-anhydro-N-acetylmuramyl-L-alanine amidase   35
+1-deoxy-D-xylulose 5-phosphate reductoisomerase (EC 1.1.1.267)  34
+1-deoxy-D-xylulose 5-phosphate synthase (EC 2.2.1.7)    35
+1-hydroxy-2-methyl-2-(E)-butenyl 4-diphosphate synthase (EC 1.17.7.1)   38
+1-phosphofructokinase (EC 2.7.1.56) 34
+</blockquote>
+Now we perform the same exercise with Vibrio campbelli.
+<blockquote class="call">
+p3-all-genomes --eq "genome_name,Vibrio campbelli" | p3-get-genome-features --attr product | p3-function-to-role | p3-sort --count feature.role &gt;cRoles.tbl
+
+</blockquote>
+<blockquote class="resp">
+feature.role    count
+(2E,6E)-farnesyl diphosphate synthase (EC 2.5.1.10) 25
+1,4-alpha-glucan (glycogen) branching enzyme, GH-13-type (EC 2.4.1.18)  27
+1,4-alpha-glucan branching enzyme (EC 2.4.1.18) 25
+1,4-dihydroxy-2-naphthoate polyprenyltransferase (EC 2.5.1.74)  27
+1,4-dihydroxy-2-naphthoyl-CoA hydrolase (EC 3.1.2.28) in menaquinone biosynthesis   28
+1,6-anhydro-N-acetylmuramyl-L-alanine amidase   25
+1-deoxy-D-xylulose 5-phosphate reductoisomerase (EC 1.1.1.267)  30
+1-deoxy-D-xylulose 5-phosphate synthase (EC 2.2.1.7)    27
+1-hydroxy-2-methyl-2-(E)-butenyl 4-diphosphate synthase (EC 1.17.7.1)   26
+1-phosphofructokinase (EC 2.7.1.56) 33
+16 kDa heat shock protein A 25
+
+</blockquote>
+Now we filter <b>cRoles.tbl</b> by removing records that match <b>aRoles.tbl</b>. Note that we are matching on the key column ONLY. We don't care about the counts,
+only which roles are in campbellii but not alginolyticus. The <b>p3-file-filter</b> command performs this task.
+<blockquote class="call">
+p3-file-filter --reverse --col=feature.role aRoles.tbl &lt;cRoles.tbl
+</blockquote>
+The <code>--reverse</code> option tells us we want roles that are in the standard input file (<b>cRoles.tbl</b>) but not the filter file (<b>aRoles.tbl</b>).
+The <code>--col</code> option tells us we are comparing values in the <i>feature.role</i> column. Both files are the same format; if the formats were different,
+we could specify a different key column identifier for the filter file by appending it as a positional parameter. So, another way to code the same thing
+would be
+<blockquote class="call">
+p3-file-filter --reverse --col=feature.role aRoles.tbl feature.role &lt;cRoles.tbl
+
+</blockquote>
+The output looks something like this
+<blockquote class="resp">
+feature.role    count
+2,3-dihydroxybenzoate-AMP ligase (EC 2.7.7.58) of siderophore biosynthesis  33
+2-octaprenyl-3-methyl-6-methoxy-1,4-benzoquinol hydroxylase (EC 1.14.13.-)  1
+2-pyrone-4,6-dicarboxylic acid hydrolase (EC 3.1.1.57)  14
+23S ribosomal RNA rRNA prediction is too short  1
+3-polyprenyl-4-hydroxybenzoate carboxy-lyase UbiX (EC 4.1.1.-)  1
+4-amino-4-deoxy-L-arabinose transferase 26
+4-carboxy-2-hydroxymuconate-6-semialdehyde dehydrogenase    17
+4-carboxy-4-hydroxy-2-oxoadipate aldolase (EC 4.1.3.17) 16
+4-hydroxy-2-oxovalerate aldolase (EC 4.1.3.39)  7
+4-oxalmesaconate hydratase (EC 4.2.1.83)    14
+4-oxalocrotonate tautomerase    1
+
+</blockquote>
+</dd>
 </dl>
 <ol>
-<li> Given two sets of genomes Gs1 and Gs2, list the roles implemented in genomes in Gs1, but not by
-genomes in Gs2.
 <li>What is the average length of proteins in family F, along with the standard deviation.
 <li>Compute the upstream and downstream regions for pegs in list pegL.
 <li>Return features from a designated list of types for a genome G -- sorted by location on the chromosome.
