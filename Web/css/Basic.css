@@ -393,19 +393,20 @@ div.pod blockquote,
    padding: 2px;
 }
 
-#Dump blockquote.resp {
-    font-family: Courier New, Courier, monospace;
-    font-size: small;
-    white-space: pre;
-    overflow: auto;
+#Dump pre.resp {
+    background-color: #ff0;
 }
 
-#Dump blockquote.call {
-    font-family: Courier New, Courier, monospace;
-    font-size: small;
-    white-space: pre;
+#Dump pre.call {
     background-color: #fff;
-    overflow: auto;
+}
+
+#Dump pre.call,
+#Dump pre.resp {
+        font-size: small;
+        overflow: auto;
+        padding: 0.5em;
+        border: medium inset #ccc;
 }
 
 .error {
