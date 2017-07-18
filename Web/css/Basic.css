@@ -9,15 +9,18 @@ body {
 }
 
 pre {
-        font-size: medium;
-        background-color: white;
-        color: black;
+    font-size: medium;
+    background-color: white;
+    color: black;
 }
 
 body.borderless {
     background-image:url(BlackNoise.jpg);
 }
 
+span.interrupt {
+    background-color: #ccc; width: 100%; display: block; margin-bottom: -1em;
+}
 
 h1, h2, h3, h4, h5 {
     font-family: Georgia, "Times New Roman", Times, serif;
@@ -521,5 +524,10 @@ form#armyAnalysis {
     height: 800px;
     border: none;
     background-color: #FFFFFF;
+}
+
+#Dump blockquote.alarm {
+        background-color: #f00;
+        color: #fff;
 }
 
