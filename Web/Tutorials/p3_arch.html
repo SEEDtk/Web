@@ -1614,9 +1614,49 @@ genome_id   feature.patric_id   feature.sequence_id feature.start   feature.stra
 1313.7001   fig|1313.7001.peg.15    1313.7001.con.0003  10173   +   tmRNA-binding protein SmpB
 1313.7001   fig|1313.7001.peg.16    1313.7001.con.0003  10656   +   Tellurite methyltransferase (EC 2.1.1.265)
 </pre>
+</dd>
+<dt>Compute the upstream regions for the protein-encoding genes in genome 1313.7001.</dt>
+<dd>We get upstream regions from the <b>p3-feature-upstream</b> script, but to use it we need an input list of feature IDs.
+We will produce feature IDs and functional assignments, then append the upstream sequences.
+<pre class="call">
+p3-echo -t genome_id 1313.7001 | p3-get-genome-features --eq feature_type,CDS --attr patric_id --attr product | p3-feature-upstream --col=feature.patric_id
+</pre>
+The <code>-eq feature_type,CDS</code> insures we only see protein-encoding features. Because we are not putting the feature ID in the last column,
+we use <code>--col=feature.patric_id</code> to direct <b>p3-feature-upstream</b> to the correct input column. The output will look something like this.
+Note the upstream DNA is in the last column.
+<pre class="resp">
+genome_id   feature.patric_id   feature.product upstream
+1313.7001   fig|1313.7001.peg.1182  beta-glycosyl hydrolase      ttgtcatctcctcttgactctcgttaatataagaaataaaataagggcgttgatttatataatcgctatcaatataacaatgcaatcaggaggttttgca
+1313.7001   fig|1313.7001.peg.1189  IMP cyclohydrolase (EC 3.5.4.10) / Phosphoribosylaminoimidazolecarboxamide formyltransferase (EC 2.1.2.3)   gatcaatatcttaggtatgcttagccttggttttgcttatcttgttttactgttactgcatttaattggtgtttaactaatgattaaaaaggagaatata
+1313.7001   fig|1313.7001.peg.1191  Phosphoribosylglycinamide formyltransferase (EC 2.1.2.2)      tcagccctgaaaatgtagagcgtgtaaaagaattgttggatgaagcagtctatgaaattggtcgcatcgtcaagaaagaaaacgaaagtgtcattatcaa
+1313.7001   fig|1313.7001.peg.1192  Phosphoribosylformylglycinamidine cyclo-ligase (EC 6.3.3.1)   tctctatgactacgaagaagactatcgtagaagtttggaagaaaagaccagtttttacaagtaggcgacagattctccattaaagaaaaggaaaaaacaa
+1313.7001   fig|1313.7001.peg.1199  hypothetical protein    aaggtggcggatgcaattggggagattttgccaaagcaggtgttggaggaggagctatacttggaggtgtggcctatgcagcgacatgttggtggtaatt
+1313.7001   fig|1313.7001.peg.1211  hypothetical protein    ttggcgattaccaacaatggacaggaaaaccatctggttaagatggcattcttggaattaaaaaatacagagaaaccagcaaagacaaggttcgcaagcc
+1313.7001   fig|1313.7001.peg.1259  Acetyl xylan esterase 1; Cephalosporin-C deacetylase (EC 3.1.1.41)  aaagaatctaaattcactttctatttacccttctttcttgcattgattacatagatatgctacagttgtggtaacgattacaaaataaaaggagcatgct
+1313.7001   fig|1313.7001.peg.1278  Helicase loader DnaB    acgttttgctagtgtctatcgtagttttaaggatgtcagtgagttagagagcttgctccaacaaatcacccagtcctctaaaaagaaaaaggaaagataa
+1313.7001   fig|1313.7001.peg.1288  Fructokinase (EC 2.7.1.4)   ttattagatagtaagatttacagaggaaaatctaaaaaatagagacatttagactttcgaagtatgctataataaagaaaataaaaacaagaggtttatc
+</pre>
+You can use the <code>--len</code> parameter of <b>p3-feature-upstream</b> to change the number of base pairs displayed (the default is 100). If the feature is
+at the edge of the contig, you may see less than the specified length or even nothing at all, since the script stops at the end. To see downstream regions instead,
+use the <code>--downstream</code> option. This pipe shows the 10 base pairs downstream of each gene.
+<pre class="call">
+p3-echo -t genome_id 1313.7001 | p3-get-genome-features --eq feature_type,CDS --attr patric_id --attr product | p3-feature-upstream --col=feature.patric_id --downstream --len=10
+</pre>
+<pre class="resp">
+genome_id   feature.patric_id   feature.product downstream
+1313.7001   fig|1313.7001.peg.1182  beta-glycosyl hydrolase    gtcttttcga
+1313.7001   fig|1313.7001.peg.1189  IMP cyclohydrolase (EC 3.5.4.10) / Phosphoribosylaminoimidazolecarboxamide formyltransferase (EC 2.1.2.3)   gaagataaaa
+1313.7001   fig|1313.7001.peg.1191  Phosphoribosylglycinamide formyltransferase (EC 2.1.2.2)    ctttttgatg
+1313.7001   fig|1313.7001.peg.1192  Phosphoribosylformylglycinamidine cyclo-ligase (EC 6.3.3.1)     aaaaaatagc
+1313.7001   fig|1313.7001.peg.1199  hypothetical protein    tcaaaactat
+1313.7001   fig|1313.7001.peg.1211  hypothetical protein    tcaactacat
+1313.7001   fig|1313.7001.peg.1259  Acetyl xylan esterase 1; Cephalosporin-C deacetylase (EC 3.1.1.41)  ggagtcgact
+1313.7001   fig|1313.7001.peg.1278  Helicase loader DnaB    atggaaagtg
+</pre>
+</dd>
 </dl>
+<!--
 <ol>
-<li>Compute the upstream and downstream regions for pegs in list pegL.
 <li>Which kmers occur in one list of genomes, but not in a second set?  Here we are defining
 signature kmers.
 <li>Compute the codon usage for pegs in a specified genome.  This requires getting the DNA sequence
@@ -1628,6 +1668,7 @@ existing version.
 <li>Given a genome G and a close genome G', use G' to look for pegs in G1 that might span contigs.
 
 </ol>
+-->
 </div><div id="Apps"><h2>More Applications</h2>
 <p>The following documents describe more applications for the PATRIC CLI.</p>
 <ol>
@@ -1635,6 +1676,7 @@ existing version.
 <li><a href="p3_phylogenetic.html">What Distinguishes Phylogenetic Groups?</a></li>
 <li><a href="p3_applications.html">Uploading Genomes and Assembling Reads</a></li>
 </ol>
+</div>
 </div>
 </body>
 </html>
