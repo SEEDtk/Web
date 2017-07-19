@@ -478,7 +478,7 @@ Streptococcus penumoniae genomes that are resistant to penicillin. The following
 of genomes (we will discuss all query commands in more details later).</p>
 
 <pre class="call">
-p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,resistant --attr genome_id --attr genome_name &gt;resist.tbl
+p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --resistant --attr genome_id --attr genome_name &gt;resist.tbl
 </pre>
 
 <p>This particular
@@ -493,8 +493,9 @@ We put the single record <code>penicillin</code> in that column.<p>
 <dd>Only include records for Streptococcus pneumoniae genomes. Because this is a string field, it does a substring match.
 A genome name including follow-on strain information (e.g. <code>Streptococcus pneumoniae strain LMG2888</code>)
 will still match.</dd>
-<dt><code>--eq resistant_phenotype,resistant</code></dt>
-<dd>Only include records that state the genome is resistant.</dd>
+<dt><code>--resistant</code></dt>
+<dd>Only include records that state the genome is resistant. This is a special parameter for the <b>p3-get-drug-genomes</b> and
+<b>p3-get-genome-drugs</b> commands that is provided for convenience.</dd>
 <dt><code>--attr genome_id</code></dt>
 <dd>Output the genome ID.</dd>
 <dt><code>--attr genome_name</code></dt>
@@ -574,10 +575,10 @@ resist_strep.genome_id  genome.genome_name
 <b>p3-put-genome-group</b> to store them in our workspace.</p>
 
 <pre class="call">
-p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --eq resistant_phenotype,susceptible --attr genome_id --attr genome_name | p3-put-genome-group --col=2 weak_strep
+p3-echo -t antibiotic penicillin | p3-get-drug-genomes --eq "genome_name,Streptococcus pneumoniae"  --susceptible --attr genome_id --attr genome_name | p3-put-genome-group --col=2 weak_strep
 </pre>
 
-<p>Now when you ask for the group back, you would get something like the following.
+<p>Now when you ask for the group back, you would get something like the following.</p>
 
 <pre class="call">
 p3-get-genome-group weak_strep
@@ -601,23 +602,34 @@ weak_strep.genome_id
 
 <p>We want to look at features in the resistant Streptococcus pneumoniae genomes that distinguish them from the susceptible ones.
 Then we will gather those features into a feature group and store them in our workspace so we can work with them later.
-We already have our resistant group in a file called <i>resist.tbl</i>. We will use the <b>p3-get-genome-group</b>
-command to pull the susceptible genomes out of our workspace and pipe it into <b>p3-signature-families</b>, which
-counts and compares protein families.
+We have the genomes we want stored in the genome groups <i>weak_strep</i> and <i>resist_strep</i>. The command that
+processes them is called <b>p3-signature-families</b>.</p>
+<p><b>p3-signature families</b> compares two genome groups-- group 1 contains genomes that are interesting for some reason,
+group 2 contains genomes that are not. We can pipe one of the two groups directly into the command, but the other needs
+to be in a file. We will start by creating a file called <i>weak.tbl</i> that contains the <i>weak_strep</i>
+genomes.</p>
 
 <pre class="call">
-p3-get-genome-group weak_strep | p3-signature-families --gs1=resist.tbl >families.tbl
+p3-get-genome-group weak_strep &gt;weak.tbl
 </pre>
 
-<p>The <b>p3-signature-families</b> script asks for two sets of genome IDs as input,
-specified as file names using the command-line parameters <b>--gs1</b> (interesting set) and <b>--gs2</b> (other set). The output
-contains protein families that are common in the interesting set but not in the other set. (For convenience, any genomes in the
-interesting set are removed from the other set before processing.) If a set file is not specified, it is taken from the standard
-input. In this case, that would be the other set, since there is no <b>--gs2</b> parameter. That is piped in from
-the <b>p3-get-genome-group</b> command.</p>
+<p>Now we pipe in <i>resist_strep</i> (the interesting set) and specify <i>weak.tbl</i> as the source of group 2.</p>
 
-<p>Our signature families analysis script yields four protein families, displayed in the following output.</p>
+<pre class="call">
+p3-get-genome-group resist_strep | p3-signature-families --gs2=weak.tbl &gt;families.tbl
+</pre>
 
+<p>The output
+contains protein families that are common in the interesting set (resistant to penicillin) but not in the other set.
+If a set file is not specified, it is taken from the standard input. In this case, that would be the interesting set,
+since there is no <b>--gs1</b> parameter.</p>
+
+<p>Our signature families analysis script has no output, because we redirected it to <i>families.tbl</i>. We can peek
+at the results using the <code>--all</code> option of <b>p3-extract</b>.</p>
+
+<pre class="call">
+p3-extract --all &lt;families.tbl
+</pre>
 <pre class="resp">
 counts_in_set1  counts_in_set2  family.family_id    family.product
 92  10  PGF_00112374    hypothetical protein
@@ -626,19 +638,19 @@ counts_in_set1  counts_in_set2  family.family_id    family.product
 91  10  PGF_03497236    hypothetical protein
 </pre>
 
-<p>The next step is to convert the families into feature IDs. The <b>p3-get-family-features</b> script performs that
+<p> We found four protein families. The next step is to convert the families into feature IDs. The <b>p3-get-family-features</b> script performs that
 function. We will use the following command.</p>
 
 <pre class="call">
-p3-get-family-features --gFile=resist.tbl --gCol=1 --ftype=global --col=family.family_id &lt;families.tbl
+p3-get-family-features --gFile=resist.tbl --gCol=2 --ftype=global --col=family.family_id &lt;families.tbl
 </pre>
 
 <p>The parameters work as follows.
 <dl>
 <dt>--gFile=resist.tbl</dt>
 <dd>Only features from the genomes listed in the file <i>resist.tbl</i> should be included in the output.</dd>
-<dt>--gCol=1</dt>
-<dd>The genome IDs in <i>resist.tbl</i> are in the first column.</dd>
+<dt>--gCol=2</dt>
+<dd>The genome IDs in <i>resist.tbl</i> are in the second column.</dd>
 <dt>--ftype=global</dt>
 <dd>The family IDs in the input file are global families. (Local families and FIGfams are also supported, but
 the <b>p3-signature-families</b> script uses global families.)</dd>
@@ -1169,7 +1181,7 @@ group of everything resistant to a particular drug. The drug is the first
 parameter, the group name the second.</p>
 <pre class="call">
 function rg {
-    p3-echo -t antibiotic $1 | p3-get-drug-genomes --eq resistant_phenotype,resistant --attr genome_id | p3-put-genome-group $2
+    p3-echo -t antibiotic $1 | p3-get-drug-genomes --resistant --attr genome_id | p3-put-genome-group $2
 }
 </pre>
 <p>Once the above definition is in place, the following command will put all the methicillin-resistant genomes into the group
@@ -1209,7 +1221,7 @@ group of everything resistant to a particular drug. The drug is the first
 parameter, the group name the second.</p>
 <pre class="call">
 @echo off
-p3-echo -t antibiotic %1 | p3-get-drug-genomes --eq resistant_phenotype,resistant --attr genome_id | p3-put-genome-group %2
+p3-echo -t antibiotic %1 | p3-get-drug-genomes --resistant --attr genome_id | p3-put-genome-group %2
 </pre>
 <p>Once the above is saved as <b>rg.cmd</b>, the following command will put all the methicillin-resistant genomes into the roup
 <b>meth_resist</b>.</p>
@@ -1285,7 +1297,7 @@ genome.count
 To get the count of resistant genomes, we need to pipe the drug name into <b>p3-get-drug-genomes</b>. Here we don't have the option of
 using the <i>genus</i> field, since only the genome name is present in the drug-genome records, not the entire taxonomy.
 <pre class="call">
-p3-echo -t antibiotic methicillin | p3-get-drug-genomes --equal resistant_phenotype,resistant --equal genome_name,Staphylococcus --count
+p3-echo -t antibiotic methicillin | p3-get-drug-genomes --resistant --equal genome_name,Staphylococcus --count
 </pre>
 <pre class="resp">
 antibiotic   genome_drug.count
@@ -1334,7 +1346,7 @@ line. Since our example has only one title, the output file has only a single co
 <dd>
 The drug name is in the <i>antibiotic</i> attribute of the genome-drug table. We start with a genome ID and use <b>p3-get-genome-drugs</b>.
 <pre class="call">
-p3-echo -t genome_id 46170.310 | p3-get-genome-drugs --equal resistant_phenotype,resistant --attr antibiotic
+p3-echo -t genome_id 46170.310 | p3-get-genome-drugs --resistant --attr antibiotic
 </pre>
 <pre class="resp">
 genome_id   genome_drug.antibiotic
@@ -1349,7 +1361,7 @@ genome_id   genome_drug.antibiotic
 <dt>What genomes are resistant to erythromycin?</dt>
 <dd>Here we start with a drug name and use <b>p3-get-drug-genomes</b> to get the genome data.
 <pre class="call">
-p3-echo -t antibiotic erythromycin | p3-get-drug-genomes --equal resistant_phenotype,resistant --attr genome_id --attr genome_name
+p3-echo -t antibiotic erythromycin | p3-get-drug-genomes --resistant --attr genome_id --attr genome_name
 </pre>
 <pre class="resp">
 antibiotic  genome_drug.genome_id   genome_drug.genome_name
