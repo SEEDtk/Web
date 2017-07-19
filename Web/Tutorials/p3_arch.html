@@ -1483,7 +1483,7 @@ The GC content percentage is found in the <i>gc_content</i> attribute, as shown 
 <pre class="call">
 p3-get-genome-data --attr gc_content --attr genome_name &lt;genomes.tbl
 </pre>
-<pre class="call">
+<pre class="resp">
 genome_id   genome.gc_content   genome.genome_name
 66976.17    38.28   Legionella pneumophila serogroup 1 strain Lp01_666
 91890.5 38.19   Legionella pneumophila subsp. pascullei strain D-7158
@@ -1499,7 +1499,7 @@ specific values of that field.
 <pre class="call">
 p3-get-genome-data --attr gc_content --attr genome_name --gt gc_content,60 &lt;genomes.tbl
 </pre>
-<pre class="call">
+<pre class="resp">
 genome_id   genome.gc_content   genome.genome_name
 316273.25   64.56   Xanthomonas campestris pv. vesicatoria str. 85-10
 </pre>
@@ -1666,13 +1666,57 @@ genome_id   feature.patric_id   feature.product downstream
 1313.7001   fig|1313.7001.peg.1278  Helicase loader DnaB    atggaaagtg
 </pre>
 </dd>
+<dt>What is the codon usage in genome 186497.12?</dt>
+<dd>The <b>p3-sequence-profile</b> script counts the number of occurrences of each letter in a sequence field.
+To use it, we need to create a file that has the sequences we want to analyze in the last column.
+We start with the genome ID, then use <b>p3-get-genome-features</b> to get the feature data. The <i>aa_sequence</i>
+field contains the protein sequences, which are then processed by <b>p3-sequence-profile</b>.
+<pre class="call">
+p3-echo -t genome_id 186497.12 | p3-get-genome-features --attr aa_sequence | p3-sequence-profile
+</pre>
+By default, <b>p3-sequence-profile</b> works on the last input column, which in this case is the amino acid
+sequence. The output will look something like this.
+<pre class="resp">
+letter  count
+L   60774
+A   43592
+E   43055
+I   42886
+V   41539
+K   41008
+G   38969
+S   36666
+D   32910
+T   32719
+F   27547
+N   25935
+Q   24322
+R   24255
+Y   22745
+P   19739
+M   14649
+H   11581
+W   5414
+C   3616
+</pre>
+Note that the output is sorted from most common to least. The same trick works for DNA sequences, which are in the
+<i>na_sequence</i> field.
+<pre class="call">
+p3-echo -t genome_id 186497.12 | p3-get-genome-features --attr na_sequence | p3-sequence-profile
+</pre>
+<pre class="resp">
+letter  count
+A   588473
+T   568123
+G   420574
+C   367718
+</pre>
+</dd>
 </dl>
 <!--
 <ol>
 <li>Which kmers occur in one list of genomes, but not in a second set?  Here we are defining
 signature kmers.
-<li>Compute the codon usage for pegs in a specified genome.  This requires getting the DNA sequence
-    for the genome, getting the peg translations, and tabulating the codon counts.
 <li>Given a possible frameshift (in the form of two adjacent pegs), try to "fix it".  We have a version
 of the code to do this, and it involves a Smith-Waterman algorithm.  Hopefully, we can just lift the
 existing version.
