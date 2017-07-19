@@ -89,16 +89,21 @@ genomes,<ul>
 <li>Use <b>p3-get-genome-contigs</b> to access the genomes' sequences.</li>
 <li>Use <b>p3-get-genome-drugs</b> to access drug resistance data about the genomes.</li>
 </ul>
+Fields from the Genome table appear in the output with a heading prefix of <code>genome</code>.
+Thus, the <i>genome_name</i> will be in a column named <code>genome.genome_name</code>.
 </dd>
 <dt>Contig</dt>
 <dd>Represents one of the DNA sequences that comprise a genome. A contig can be a chromosome,
 a plasmid, or a fragment thereof. Contig data can be accessed from genome IDs using
-<b>p3-get-genome-contigs</b>.</dd>
+<b>p3-get-genome-contigs</b>. Fields from the Contig table appear in the output with a heading prefix
+of <code>contig</code>. Thus, the <i>length</i> will be in a column named <code>contig.length</code>.</dd>
 <dt>Drug</dt>
 <dd>Represents an antimicrobial drug used for therapeutic treatment. This table is the
 anchor for all antimicrobial resistance data in PATRIC. Use <b>p3-all-drugs</b> to get
 a list of drugs. Use <b>p3-get-drug-genomes</b> to get resistance data relating to
-specific drugs from a list.</dd>
+specific drugs from a list. Fields from the Drug table appear in the output with a heading prefix
+of <code>drug</code>. Thus, the <i>molecular_formula</i> will be in a column named
+<code>drug.molecular_formula</code>.</dd>
 <dt>Feature</dt>
 <dd>Represents a region of interest in a genome. This could be a CRISPR array, an
 RNA site, a protein encoding region, or a regulatory site, among others. A feature can
@@ -106,14 +111,18 @@ be split across multiple regions, or even multiple contigs, but never multiple g
 Given a list of genome IDs, use <b>p3-get-genome-features</b> to access the features in
 the genomes. Given a list of family IDs, use <b>p3-get-family-features</b> to access the features
 in the families. Given a list of feature IDs, use <b>p3-get-feature-data</b> to access data
-about those features.</dd>
+about those features.Fields from the Feature table appear in the output with a heading prefix
+of <code>feature</code>. Thus, the <i>location</i> will be in a column named
+<code>feature.location</code>.</dd>
 <dt>Family</dt>
 <dd>Represents a protein family, which is a set of features believed to be isofunctional homologs.
 Given a list of family IDs, use <b>p3-get-family-features</b>
 to get data about the features in the family. Given a list of feature IDs, use <b>p3-get-feature-data</b> to get
 the families to which the features belong. There are three types of protein families supported-- <i>local</i>
 families which are confined to one genus, <i>global</i> families which cross the entire database, and
-<i>figfams</i>, which are computed using a different method.</dd>
+<i>figfams</i>, which are computed using a different method. Fields from the Family table appear in the output with a heading prefix
+of <code>family</code>. Thus, the <i>product</i> will be in a column named
+<code>family.product</code>.</dd>
 </dl>
 </div><div id="Pipes"><h2>Files and Pipelines</h2>
 
