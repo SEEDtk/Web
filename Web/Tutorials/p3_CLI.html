@@ -111,13 +111,18 @@ be split across multiple regions, or even multiple contigs, but never multiple g
 Given a list of genome IDs, use <b>p3-get-genome-features</b> to access the features in
 the genomes. Given a list of family IDs, use <b>p3-get-family-features</b> to access the features
 in the families. Given a list of feature IDs, use <b>p3-get-feature-data</b> to access data
-about those features.Fields from the Feature table appear in the output with a heading prefix
-of <code>feature</code>. Thus, the <i>location</i> will be in a column named
+about those features.  <b>It is important to remember that the ID of the feature is called
+<i>patric_id</i>, not <i>feature_id</i>.</b> The internal feature ID is a long string with a
+lot of data packed into it that may change if the genome is re-annotated (e.g.
+<code>PATRIC.269798.23.NC_008255.CDS.22581.24344.fwd</code>). The <i>patric_id</i> value is
+shorter and more consistent (<code>fig|269798.23.peg.22</code>). Fields from the Feature table appear
+in the output with a heading prefix of <code>feature</code>. Thus, the <i>location</i> will be in a column named
 <code>feature.location</code>.</dd>
 <dt>Family</dt>
 <dd>Represents a protein family, which is a set of features believed to be isofunctional homologs.
 Given a list of family IDs, use <b>p3-get-family-features</b>
-to get data about the features in the family. Given a list of feature IDs, use <b>p3-get-feature-data</b> to get
+to get data about the features in the families or <b>p3-get-family-data</b> to get data about the
+families themselves. Given a list of feature IDs, use <b>p3-get-feature-data</b> to get
 the families to which the features belong. There are three types of protein families supported-- <i>local</i>
 families which are confined to one genus, <i>global</i> families which cross the entire database, and
 <i>figfams</i>, which are computed using a different method. Fields from the Family table appear in the output with a heading prefix
@@ -155,16 +160,29 @@ options are available on all of the database scripts.</p>
 <p>By default, the last column in the input file is used as the key field for the get-type scripts. You can modify this
 behavior using the <code>--col</code> command-line option. The special value <code>0</code> denotes the last column, but
 you can also use a 1-based column number (<code>1</code> for the first, <code>2</code> for the second) or a column name.
-So, if you want to get location information from the features output by the pipeline above, you could use</p>
+If the field-name portion of the column name is unique, you can leave off the table-name portion.
+So, if you want to get location information from the features output by the pipeline above (identified in column
+<code>feature.patric_id</code>, which is the second one), you could use any of the three following commands</p>
 <pre class="call">
 p3-get-feature-data --col=feature.patric_id --attr sequence_id --attr location &lt;input.tbl
 </pre>
-<p>where <i>input.tbl</i> is the above output file. Note that <code>--col=2</code> would also work.</p>
+<pre class="call">
+p3-get-feature-data --col=2 --attr sequence_id --attr location &lt;input.tbl
+</pre>
+<pre class="call">
+p3-get-feature-data --col=patric_id --attr sequence_id --attr location &lt;input.tbl
+</pre>
+<p>where <i>input.tbl</i> is the above output file.</p>
 <p>The special script <b>p3-extract</b> allows you to select columns from a file and even change the order. Thus,
 the following pipeline removes the genome ID from our file and puts the feature ID at the end before asking
 <b>p3-get-feature-data</b> for the location information.</p>
 <pre class="call">
 p3-extract feature.product feature.patric_id &lt;input.tbl | p3-get-feature-data --attr sequence_id --attr location
+</pre>
+<p>The same flexibility provided for arguments of the <code>--col</code> option is available anywhere you specify
+column names, including the parameters of <b>p3-extract</b>. So, the following invocation is equivalent to the above.</p>
+<pre class="call">
+p3-extract product 2 &lt;input.tbl | p3-get-feature-data --attr sequence_id --attr location
 </pre>
 <p>Because of the presence of the headings, many standard file-manipulation commands won't work the way you expect. We
 provide p3 scripts for several of the most common needs.</p>
@@ -179,6 +197,8 @@ provide p3 scripts for several of the most common needs.</p>
 <dd>Horizontally join two files on a single key field.</dd>
 <dt>p3-pick</dt>
 <dd>Randomly select a specified number of records from a file</dd>
+<dt>p3-echo</dt>
+<dd>Create a small file.</dd>
 </dl>
 <div id="Echo"><h3>p3-echo</h3>
 <p>The <b>p3-echo</b> command is your most important tool for creating small files that feed into pipes.
@@ -216,6 +236,17 @@ p3-echo -t genome_id -t patric_id -t product 1313.7001 "fig|1313.7001.peg.1362" 
 genome_id   patric_id   product
 1313.7001   fig|1313.7001.peg.1362  hypothetical protein
 </pre>
+<p>If you leave off the title parameter, the default title <code>id</code> is used. This is a handy shortcut when
+you're in a hurry.</p>
+<pre class="call">
+p3-echo 1313.7001. 1313.7016
+</pre>
+<pre class="resp">
+id
+1313.7001
+1313.7016
+</pre>
+<p>Of course, you can only do that for a single-column output.</p>
 </div>
 </div><div id="Scripts"><h2>Database Script Examples</h2>
 <p>In this section we briefly discuss the main database scripts.</p>
@@ -225,8 +256,21 @@ genome_id   patric_id   product
 <pre class="call">
 p3-all-genomes --eq genome_name,Streptomyces
 </pre>
+<pre class="resp">
+genome.genome_id
+284037.4
+67257.17
+68042.5
+68042.6
+1395572.3
+68570.5
+1160718.3
+749414.3
+66876.3
+249567.6
+</pre>
 would list all genomes in the genus Streptomyces. (That is, all genomes whose names start with that word.) The <code>--eq</code>
-parameter introduces an equality constraint. In PATRIC, string searches perform a substring match, which allows us to easily do
+parameter introduces an equality constraint. In PATRIC, string searches perform a word-based substring match, which allows us to easily do
 queries of this type. The various database commands all support the <code>--eq</code> option. In addition, you can specify
 output fields using the <code>--attr</code> option. Thus,
 <pre class="call">
@@ -246,8 +290,8 @@ genome.genome_id    genome.genome_name
 66876.3 Streptomyces chattanoogensis strain NRRL ISP-5002
 249567.6    Streptomyces decoyicus strain NRRL 2666
 </pre>
-To get a complete list of the available fields, use the <code>--fields</code> option. Again, this is available for all the
-database scripts described in this section.
+<p>To get a complete list of the available fields, use the <code>--fields</code> option. This option is available for all the
+database scripts described in this section.</p>
 <pre class="call">
 p3-all-genomes --fields
 </pre>
@@ -273,32 +317,70 @@ genome.genome_id    genome.genome_name  genome.contigs  genome.genome_length
 In actual fact, the use of <b>p3-get-genome-data</b> in the above pipeline is redundant, since <b>p3-all-genomes</b>
 supports the same command-line options. In practice, you will use <b>p3-get-genome-data</b> to process genome ID
 files created on a separate occasion or via other scripts that don't have the full power of <b>p3-all-genomes</b>.
+If you don't specify any <code>--attr</code> values, you get the same output fields as found on the PATRIC genome
+list tab.
+<pre class="call">
+p3-all-genomes --eq genome_name,Streptomyces | p3-get-genome-data
+</pre>
+<pre class="resp">
+genome.genome_id    genome.genome_name  genome.genome_id    genome.genome_status    genome.sequences    genome.patric_cds   genome.isolation_country    genome.host_name    genome.disease  genome.collection_year  genome.completion_date
+284037.4    Streptomyces sporocinereus strain OsiSh-2   284037.4    WGS 125 9060    China   Rice        2012    2016-08-16T00:00:00Z
+67257.17    Streptomyces albus subsp. albus strain NRRL F-4371  67257.17    WGS 307 8633                    2016-01-26T00:00:00Z
+68042.5 Streptomyces hygroscopicus subsp. hygroscopicus strain NBRC 16556   68042.5 WGS 133 8955                    2016-02-05T00:00:00Z
+68042.6 Streptomyces hygroscopicus subsp. hygroscopicus strain NBRC 13472   68042.6 WGS 680 8767                    2016-02-05T00:00:00Z
+1395572.3   Streptomyces albulus PD-1   1395572.3   WGS 482 8332    China               2013-12-05T00:00:00Z
+68570.5 Streptomyces albulus strain NK660   68570.5 Complete    2   8793    China               2014-06-18T00:00:00Z
+1160718.3   Streptomyces auratus AGR0001    1160718.3   WGS 238 6866    China               2012-07-23T00:00:00Z
+749414.3    Streptomyces bingchenggensis BCW-1  749414.3    Complete    1   10313   China               2010-05-28T00:00:00Z
+66876.3 Streptomyces chattanoogensis strain NRRL ISP-5002   66876.3 WGS 217 8838    United States               2015-09-18T00:00:00Z
+249567.6    Streptomyces decoyicus strain NRRL 2666 249567.6    WGS 304 8231    United States               2015-08-19T00:00:00Z
+1907.4  Streptomyces glaucescens GLA.O  1907.4  Complete    2   6719    India               2014-10-01T00:00:00Z
+1172567.3   Streptomyces globisporus C-1027 1172567.3   WGS 278 6980    China               2012-05-04T00:00:00Z
+</pre>
+This is typical of the <code>p3-get</code> scripts: the default attributes match what you see on the web site as closely
+as possible.
 </dd>
 <dt>p3-get-genome-features</dt>
 <dd>Given a file of genome IDs, return data about the genome's features. So, for example, the following pipeline would
-return the ID and function (product) of each feature in the Mycoplasma genomes.
+return the ID and function (product) of each feature in the Cytophaga genomes.
 <pre class="call">
-p3-all-genomes --eq genome_name,Mycoplasma | p3-get-genome-features --attr patric_id --attr product
+p3-all-genomes --eq genus,Cytophaga | p3-get-genome-features --attr patric_id --attr product
 </pre>
 <pre class="resp">
 genome.genome_id    feature.patric_id   feature.product
-1262907.4   fig|1262907.4.repeat.1  repeat region
-1262907.4   fig|1262907.4.rna.1 SSU rRNA ## 16S rRNA, small subunit ribosomal RNA
-1262907.4   fig|1262907.4.repeat.2  repeat region
-1262907.4   fig|1262907.4.peg.1 Cysteinyl-tRNA synthetase related protein
-1262907.4   fig|1262907.4.peg.2 hypothetical protein
-1262907.4   fig|1262907.4.peg.3 hypothetical protein
-1262907.4   fig|1262907.4.peg.4 ABC transporter, ATP-binding protein
-1262907.4   fig|1262907.4.peg.5 Glycerol-3-phosphate dehydrogenase [NAD(P)+] (EC 1.1.1.94)
-1262907.4   fig|1262907.4.peg.6 BH0638 unknown conserved protein
-1262907.4   fig|1262907.4.peg.7 hypothetical protein
+269798.23   fig|269798.23.peg.1 hypothetical protein
+269798.23   fig|269798.23.peg.2 Capsular polysaccharide synthesis enzyme Cap8C; Manganese-dependent protein-tyrosine phosphatase (EC 3.1.3.48)
+269798.23   fig|269798.23.peg.3 Dihydroflavonol-4-reductase (EC 1.1.1.219)
+269798.23   fig|269798.23.peg.4 TPR domain protein
+269798.23   fig|269798.23.peg.5 Phosphosulfolactate synthase (EC 4.4.1.19)
+269798.23   fig|269798.23.peg.6 DedA protein
+269798.23   fig|269798.23.peg.7 Shikimate 5-dehydrogenase I alpha (EC 1.1.1.25)
+269798.23   fig|269798.23.peg.8 hypothetical protein
+269798.23   fig|269798.23.peg.9 Excinuclease ABC subunit B
+269798.23   fig|269798.23.peg.10    DNA polymerase III epsilon subunit
+269798.23   fig|269798.23.peg.11    hypothetical protein
+269798.23   fig|269798.23.peg.12    putative fatty acid hydroxylase
 </pre>
 You can use the <code>--fields</code> option to list all the fields available in a feature record. In addition, you have
 access to the usual filtering parameters-- <code>--eq</code> as well as <code>--lt</code>, <code>--gt</code>, <code>--le</code>,
 <code>--ge</code>, and <code>--ne</code>. So, for example, the following command would restrict the features to CDS features
 of at least 500 base pairs.
 <pre class="call">
-p3-all-genomes --eq genome_name,Mycoplasma | p3-get-genome-features --eq feature_type,CDS --ge na_length,500 --attr patric_id --attr product
+p3-all-genomes --eq genus,Cytophaga | p3-get-genome-features --eq feature_type,CDS --ge na_length,500 --attr patric_id --attr product
+</pre>
+<pre class="resp">
+genome.genome_id    feature.patric_id   feature.product
+269798.23   fig|269798.23.peg.2 Capsular polysaccharide synthesis enzyme Cap8C; Manganese-dependent protein-tyrosine phosphatase (EC 3.1.3.48)
+269798.23   fig|269798.23.peg.3 Dihydroflavonol-4-reductase (EC 1.1.1.219)
+269798.23   fig|269798.23.peg.4 TPR domain protein
+269798.23   fig|269798.23.peg.5 Phosphosulfolactate synthase (EC 4.4.1.19)
+269798.23   fig|269798.23.peg.6 DedA protein
+269798.23   fig|269798.23.peg.7 Shikimate 5-dehydrogenase I alpha (EC 1.1.1.25)
+269798.23   fig|269798.23.peg.8 hypothetical protein
+269798.23   fig|269798.23.peg.9 Excinuclease ABC subunit B
+269798.23   fig|269798.23.peg.10    DNA polymerase III epsilon subunit
+269798.23   fig|269798.23.peg.12    putative fatty acid hydroxylase
+269798.23   fig|269798.23.peg.13    Glycosyl transferase
 </pre>
 </dd>
 <dt>p3-get-genome-contigs</dt>
@@ -357,7 +439,7 @@ cefazolin
 <dd>Given a file of antibiotic names, display all the resistance data for those antibiotics. The following pipeline lists all the
 genomes resistant to at least one drug.
 <pre class="call">
-p3-all-drugs | p3-get-drug-genomes --attr genome_id --attr genome_name --eq resistance_phenotype,resistant
+p3-all-drugs | p3-get-drug-genomes --attr genome_id --attr genome_name --resistant
 </pre>
 <pre class="resp">
 drug.antibiotic_name    genome_drug.genome_id   genome_drug.genome_name
@@ -375,6 +457,9 @@ amikacin    1427202.3   Mycobacterium tuberculosis XTB13-110
 amikacin    1427204.3   Mycobacterium tuberculosis XTB13-112
 amikacin    1427207.3   Mycobacterium tuberculosis XTB13-115
 </pre>
+Rather than typing <code>--eq resistant_phenotype,resistant</code>, the <b>p3-get-drug-genomes</b> script provides the special
+command-line options <code>--resistant</code> and <code>--susceptible</code> to filter for the appropriate resistance phenotypes
+automatically.
 </dd>
 <dt>p3-get-family-features</dt>
 <dd>Given a list of protein family IDs, get all the features in the families. PATRIC supports three types of protein families--
@@ -422,6 +507,14 @@ genome_id   feature.patric_id   feature.product feature.aa_sequence
 1105121.3   fig|1105121.3.peg.228   LSU ribosomal protein L23p (L23Ae)  MNLYDVIKKPVITESSMAQLEAGKYVFEVDTRAHKLLIKQAVEAAFEGVKVANVNTINVKPKAKRVGRYTGFTNKTKKAIITLTADSKAIELFAAEAE
 1105121.3   fig|1105121.3.peg.230   SSU ribosomal protein S19p (S15e)   MGRSLKKGPFVDEHLMKKVEAQANDEKKKVIKTWSRRSTIFPSFIGYTIAVYDGRKHVPVYIQEDMVGHKLGEFAPTRTYKGHAADDKKTRRK
 </pre>
+The use of <b>p3-get-feature-data</b> here is redundant, since you could get the same result by placing the attribute requests
+directly on <b>p3-get-genome-features</b>.
+<pre class="call">
+p3-echo -t genome_id 1105121.3 | p3-get-genome-features --lt na_length,300 --eq feature_type,CDS --attr patric_id --attr product --attr aa_sequence
+</pre>
+<b>p3-get-feature-data</b> is provided for the situation where you are piping in the feature list
+from something external or precomputed.
+</dd>
 </dl>
 </div><div id="Space"><h2>What Is a PATRIC Workspace?</h2>
 
@@ -672,20 +765,23 @@ the <b>p3-signature-families</b> script uses global families.)</dd>
 <p>The output looks something like this.</p>
 
 <pre class="resp">
-counts_in_set1  counts_in_set2  family.family_id    family.product  feature.patric_id   feature.feature_type    feature.location    feature.product
-92  10  PGF_00112374    hypothetical protein    fig|1313.5465.peg.1094  CDS complement(6450..9101)  hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|1313.5418.peg.2058  CDS complement(6450..9101)  hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|1313.5645.peg.1124  CDS 3518..6169  hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|1069623.3.peg.450   CDS 391076..393727  hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|1313.6729.peg.1445  CDS 32402..35053    hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|1313.6728.peg.1682  CDS complement(6420..9071)  hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|1313.6723.peg.2045  CDS 297..2948   hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|760766.3.peg.438    CDS 293743..296403  hypothetical protein
-92  10  PGF_00112374    hypothetical protein    fig|1313.6724.peg.811   CDS 32400..35051    hypothetical protein
+counts_in_set1  counts_in_set2  family.family_id    family.product  feature.patric_id   feature.refseq_locus_tag    feature.gene_id feature.plfam_id    feature.pgfam_id    feature.product
+92  10  PGF_00112374    hypothetical protein    fig|1105121.3.peg.460   SPAR163_0451    0   PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1069626.3.peg.432   SPAR154_0430    0   PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.6771.peg.1961  ERS013947_01920     PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5503.peg.1279  ERS013945_01218     PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5634.peg.1224  ERS013952_01170     PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1069624.3.peg.437   SPAR151_0439    0   PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1069628.3.peg.451   SPAR156_0440    0   PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5669.peg.1163  ERS013960_01123     PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.6725.peg.2115  ERS013931_02059     PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5465.peg.1094  ERS013930_01056     PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5418.peg.2058  ERS013923_02003     PLF_1301_00002060   PGF_00112374    hypothetical protein
+92  10  PGF_00112374    hypothetical protein    fig|1313.5645.peg.1124  ERS013964_01084     PLF_1301_00002060   PGF_00112374    hypothetical protein
 </pre>
 
-<p>We didn't tell <b>p3-get-family-features</b> what attributes of the features to display, so it defaulted to ID, type,
-location, and functional assignment (product). We don't have time to examine these features in detail now, but we can put them
+<p>We didn't tell <b>p3-get-family-features</b> what attributes of the features to display, so it defaulted to the columns normally found
+on the PATRIC web page <i>Features</i> tab. We don't have time to examine these features in detail now, but we can put them
 in a feature group by piping them into <b>p3-put-feature-group</b> as follows.</p>
 
 <pre class="call">
