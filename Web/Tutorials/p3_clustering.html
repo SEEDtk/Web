@@ -174,7 +174,72 @@ cluster_id  genome_id   sequence_id start   end features
 1   1035377.4   CP002956    299094  308182  fig|1035377.4.peg.251::fig|1035377.4.peg.252::fig|1035377.4.peg.253::fig|1035377.4.peg.255::fig|1035377.4.peg.257::fig|1035377.4.peg.258::fig|1035377.4.peg.259::fig|1035377.4.peg.260
 </pre>
 <p>The hypothetical proteins can be found in the file <i>features.tbl</i> generated way back at the beginning of this tutorial. We want to compare them to
-the cluster locations computed above.</p>
+the cluster locations computed above, but first we have to extract them from the file. This is accomplished using <b>p3-match</b>.</p>
+<pre class="call">
+p3-match --col=product "hypothetical protein" &lt;features.tbl &gt;hypotheticals.tbl
+</pre>
+<p>The result is a subset of <i>features.tbl</i> consisting only of records that have the value <code>hypothetical protein</code> in the <i>product</i> column. About
+296,000 proteins are filtered into the output file, which looks something like this.</p>
+<pre class="resp">
+genome.genome_id    feature.patric_id   feature.sequence_id feature.location    feature.product
+385964.3    fig|385964.3.peg.1003   JMUF01000016    29951..30067    hypothetical protein
+385964.3    fig|385964.3.peg.101    JMUF01000001    complement(90500..90613)    hypothetical protein
+385964.3    fig|385964.3.peg.1035   JMUF01000017    17773..17895    hypothetical protein
+385964.3    fig|385964.3.peg.1055   JMUF01000017    complement(42310..42438)    hypothetical protein
+385964.3    fig|385964.3.peg.1101   JMUF01000018    complement(39479..39601)    hypothetical protein
+385964.3    fig|385964.3.peg.1144   JMUF01000019    39640..39753    hypothetical protein
+385964.3    fig|385964.3.peg.1146   JMUF01000019    complement(41198..41398)    hypothetical protein
+385964.3    fig|385964.3.peg.1200   JMUF01000021    19613..19729    hypothetical protein
+385964.3    fig|385964.3.peg.1207   JMUF01000021    complement(26958..27077)    hypothetical protein
+385964.3    fig|385964.3.peg.1218   JMUF01000021    complement(36030..36161)    hypothetical protein
+385964.3    fig|385964.3.peg.1223   JMUF01000021    complement(39935..40057)    hypothetical protein
+</pre>
+<p>This filtered set of hypothetical proteins is fed as input to <b>p3-find-in-clusters</b>, which compares the feature locations to the cluster locations and
+outputs a record if there is a match.</p>
+<pre class="call">
+p3-find-in-clusters --col=patric_id real.clusters.tbl &lt;hypotheticals.tbl &gt;clustered.hypo.tbl
+</pre>
+<p>Note that this could have been done with a pipeline and eschewed the intermediate <i>hypotheticals.tbl</i> file.</p>
+<pre class="call">
+p3-match --col=product "hypothetical protein" &lt;features.tbl | p3-find-in-clusters --col=patric_id real.clusters.tbl &gt;clustered.hypo.tbl
+</pre>
+<p>For the purposes of this tutorial, however, we wanted to show the intermediate result. The output including the cluster numbers looks like this.</p>
+<pre class="resp">
+genome.genome_id    feature.patric_id   feature.sequence_id feature.location    feature.product cluster
+385964.3    fig|385964.3.peg.1003   JMUF01000016    29951..30067    hypothetical protein    1
+385964.3    fig|385964.3.peg.101    JMUF01000001    complement(90500..90613)    hypothetical protein    1
+385964.3    fig|385964.3.peg.1200   JMUF01000021    19613..19729    hypothetical protein    1
+385964.3    fig|385964.3.peg.1207   JMUF01000021    complement(26958..27077)    hypothetical protein    1
+385964.3    fig|385964.3.peg.1237   JMUF01000022    complement(13686..13844)    hypothetical protein    32
+385964.3    fig|385964.3.peg.1253   JMUF01000022    complement(29533..29670)    hypothetical protein    1
+385964.3    fig|385964.3.peg.1253   JMUF01000022    complement(29533..29670)    hypothetical protein    1   58
+385964.3    fig|385964.3.peg.1278   JMUF01000023    complement(11479..11595)    hypothetical protein    1
+385964.3    fig|385964.3.peg.1300   JMUF01000023    32920..33093    hypothetical protein    24
+385964.3    fig|385964.3.peg.1310   JMUF01000024    complement(2364..2477)  hypothetical protein    1
+385964.3    fig|385964.3.peg.1371   JMUF01000025    22506..22685    hypothetical protein    1
+</pre>
+<p>You can see a lot of features are in or near the giant cluster 1, but we also picked up some hypotheticals crowding the smaller clusters (32, 58, 24).
+Using the <b>p3-sort</b> script, we can see how many hypotheticals we found for each cluster.</p>
+<pre class="call">
+p3-sort --col=cluster --count &lt;clustered.hypo.tbl
+</pre>
+<pre class="resp">
+cluster count
+1   83823
+10  263
+101 6
+102 18
+103 21
+104 61
+105 1
+106 6
+107 34
+108 10
+109 17
+11  827
+</pre>
+<p>The next step is to choose a cluster and BLAST the hypotheticals for that cluster to see if any of them are substantially similar. We would then have reason to
+believe the similar hypotheticals have a function related to the cluster.</p>
 <p>&nbsp;</p>
 </div>
 </body>
