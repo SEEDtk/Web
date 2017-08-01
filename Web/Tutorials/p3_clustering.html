@@ -85,7 +85,7 @@ p3-function-to-role &lt;features.tbl &gt;feature.roles.tbl
 385964.3    fig|385964.3.peg.1467   JMUF01000027    31783..32466    Lipoprotein NlpE involeved in surface adhesion
 385964.3    fig|385964.3.peg.1470   JMUF01000027    complement(35126..35533)    Protein RcsF
 </pre>
-<p>here the hypothetical protein has been eliminated, and the multiple-role peg has been duplicated once for each role.</p>
+<p>Here the hypothetical protein has been eliminated, and the multiple-role peg has been duplicated once for each role.</p>
 <p>In our case, we need to remove a lot more than the hypothetical proteins:  we want to restrict ourselves to roles in which we have a high degree of
 confidence. You do this by specifying a <i>role file</i> that contains information used to disambiguate substantially identical roles and identifies the
 roles of interest. The data for producing these files from the PATRIC database is still being installed; however, there is a pre-generated file that comes
@@ -109,9 +109,10 @@ genome.genome_id    feature.patric_id   feature.sequence_id feature.location    
 
 <p>So now we have a five-column file <i>feature.roles.tbl</i> that contains location and role information and we have a similar
 file containing all the features and showing the functional assignment rather than the role. We are going to work with the
-role-oriented file to compute the clusters.</p>
+role-oriented file to compute the clusters. We are looking for groups of roles that commonly occur together.</p>
 
-<p>Creating clusters is a two-step process: first we compute the functionally-coupled roles, then we group them into clusters.
+<p>Creating clusters is a two-step process: first we compute the functionally-coupled roles (that is, roles that commonly
+occur close to each other on the chromsome), then we use transitive closure to group them into clusters.
 The scripts used are <b>p3-find-couples</b> and <b>p3-generate-clusters</b>. This gives us the following pipe.</p>
 
 <pre class="call">
