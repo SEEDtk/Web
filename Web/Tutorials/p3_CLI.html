@@ -155,9 +155,9 @@ pipeline</p>
 p3-all-genomes --eq "genome_name,Vibrio parahaemolyticus" | p3-get-genome-features --attr patric_id --attr product
 </pre>
 <p>In the first command of this pipeline, the <code>--eq</code> command-line option was used to filter a query, while the
-<code>--attr</code> option was used to specify the output columns and the order in which they appear. These
+<code>--attr</code> option in the second command was used to specify the output columns and the order in which they appear. These
 options are available on all of the database scripts.</p>
-<p>For get-type scripts (p3-get-genome-data, p3-get-genome-feature-data, etc), you must supply the id of the object of interest, e.g., the genome id, feature id, etc. By default, the last column in the input file is used as the key field for these get-type scripts. You can modify this
+<p>For get-type scripts (<b>p3-get-genome-data</b>, <b>p3-get-genome-feature-data</b>, ...), you must supply the id of the object of interest, e.g., the genome id, feature id, etc. By default, the last column in the input file is used as the key field for these get-type scripts. You can modify this
 behavior using the <code>--col</code> command-line option. The special value <code>0</code> denotes the last column, but
 you can also use a 1-based column number (<code>1</code> for the first, <code>2</code> for the second) or a column name.
 If the field-name portion of the column name is unique, you can leave off the table-name portion.
@@ -184,22 +184,19 @@ column names, including the parameters of <b>p3-extract</b>. So, the following i
 <pre class="call">
 p3-extract product 2 &lt;input.tbl | p3-get-feature-data --attr sequence_id --attr location
 </pre>
-<p>Because of the presence of the headings, many standard file-manipulation commands won't work the way you expect. We
-provide p3 scripts for several of the most common needs.</p>
-<dl>
-<dt>p3-extract</dt>
-<dd>Select and re-order specific columns.</dd>
-<dt>p3-sort</dt>
-<dd>Sort by specified columns.</dd>
-<dt>p3-match</dt>
-<dd>Select records that possess (or do not possess) a particular value in a specified column.</dd>
-<dt>p3-join</dt>
-<dd>Horizontally join two files on a single key field.</dd>
-<dt>p3-pick</dt>
-<dd>Randomly select a specified number of records from a file</dd>
-<dt>p3-echo</dt>
-<dd>Create a small file.</dd>
-</dl>
+<p>Because of the presence of the headings, many standard file-manipulation commands won't work the way you expect. For example,
+if you use a standard sort command, the headers will sort somewhere into the middle of the file. We provide p3 scripts for
+several of the most common needs.</p>
+<table style="width: 60%; margin-left: 20%; margin-right: 20%;">
+<tr><th>P3 Script</th><th>Description</th><th>Unix Equivalent</th></tr>
+<tr><td>p3-extract</td><td>Select and re-order specific columns.</td><td>cut</td></tr>
+<tr><td>p3-sort</td><td>Sort by specified columns.</td><td>sort</td></tr>
+<tr><td>p3-match</td><td>Select records that possess (or do not possess) a particular value in a specified column.</td><td>grep</td></tr>
+<tr><td>p3-join</td><td>Horizontally join two files on a single key field.</td><td>join</td></tr>
+<tr><td>p3-echo</td><td>Create a small file.</td><td>echo</td></tr>
+</table>
+<p>These commands do not work precisely like their unix equivalents. Most have fewer options: for example, <b>p3-match</b>
+searches for text in a single column rather than the entire file and does not support regular expressions.</p>
 <div id="Echo"><h3>p3-echo</h3>
 <p>The <b>p3-echo</b> command is your most important tool for creating small files that feed into pipes.
 The <code>--title</code> command-line option (abbreviated <code>-t</code>) allows you to specify the title
