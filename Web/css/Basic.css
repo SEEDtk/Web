@@ -328,6 +328,7 @@ div.pod,
    color: #000;
    background-image: url(YellowNoise.jpg);
    background-attachment: fixed;
+   padding: 1em;
 }
 
 div.pod dd,
