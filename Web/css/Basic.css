@@ -2,7 +2,6 @@
 /* CSS Document */
 
 body {
-    background-image:url(RedNoise.jpg);
     color: #ccc;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: small;
@@ -12,10 +11,6 @@ pre {
     font-size: medium;
     background-color: white;
     color: black;
-}
-
-body.borderless {
-    background-image:url(BlackNoise.jpg);
 }
 
 span.interrupt {
@@ -192,7 +187,6 @@ input.textFix {
 }
 
 #Content {
-    background-image: url(BlackNoise.jpg);
     border: ridge 5px #222;
     padding: 5px;
 }
@@ -326,8 +320,6 @@ div.pod,
    font-size: small;
    font-weight: normal;
    color: #000;
-   background-image: url(YellowNoise.jpg);
-   background-attachment: fixed;
    padding: 1em;
 }
 
@@ -532,3 +524,34 @@ form#armyAnalysis {
         color: #fff;
 }
 
+@media screen {
+        body {
+        background-image:url(RedNoise.jpg);
+        }
+
+        body.borderless {
+            background-image:url(BlackNoise.jpg);
+        }
+
+        div.pod,
+        #Pod,
+        #Dump {
+           background-image: url(YellowNoise.jpg);
+           background-attachment: fixed;
+        }
+
+        #Content {
+        background-image: url(BlackNoise.jpg);
+    }
+}
+
+@media print {
+    div.pod,
+    #Pod,
+    #Dump {
+           background-color: #fff;
+        }
+    .skip {
+        display: none;
+    }
+}
