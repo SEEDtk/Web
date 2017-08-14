@@ -332,6 +332,21 @@ database scripts described in this section.</p>
 <pre class="call">
 p3-all-genomes --fields
 </pre>
+<pre class="resp">
+_version_
+additional_metadata (multi)
+altitude
+antimicrobial_resistance (multi)
+antimicrobial_resistance_evidence
+assembly_accession
+assembly_method
+bioproject_accession
+biosample_accession
+biovar
+</pre>
+The parenthetical <code>(multi)</code> indicates that a field has multiple values. The values returned will be separated by the
+current delimiter (which defaults to a double colon <code>::</code>). There is also a parenthetical <code>(derived)</code> which indicates
+the value of the field is computed from other fields and can't be used in filtering.
 </dd>
 <dt>p3-get-genome-data</dt>
 <dd>Given an input file of genome IDs, this script allows you to retrieve additional data and fields. For example, the
