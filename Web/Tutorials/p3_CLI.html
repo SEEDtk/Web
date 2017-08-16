@@ -264,7 +264,7 @@ genome_id       sequences        gc_content
 1313.7016       58      39.77
 </pre>
 
-<p>If a field contains special characters such as spaces or pipe symbols, use double quotes to insure the characters
+<p>If a field contains special characters such as spaces or pipe symbols, use double quotes to ensure the characters
 are interpreted correctly.</p>
 <pre class="call">
 p3-echo -t genome_id -t patric_id -t product 1313.7001 "fig|1313.7001.peg.1362" "hypothetical protein"
@@ -276,7 +276,7 @@ genome_id   patric_id   product
 <p>If you leave off the title parameter, the default title <code>id</code> is used. This is a handy shortcut when
 you're in a hurry.</p>
 <pre class="call">
-p3-echo 1313.7001. 1313.7016
+p3-echo 1313.7001 1313.7016
 </pre>
 <pre class="resp">
 id
@@ -448,7 +448,7 @@ Again, use the <code>--fields</code> option to see which fields are available fo
 available, so it is not hard to get an empty file output from this command. The following pipeline outputs the default resistance
 data information for all the Acinetobacter pittii genomes.
 <pre class="call">
-p3-all-genomes --eq "genome_name,Acinetobacter pittii"" | p3-get-genome-drugs
+p3-all-genomes --eq "genome_name,Acinetobacter pittii" | p3-get-genome-drugs
 </pre>
 <pre class="resp">
 genome.genome_id    genome_drug.genome_id   genome_drug.antibiotic  genome_drug.resistant_phenotype
@@ -1790,7 +1790,7 @@ We will produce feature IDs and functional assignments, then append the upstream
 <pre class="call">
 p3-echo -t genome_id 1313.7001 | p3-get-genome-features --eq feature_type,CDS --attr patric_id --attr product | p3-feature-upstream --col=feature.patric_id
 </pre>
-The <code>-eq feature_type,CDS</code> insures we only see protein-encoding features. Because we are not putting the feature ID in the last column,
+The <code>-eq feature_type,CDS</code> ensures we only see protein-encoding features. Because we are not putting the feature ID in the last column,
 we use <code>--col=feature.patric_id</code> to direct <b>p3-feature-upstream</b> to the correct input column. The output will look something like this.
 Note the upstream DNA is in the last column.
 <pre class="resp">
