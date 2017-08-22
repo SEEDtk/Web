@@ -70,7 +70,7 @@ eval {
         }
     } elsif ($action eq 'CountIntent') {
         my $table = $cgi->param('parameter');
-        $table =~ s/s$//;
+        $table =~ s/'?s$//;
         $table = ucfirst $table;
         if ($table eq 'Bin' || $table eq 'Ben' || $table eq 'Thing') {
             opendir(my $dh, "$FIG_Config::data/GoodPackages") || die "Could not open GoodPackages: $!";
