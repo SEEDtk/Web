@@ -223,7 +223,7 @@ genome.genome_id    feature.patric_id   feature.sequence_id feature.location    
 <p>You can see a lot of features are in or near the giant cluster 1, but we also picked up some hypotheticals crowding the smaller clusters (32 and 24).
 Using the <b>p3-sort</b> script, we can see how many hypotheticals we found for each cluster.</p>
 <pre class="call">
-p3-sort --col=cluster_id --count &lt;clustered.hypo.tbl
+p3-sort cluster_id --count &lt;clustered.hypo.tbl
 </pre>
 <pre class="resp">
 cluster count

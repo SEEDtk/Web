@@ -1754,7 +1754,7 @@ The total range is 31 amino acids to 901 amino acids.
 <pre class="call">
 p3-echo -t genome_id 1313.7001 | p3-get-genome-features --in feature_type,CDS,rna --attr patric_id --attr sequence_id --attr start --attr strand --attr product | p3-sort feature.sequence_id feature.start/n feature.strand
 </pre>
-We start by useing <b>p3-echo</b> to create a file that has our single genome ID in it. The bulk of the retrieval work is
+We start by using <b>p3-echo</b> to create a file that has our single genome ID in it. The bulk of the retrieval work is
 performed by <b>p3-get-genome-features</b>. The <code>--in</code> parameter allows us to specify a list of values for a
 specific field. In this case, we want <i>feature_type</i> to equal either <code>CDS</code> or <code>rna</code>.
 To sort by location, we need the contig ID (<i>sequence_id</i>) and the start location (<i>start</i>). The start location
