@@ -172,7 +172,7 @@ eval {
                 my @cells;
                 # Loop through the results.
                 for (my $i = 0; $i < $n; $i++) {
-                    my $item = $row->[$i] || '';
+                    my $item = $row->[$i] // '';
                     push @cells, CGI::td({ class => $aligns[$i] }, $item);
                 }
                 # Output the row.
