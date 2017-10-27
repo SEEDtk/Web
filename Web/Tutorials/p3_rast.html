@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Using RAST to Create New Genomes</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<p>If you have a DNA fasta file and you know the taxonomic ID with a certain degree of confidence, you can use the
+script <b>p3-rast</b> to annotate the DNA and produce a new genome. The standard output of the script is a GTO. In
+almost every case, you will want to redirect this to a file. In addition, the new genome is stored in your workspace.
+It will appear in listings from <b>p3-all-genomes</b>, and you can find its files via the web interface in your QuickData
+folders.</p>
+<p>To invoke <b>p3-rast</b>, you specify a taxonomic ID or the ID of a genome with the same taxonomic ID plus the name to give
+to the new genome. The contigs should be in the form of a FASTA file via the standard input. All this data is submitted to
+the PATRIC annotation service. When the service completes, it stores the new genome in your workspace and sends back a
+GTO. The example below shows a submission of sequences taken from a metagenomic sample named <i>SRS576036</i> chosen because
+they have a high similarity to sequences from Catenibacterium mitsuokai (taxon ID 100886).</p>
+<pre class="call">
+p3-rast 100886 "Catenibacterium from sample SRS576036" &lt;sample.fna &gt;test.gto 2&gt;test.log
+</pre>
+<p>Now <b>test.gto</b> contains a GTO of the resulting genome and <b>test.log</b> contains information about
+the RAST job. If we use the <code>--private</code> option of
+<b>p3-all-genomes</b>, we will see the new genome in the list.</p>
+<pre class="call">
+p3-all-genomes --private --attr genome_name
+</pre>
+<pre class="resp">
+genome.genome_id       genome.genome_name
+100886.26       Catenibacterium from sample SRS576036
+</pre>
+<p>The genome was assigned the ID <i>100886.26</i>. We can see this in the GTO file as well.</p>
+<pre class="resp">
+{
+   "genetic_code" : "11",
+<span class="interrupt">&nbsp;</span>
+         ],
+         "family_assignments" : [],
+         "type" : "CDS",
+         "id" : "fig|100886.26.peg.1540"
+      },
+      {
+         "protein_translation" : "MLQIENASIAYGNDILFSGFNLQLERGEIASISGPSGCGKSSLLNAILGFTPLKEGRIVLNGILLDKGNVDVVRKQTAWIPQELALPLEWVKDMVQLPFGLKANRGTPFSETRLFACFEDLGLEQELYYKRVNEISGGQRQRMMIAVASMIGKPLTIVDEPTSALDSGSAEKVLSFFRRQTENGSAILTVSHDKRFANGCDRHIIMK",
+         "aliases" : [],
+         "location" : [
+            [
+               "100886.26.con.0010",
+               "23684",
+               "-",
+               624
+            ]
+<span class="interrupt">&nbsp;</span>
+         "type" : "CDS"
+      }
+   ],
+   "id" : "100886.26",
+   "contigs" : [
+      {
+         "id" : "100886.26.con.0001",
+<span class="interrupt">&nbsp;</span>
+}
+</pre>
+<p>The genome ID appears as a part of every feature ID, as an ID in its own right, and as the first part of every contig ID.</p>
+<p>As long as you are signed in, the genomes you create using <b>p3-rast</b> will participate in all queries.<p>
+<pre class="call">
+p3-all-genomes --eq taxon_id,100886 --attr genome_name
+</pre>
+<pre class="resp">
+genome.genome_id        genome.genome_name
+100886.3        Catenibacterium mitsuokai
+100886.26       Catenibacterium from sample SRS576036
+</pre>
+<p>However, just as
+you can restrict <b>p3-all-genomes</b> to your own private genomes using the <code>--private</code> option, you can restrict it
+to public genomes only using the <code>--public</code> option.</p>
+<pre class="call">
+p3-all-genomes --public --eq taxon_id,100886 --attr genome_name
+</pre>
+<pre class="resp">
+genome.genome_id        genome.genome_name
+100886.3        Catenibacterium mitsuokai
+</pre>
+<p>The GTO produced by <b>p3-rast</b> has extra information in it describing the annotation process, but it is functionally
+equivalent to the output were you to re-fetch the genome using the standard script.</p>
+<pre class="call">
+p3-gto 100886.26
+</pre>
+<p>A <b>p3-gto-scan</b> for <b>test.gto</b> would return the same role profile as for <b>100886.26.gto</b>.</p>
+</body>
+</html>
