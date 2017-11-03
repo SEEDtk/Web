@@ -154,7 +154,7 @@ erythromycin    1313.7013   Streptococcus pneumoniae P310795-191
 </pre>
 </dd>
 <dt>How close are fig|1302.21.peg.966 and fig|1302.21.peg.1019 on the chromosome?</dt>
-<dd>The script <b>p3-get-feature-gap</b> gives us this information. Since it expects two feature IDs
+<dd>The script <b>p3-feature-gap</b> gives us this information. Since it expects two feature IDs
 on the same input line, we use a <b>p3-echo</b> with two titles to put its two parameters on a single line.
 <pre class="call">
 p3-echo -t f1.patric_id -t f2.patric_id "fig|1302.21.peg.966" "fig|1302.21.peg.1019" | p3-feature-gap
