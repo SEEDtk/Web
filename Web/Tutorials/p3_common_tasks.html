@@ -58,6 +58,26 @@ Streptococcus oralis strain DD27    1303.82
 Streptococcus oralis strain DD30    1303.83
 </pre>
 </dd>
+<dt>What are all the features in the genome 83333.219?</dt>
+<dd>The script <b>p3-get-genome-features</b> retrieves all the features for a genome. In addition to the feature ID, we will want the functional
+assignment, which is in the <code>product</code> field. The command pipe is as follows.
+<pre class="call">
+p3-echo 83333.219 | p3-get-genome-features --attr patric_id --attr product
+</pre>
+<pre class="resp">
+id      feature.patric_id       feature.product
+83333.219       fig|83333.219.peg.1     tRNA:Cm32/Um32 methyltransferase
+83333.219       fig|83333.219.peg.2     Aspartokinase (EC 2.7.2.4) / Homoserine dehydrogenase (EC 1.1.1.3)
+83333.219       fig|83333.219.peg.3     Homoserine kinase (EC 2.7.1.39)
+83333.219       fig|83333.219.peg.4     Threonine synthase (EC 4.2.3.1)
+83333.219       fig|83333.219.peg.5     Uncharacterized protein YaaX
+83333.219       fig|83333.219.peg.6     UPF0246 protein YaaA
+83333.219       fig|83333.219.peg.7     Putative alanine/glycine transport protein
+83333.219       fig|83333.219.peg.8     Transaldolase (EC 2.2.1.2)
+83333.219       fig|83333.219.peg.9     Molybdopterin adenylyltransferase (EC 2.7.7.75)
+83333.219       fig|83333.219.peg.10    Succinate-acetate/proton symporter SatP
+</pre>
+</dd>
 <dt>What fraction of the genomes in genus Staphylococcus are resistant to methicillin?</dt>
 <dd>This is a two-step process, since we need two numbers.
 <pre class="call">
