@@ -398,7 +398,7 @@ We start by using <b>p3-echo</b> to create a file that has our single genome ID 
 performed by <b>p3-get-genome-features</b>. The <code>--in</code> parameter allows us to specify a list of values for a
 specific field. In this case, we want <i>feature_type</i> to equal either <code>CDS</code> or <code>rna</code>.
 To sort by location, we need the contig ID (<i>sequence_id</i>) and the start location (<i>start</i>). The start location
-is always the leftmost location on the contig, so it is perfect for sorting. Finally, we add the strand (<code>+</code> or <code>i</code>)
+is always the leftmost location on the contig, so it is perfect for sorting. Finally, we add the strand (<code>+</code> or <code>-</code>)
 and then the functional assignment (<i>product</i>) so we can see what the feature does. The <b>p3-sort</b> gets the
 file records in the proper order. Because one of the fields is numeric, we put a <code>/n</code> after the field name.
 This tells the sorter that for the <i>feature.start</i> column, the value <code>20</code> comes before, not after, the
