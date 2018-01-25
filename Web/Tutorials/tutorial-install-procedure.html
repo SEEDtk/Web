@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Installing Tutorials on the SEEDtk Web Site</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="Dump">
+<p>This document describes the procedure for installing a tutorial web page on this site.
+Eventually, we wish all of the important SEEDtk tasks to be documented in a tutorial here.</p>
+<p>To start, you will need to create an empty HTML file with the following skeleton.</p>
+<pre>
+        &lt;!doctype html&gt;
+        &lt;html&gt;
+        &lt;head&gt;
+        &lt;meta charset="utf-8" /&gt;
+        &lt;title&gt;... tutorial title ... &lt;/title&gt;
+        &lt;link href="../css/Basic.css" rel="stylesheet" type="text/css"&gt;
+        &lt;/head&gt;
+        &lt;body&gt;
+        &lt;div id="Dump"&gt;
+            ... your text here ...
+        &lt;/div&gt;
+        &lt;/body&gt;
+        &lt;/html&gt;
+</pre>
+<p>The file should be stored in the Web/Web/Tutorials directory of your SEEDtk code folder,
+where it will be in the scope of the GIT source control system. If you are unsure of the location
+of this directory, use the <b>tut-dir</b> command.</p>
+<p>Note that the text inside the <code>&lt;title&gt;</code> tag above will be shown in the master
+tutorial index, so it is important to choose a descriptive one.</p>
+<p>Once the tutorial HTML file is complete, it will automatically appear on your localhost
+web site in the <b>Tutorials</b> list.</p>
+<p>The tutorial must now be updated in the master repository. Switch to the tutorials directory and
+use the following commands.</p>
+<pre class="call">
+git add ...filename...
+git pull
+git commit -m 'tutorial update'
+git push
+</pre>
+<p>The first command (<b>add</b>) tells GIT that you have modified the named file (which in this case is your HTML tutorial).
+The second command (<b>pull</b>) insures your web files are up-to-date. It is not always necessary, but it reduces the incidence
+of the most common errors in the final command. The third command (<b>commit</b>) stores the updated tutorial in your local source
+control system. The final command (<b>push</b>) copies the changes to the master source control system.</p>
+</div>
+</body>
+</html>
