@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SEEDtk Utility Page</title>
+<link href="css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div class="heading">
+    <h1>SEEDtk Utility Page</h1>
+</div>
+<div id="Content">
+<form method="post" action="utilities.cgi" target="testFrame">
+<table border="1" style="margin-left: auto; margin-right: auto">
+  <tbody>
+    <tr>
+      <td>request</td>
+      <td><select name="request">
+            <option value="get_gto">get_gto</option>
+            <option value="qual_gto">qual_gto</option>
+        </select></td>
+      <td>account</td>
+      <td><input type="text" name="account" /></td>
+      <td><input type="reset" tabindex="-1" /></td>
+    <tr>
+      <td>genome ID</td><td><input name="genome_id" type="text" size="20" /></td>
+      <td>&nbsp;</td><td>&nbsp;</td>
+      <td colspan="2"><input type="submit" /></td>
+    </tr>
+  </tbody>
+</table>
+
+</form>
+<div style="background-color:#ccc"><iframe name="testFrame" width="100%" height="600px"></iframe></div>
+</div>
+</body>
+</html>
