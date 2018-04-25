@@ -31,6 +31,7 @@ use URI::Escape;
 use Shrub;
 use SeedUtils;
 use GenomeTypeObject;
+use SeedAware;
 
 =head1 Utility Script for SEEDtk Web Interface
 
