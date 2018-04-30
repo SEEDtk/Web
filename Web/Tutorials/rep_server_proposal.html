@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Representative-Genomes (obsolete proposal)</title>
+<link href="../css/Basic.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="Dump">
+<h1>Representative-Genomes (obsolete proposal)</h1>
+
+<p>In early 2017, as this document is being written,
+three points: have become clear</p>
+<ol>
+<li>PATRIC now contains about 90,000 genomes.</li>
+<li>Approximately 7500 of these genomes are marked as
+complete.  We are running evaluations of all of the
+PATRIC genomes, and we believe that when
+we complete the efort there will be a close
+correspondence between the genomes marked as <i>complete</i>
+and those marked as <i>good</i> by the evaluation process
+(essentially, a <i>good genome</i> has a checkM completeness
+score of at least 80 and an FIGannCon score of at least
+85).</li>
+<li>The majority of the 7500 complete/good genomes represent
+pathogens (with genomes that are very similar).  <b>You can
+pick about 2000 representative genomes from the 7500. </b></li>
+</ol>
+While it is true that we probably have over 100,000 "good quality" genomes
+now, it is also true that the vast majority are essentially identical
+(this may be an exageration -- of course it depends on your intended use
+of the data).
+
+<p>While there is great need for sets of very similar genomes to support
+SNP analysis and studies of AMR, there is also a need for the
+representative genomes to support comparative analysis of more
+diverged genomes.  These two broad types of
+comparative analysis (one of very similar genomes, and one of diverse
+genomes that cover the tree) both need to be supported by PATRIC.</p>
+
+<p>The main sources of good genomes at this point are genomes imported
+from</p>
+
+<ol>
+<li>the CoreSEED [the manually curated collection being
+maintained as part of the SEED Project]</li>
+<li>the good genomes from PATRIC</li>
+<li>good genomes harvested from a rapidly growing body of
+metagenomic samples.</li>
+</ol>
+
+
+<p>These three sources are being merged into two collections:</p>
+
+<ol>
+<li>The first collection is composed of the representative
+genomes and will be maintained within the SEEDtk
+environment. Frequent annotation updates from the CoreSEED
+effort are critical to maintaing the value of this
+collection (biweekly updates are currently taking place).
+</li>
+<li>The second collection is a set of genome sets, each
+representing a collection of very similar genomes.</li>
+</ol>
+This write-up describes how we handle access to representative genomes.
+
+<h2>Similarity</h2>
+
+<p>We used the concept of <i>similar genomes</i> without making the notion
+precise.  Since we are entering a period in which millions of genomes
+will be sequenced, the question of how to construct tools that scale
+quickly emerges.  In particular, we need a simple notion of the
+critical concept of <i>similarity of two genomes</i>.
+
+<p>The functional role <b>Phenylalanyl-tRNA synthetase alpha chain (EC 6.1.1.20)</b>
+
+<p>is almost universal (this is the gene product of <i>pheS</i> in <i>Escherichia
+coli</i>).  Very occasionally it might be part of a fusion or a
+frameshift, but for our purposes, we will constrain the notion of
+<i>good genome</i> to require that a good genome includes precisely one
+copy of <i>pheS</i> and the encoded protein will have a length that falls
+within two standard deviations of the mean (the mean length is about
+347 amino acids and the standard deviation is about 46 aa).</p>
+
+<p>Now we can define the similarity between two good genomes as the
+number of amino acid 8-mers that are in common between the gene
+products of the two PheS genes.</p>
+
+<h2> What Is a Representative Set?</h2>
+
+You can compute a representative set of genomes. The algorithm takes a
+similarity threshhold N. The returned set will have the property that
+no two members are more similar than <i>N</i>, and all of the omitted
+sequences are similar to one of the representative sequences at a
+score of <i>N</i> or more.
+<br><br>
+The algorithm is pretty simple.  You start with the entire set of <i>pheS</i>
+from all of the "good genomes" in PATRIC.  Call this set <i>Unplaced</i>.
+You have a second set, which we will call <i>Placed</i>, that is initially empty.
+While <i>Unplaced</i> is not empty, pick a member of <i>Unplaced</i>, and call it <i>X</i>.
+Add <i>X</i> to <i>Placed</i> and remove all members of <i>Unplaced</i>that are similar at
+level <i>N</i> to <i>X</i>.
+<br><br>
+The algorithm ends when <i>Unplaced</i> is empty. When that occurs, <i>Placed</i>
+contains a repesentative set of genomes.
+<p>
+There are at least two points worth thinking about:
+<ol><li>First, the contents of the representative set depends on the the value of <i>N</i>
+and the order in which members of <i>Unplaced</i> are selected.</li>
+    <li>even the number of members in the representative set may be different based
+        on these two parameters.</li>
+</ol>
+</p>
+<p>
+When you wish to create a representative set of genomes (either for all of
+the public PATRIC genomes or some subset of those genomes), you will probably
+give priority to <i>reference</i> genomes.  You would probably do well to study
+<a href=https://www.ncbi.nlm.nih.gov/genome/browse/refhelp/>NCBI's discussion of
+reference and representative genomes</a>
+
+<h3>The rep_server p3-scripts</h3>
+
+We have implemented a set of p3-scripts that support rapid access to representative
+genomes.
+We achieve rapid access by implementings a server that
+<ol><li>loads in a large body of precomputed similarities, and then</li>
+<li>processes a stream of request (most of which utilize the precomputed data).</li>
+</ol>
+<p>
+
+<h3> Accessing a Set of Representative PATRIC Genomes</h3>
+
+
+You should use something like
+<pre>
+  p3-rep-genomes -n 50 > rep-genomes-group
+</pre>
+to create a genome-group of the representative genomes.  These genomes will all be
+from the <i>public</i> PATRIC genomes (note: this is a significant constraint).
+The "-n 50" parameter asks for genomes that have similarity scores (that is, the
+number of 8-mers in common) of 50 or more to have a common representative genome.
+<br><br>
+To prioritize the order in which genomes are added to the set, use an
+input genome-group, which is a genome-group in which the order of the genomes
+dictates the order in which they are considered for selection to be moved to the
+representative set.  Thus, somthing like this might be used
+<pre>
+  p3-rep-genomes -n 50 < prioritized-genomes > rep-genomes-group
+</pre>
+and it would be normal for typical model organisms' genomes to occur early within
+the prioritized genomes.
+<p>
+You should experiment a bit to get a feel for the representative sets generated for different values of <i>N</i>.  You might add a column to <i>rep-genomes-group</i>
+containing the name associated with each genome.
+
+</p>
+<p>
+Here is a pipeline to ponder:
+<pre>
+  p3-rep-genomes -n 40 | p3-close-genomes -n 2 > close.genomes
+</pre>
+
+Each row in the input table generates up to two lines of output.  Each
+line of output displays two genomes (a representative genome and a
+genome that is close) and the corresponding similarity score.
+
+</p>
+We suggest that you
+<ol><li> generate a file containing the first 2 representative genomes
+returned by <b>p3-rep-genomes</b>,</li>
+    <li> use <b>p3-close-genomes</b> to return up to three close representative
+         genomes for both of these first two reference genomes,</li> and finally
+    <li> add genome names columns (one for each of the genomes in each row).
+    </li>
+</ol>
+If you cannot perform each of these steps, ask for help before proceeding.
+
+<h3>Retrieving a Representative Set of a Specified Size</h3>
+<p>
+You may wish to create a representative set containing approximately <i>M</i>
+members.  This can be done using something like
+<pre>
+  p3-N-rep-genomes -m 500 > set.of.desired.size
+</pre>
+
+Note that you get a set that is approximately the size you requested, but
+probably not exactly.
+
+</p>
+<h4>Trying to Find a Close representative sequence</h4>
+
+
+<p>Suppose that you had an arbitrary PheS sequence, and you wanted to
+locate a representative genome with a close sequence.  You could use something like</p>
+
+<pre class="call">
+p3-close-rep-seq -n 200  MGSMDLDQIVADAQQSFEGAADITTLENEKARFLGKSGALTELLKGLGKLDPETRKTEGARINVAKQQVEAALNARRQALADALLNQRLAAEAIDVTLPGRGAGAGSLHPVMRTWERVEQIFRSIGFDVADGPEIETDWYNFTALNSPENHPARSMQDTFYVDGKDADGRPLLLRTHTSPMQVRYARMNRPPIKVIAPGRTYRVDSDATHSPMFNQVEGLWIDENVSFADLKGVYTDFLKKFFERDDILVRFRPSYFPFTEPSAEIDMMFEHGKNAGKWLEISGSGQVHPTVIRNMGLDPERYIGFAFGSGLERLTMLRYGVQDLRLFFENDLRFLRQFA > close.reps
+</pre>
+
+<p>which tries to find a representative sequence that is close to the
+specified sequence.  The search computes a set of about 200 rep sets
+that cover the collection, keeping the closest to the given sequence.
+It then takes that rep sequence and looks at the 50 closest other rep
+sequences.  The closest is returned.  In this case it was 1009846.3
+that had 268 8-mers in common with the query PheS.</p>
+
+<h2>Summary</h2>
+
+<p>Let us summarize some of the central ideas so far:</p>
+
+<p>We have a rapidly growing set of genomes. Right now, we have about 100,000, but the number is still growing exponentially.
+We speak of the total number of <i>good genomes</i> as the universe.</p>
+
+<p>The PheS protein is universal: there is normally one copy in each new genome. We are using a new measure of similarity: the
+number of 8-mer amino acid sequences in common between the PheS proteins encoded in two genomes.
+Let us say that 2 genomes are "similar" if they have 100 or more PheS 8-mers in common.
+Then a representative set of genomes <b>G</b> is a subset of the universe that has two properties:</p>
+<ol>
+<li>Every genome in our universe is similar to at least one representative genome.</li>
+<li>No two representative genomes are similar.</li>
+</ol>
+<p>You might find it irritating that a genome can be represented by multiple representative genomes. Do not let
+this disturb you overmuch. What is important is that every genome in the universe has at least one representative,
+no two representatives are similar, and that this implies that the universe is covered by representatives.</p>
+
+</div>
+</body>
+</html>

@@ -7,221 +7,339 @@
 </head>
 <body>
 <div id="Dump">
-<h1>Representative-Genomes</h1>
+<h1>Representative Genomes</h1>
 
-<p>In early 2017, as this document is being written, 
-three points: have become clear</p>
+<a name="___top" class="dummyTopAnchor"></a>
+
+<div class="indexgroup">
+<ul class="indexList indexList1">
+  <li class="indexItem indexItem1"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Representative_Genomes_Notes">Representative Genomes Notes</a>
+  <ul class="indexList indexList2">
+    <li class="indexItem indexItem2"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Similarity">Similarity</a>
+    </li><li class="indexItem indexItem2"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Computation_Steps_Needed_to_Support_Representative_Genomes">Computation Steps Needed to Support Representative Genomes</a>
+    <ul class="indexList indexList3">
+      <li class="indexItem indexItem3"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Step_1%3A_Computation_of_Very_Similar_Sets_(VSS)">Step 1: Computation of Very Similar Sets (VSS)</a>
+      </li><li class="indexItem indexItem3"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Step_2%3A_Computing_the_Distance_Matrix">Step 2: Computing the Distance Matrix</a>
+      </li><li class="indexItem indexItem3"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Step_3%3A_The_Server">Step 3: The Server</a>
+      <ul class="indexList indexList4">
+        <li class="indexItem indexItem4"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Other_commands">Other commands</a>
+        </li><li class="indexItem indexItem4"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Getting_a_Representative_set_with_a_Specified_Number_of_Members">Getting a Representative set with a Specified Number of Members</a>
+        </li><li class="indexItem indexItem4"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Trying_to_Find_a_Close_representative_sequence.">Trying to Find a Close representative sequence.</a>
+        </li><li class="indexItem indexItem4"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Extending_a_Pin_to_Support_Compare_Regions">Extending a Pin to Support Compare Regions</a>
+      </li></ul>
+    </li></ul>
+    </li><li class="indexItem indexItem2"><a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#Identifying_Occurrences_of_the_Representative_Genomes">Identifying Occurrences of the Representative Genomes</a>
+  </li></ul>
+</li></ul>
+</div>
+
+<h1><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Representative_Genomes_Notes">Representative Genomes Notes</a></h1>
+
+<p>In early 2017,
+as I write this document,
+I am pondering the following three points:</p>
+
 <ol>
 <li>PATRIC now contains about 90,000 genomes.</li>
-<li>Approximately 7500 of these genomes are marked as
-complete.  We are running evaluations of all of the
-PATRIC genomes, and we believe that when
-we complete the efort there will be a close
-correspondence between the genomes marked as <i>complete</i>
-and those marked as <i>good</i> by the evaluation process
-(essentially, a <i>good genome</i> has a checkM completeness
-score of at least 80 and an FIGannCon score of at least
-85).</li>
-<li>The majority of the 7500 complete/good genomes represent
-pathogens (with genomes that are very similar).  <b>You can
-pick about 2000 representative genomes from the 7500. </b></li>
+
+<li>Approximately 7500 of these genomes are marked as complete.
+We are running evaluations of all of the PATRIC genomes as I write this,
+and I believe that when we complete the efort there will be a close correspondence between the genomes marked as "complete" and those marked as "good" by the evaluation process (essentially,
+a "good genome" has a checkM completeness score of at least 80 and an FIGannCon score of at least 85).</li>
+
+<li>The majority of the 7500 complete/good genomes represent pathogens (with genomes that are very similar).
+You can pick about 2000 representative genomes from the 7500.</li>
 </ol>
-While it is true that we probably have over 100,000 "good quality" genomes
-now, it is also true that the vast majority are essentially identical
-(this may be an exageration -- of course it depends on your intended use
-of the data).
 
-<p>While there is great need for sets of very similar genomes to support
-SNP analysis and studies of AMR, there is also a need for the
-representative genomes to support comparative analysis of more
-diverged genomes.  These two broad types of
-comparative analysis (one of very similar genomes, and one of diverse
-genomes that cover the tree) both need to be supported by PATRIC.</p>
+<p>While there is great need for sets of very similar genomes to support SNP analysis and studies of AMR,
+there is also a need for the representative genomes to support comparative analysis of more diverged genomes.
+From my perspective,
+these two broad types of comparative analysis (one of very similar genomes,
+and one of diverse genomes that cover the tree) both need to be supported by PATRIC.</p>
 
-<p>The main sources of good genomes at this point are genomes imported
-from</p>
+<p>My personal interests center on issues that require a broad set of genomes that cover the tree.
+We are working with Rob Edwards and his group to gather a large,
+diverse set of good genomes and make them freely available.</p>
+
+<p>The main sources of good genomes at this point are genomes imported from</p>
 
 <ol>
-<li>the CoreSEED [the manually curated collection being
-maintained as part of the SEED Project]</li>
-<li>the good genomes from PATRIC</li>
-<li>good genomes harvested from a rapidly growing body of
-metagenomic samples.</li>
-</ol>
+<li>the CoreSEED [the manually curated collection being maintained as part of the SEED Project]</li>
 
+<li>the good genomes from PATRIC</li>
+
+<li>good genomes harvested from a rapidly growing body of metagenomic samples.</li>
+</ol>
 
 <p>These three sources are being merged into two collections:</p>
 
 <ol>
-<li>The first collection is composed of the representative
-genomes and will be maintained within the SEEDtk
-environment. Frequent annotation updates from the CoreSEED
-effort are critical to maintaing the value of this
-collection (biweekly updates are currently taking place).
-</li>
-<li>The second collection is a set of genome sets, each
-representing a collection of very similar genomes.</li>
+<li>The first collection is composed of the representative genomes and will be maintained within the SEEDtk environment.
+Frequent annotation updates from the CoreSEED effort are critical to maintaing the value of this collection (biweekly updates are currently taking place).</li>
+
+<li>The second collection is a set of genome sets,
+each representing a collection of very similar genomes.</li>
 </ol>
-This write-up describes how we handle access to representative genomes.
 
-<h2>Similarity</h2>
+<h2><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Similarity">Similarity</a></h2>
 
-<p>We used the concept of <i>similar genomes</i> without making the notion
-precise.  Since we are entering a period in which millions of genomes
-will be sequenced, the question of how to construct tools that scale
-quickly emerges.  In particular, we need a simple notion of the
-critical concept of <i>similarity of two genomes</i>.
+<p>I have used the concept of <i>similar genomes</i> without making the notion precise.
+Since we are entering a period in which millions of genomes will be sequenced,
+the question of how to construct tools that scale quickly emerges.
+In particular,
+we need a simple notion of the critical concept of <i>similarity of two genomes</i>.</p>
 
-<p>The functional role <b>Phenylalanyl-tRNA synthetase alpha chain (EC 6.1.1.20)</b>
+<p>The functional role</p>
 
-<p>is almost universal (this is the gene product of <i>pheS</i> in <i>Escherichia
-coli</i>).  Very occasionally it might be part of a fusion or a
-frameshift, but for our purposes, we will constrain the notion of
-<i>good genome</i> to require that a good genome includes precisely one
-copy of <i>pheS</i> and the encoded protein will have a length that falls
-within two standard deviations of the mean (the mean length is about
-347 amino acids and the standard deviation is about 46 aa).</p>
+<pre>    Phenylalanyl-tRNA synthetase alpha chain (EC 6.1.1.20)</pre>
 
-<p>Now we can define the similarity between two good genomes as the
-number of amino acid 8-mers that are in common between the gene
-products of the two PheS genes.</p>
+<p>is almost universal (this is the gene product of pheS in Escherichia coli). Very occasionally it might be part of a fusion or a frameshift, but for our purposes, we will constrain the notion of "good genome" to require that a good genome includes precisely one copy of pheS and the encoded protein will have a length that falls within two standard deviations of the mean (the mean length is about 347 amino acids and the standard deviation is about 46 aa).</p>
 
-<h2> What Is a Representative Set?</h2>
+<p>Now we can define the similarity between two good genomes as the number of amino acid 8-mers that are in common between the gene products of the two PheS genes.</p>
 
-You can compute a representative set of genomes. The algorithm takes a
-similarity threshhold N. The returned set will have the property that
-no two members are more similar than <i>N</i>, and all of the omitted
-sequences are similar to one of the representative sequences at a
-score of <i>N</i> or more.
-<br><br>
-The algorithm is pretty simple.  You start with the entire set of <i>pheS</i>
-from all of the "good genomes" in PATRIC.  Call this set <i>Unplaced</i>.
-You have a second set, which we will call <i>Placed</i>, that is initially empty.
-While <i>Unplaced</i> is not empty, pick a member of <i>Unplaced</i>, and call it <i>X</i>.
-Add <i>X</i> to <i>Placed</i> and remove all members of <i>Unplaced</i>that are similar at
-level <i>N</i> to <i>X</i>.
-<br><br>
-The algorithm ends when <i>Unplaced</i> is empty. When that occurs, <i>Placed</i>
-contains a repesentative set of genomes.
-<p>
-There are at least two points worth thinking about:
-<ol><li>First, the contents of the representative set depends on the the value of <i>N</i>
-and the order in which members of <i>Unplaced</i> are selected.</li>
-    <li>even the number of members in the representative set may be different based
-        on these two parameters.</li>
+<h2><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Computation_Steps_Needed_to_Support_Representative_Genomes">Computation Steps Needed to Support Representative Genomes</a></h2>
+
+<h3><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Step_1:_Computation_of_Very_Similar_Sets_(VSS)">Step 1: Computation of Very Similar Sets (VSS)</a></h3>
+
+<p>I will now go through the steps needed to support computation of representative genomes. A user begins by creating two files:</p>
+
+<pre>               complete.genomes is a 2-column text file.
+                                       each row contains
+
+                                    [Genome #,Genome name]
+
+               6.1.1.20.fasta   is a fasta file of the amino acid
+                                sequences of the PheS products for
+                                the set of genomes in the
+                                complete.genomes file.</pre>
+
+<p>Then use something like</p>
+
+<pre>         mkdir Data
+         cp complete.genomes Data
+         cp 6.1.1.20.fasta Data
+         get_vss_for_reps Data</pre>
+
+<p>This get_vss_for_reps Data</p>
+
+<p>should compute</p>
+
+<pre>        Data/vss               [a file of sets of very similar sequences]</pre>
+
+<h3><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Step_2:_Computing_the_Distance_Matrix">Step 2: Computing the Distance Matrix</a></h3>
+
+<p>It is now necessary to specify the kmer size. This is accomplished by placing a number (of amino acids per kmer) in a file named <code>K</code> in the <code>Data</code> directory.</p>
+
+<pre>    echo 8 &gt;Data/K</pre>
+
+<p>Now</p>
+
+<pre>        generate_cached_rep_data Data</pre>
+
+<p>Generates a <i>similarity matrix</i> for the genomes in Data/complete.genomes and stores it in</p>
+
+<pre>        Data/similarities</pre>
+
+<p>It also creates</p>
+
+<pre>        Data/genome.index</pre>
+
+<p>which creates a surrogate key for each of the genomes that will be used in computing representative sets.</p>
+
+<p>Note that, at this time, we have a very tractable set of genomes, but when we reach 100,000 divergent genomes things may get worse. The hope is that we will be covered for 5-10 years (at which time computers will be free).</p>
+
+<p>When I designed this tool initially, I thought that there would be a need for high-performance, and this lead to the creation of surrogate keys for genomes, where the surrogates are consecutive integers (allowing tables to be built using integers -- speeding some computations and reducing memory requirements. I foresaw a time where the core computations would be pushed into C.</p>
+
+<h3><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Step_3:_The_Server">Step 3: The Server</a></h3>
+
+<p>Eventually, I think we will need a server that</p>
+
+<ol>
+<li>reads in precomputed values (most notably Data/similarities) and</li>
+
+<li>processes a stream of requests.</li>
 </ol>
-</p>
-<p> 
-When you wish to create a representative set of genomes (either for all of
-the public PATRIC genomes or some subset of those genomes), you will probably
-give priority to <i>reference</i> genomes.  You would probably do well to study
-<a href=https://www.ncbi.nlm.nih.gov/genome/browse/refhelp/>NCBI's discussion of
-reference and representative genomes</a>
 
-<h3>The rep_server p3-scripts</h3>
+<p>To make the construction of the server easier, I have implemented a query-processor similar to the old <code>fig.pl</code> style. I debug and time implementations of requests in that environment. The query processor is invoked using</p>
 
-We have implemented a set of p3-scripts that support rapid access to representative
-genomes.  
-We achieve rapid access by implementings a server that
-<ol><li>loads in a large body of precomputed similarities, and then</li>
-<li>processes a stream of request (most of which utilize the precomputed data).</li>
+<pre>   rep_server Data</pre>
+
+<p>After loading the precomputed data, a prompt should appear (this can take a few second to appear). A request of just <code>h</code> produces a short help text.</p>
+
+<p>Here is a example interaction:</p>
+
+<p>This invokes the query processor</p>
+
+<pre>        $ perl rep_server.pl Data</pre>
+
+<p>This asks for the genome id and name, given an index value of 2</p>
+
+<pre>        ?? index_to_id 2
+        2       1680.5  Bifidobacterium adolescentis strain BBMN23
+        3.60012054443359e-05 seconds to execute command</pre>
+
+<p>Note that the request is timed.</p>
+
+<p>This produces the same information, given the id of the genome.</p>
+
+<pre>        ?? id_to_index 1680.5
+        2       1680.5  Bifidobacterium adolescentis strain BBMN23
+        3.60012054443359e-05 seconds to execute command</pre>
+
+<p>This requests the help text be displayed</p>
+
+<pre>        ?? h
+
+            closest_genomes Index N    [returns closest N genomes]
+            close_rep_seq N Sequence   [returns close representative]
+            id_to_index  Id            [returns genome index]
+            index_to_id  Index         [returns genome id]
+            match_tails 16-mer         [returns genomes with matching PheS tail]
+            n_reps N [keep1, keep2, ...keepn]
+                                       [returns rep set of about N seqs]
+            rep_set N [keep1, keep2, ...keepN]
+                                       [ returns rep set ]
+            thin_set N Index1 Index2 ... IndexN  [ make thinned set ]
+        5.19752502441406e-05 seconds to execute command</pre>
+
+<p>Finally, we exit</p>
+
+<pre>        ?? x
+        $</pre>
+
+<h4><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Other_commands">Other commands</a></h4>
+
+<p>Getting closest genomes</p>
+
+<p>Assuming that you have a genome from the set of complete.genomes, you can use something like</p>
+
+<pre>        closest_genomes 2 5
+        2       1680.5  Bifidobacterium adolescentis strain BBMN23
+                343     16      1680.4  Bifidobacterium adolescentis strain 22L
+                343     829     367928.6        Bifidobacterium adolescentis ATCC 15703
+                280     1       1447716.4       Bifidobacterium kashiwanohense PV20-2
+                280     864     1150460.7       Bifidobacterium kashiwanohense JCM 15439 = DSM 21854
+                280     2022    547043.19       Bifidobacterium pseudocatenulatum DSM 20438 = JCM 1200 = LMG 10505
+        0.000138998031616211 seconds to execute command</pre>
+
+<p>to get the closest 5 genomes (i.e., the closest 5 to the genome with index 2).</p>
+
+<p>You can compute a representative set of genomes. The algorithm takes a similarity threshhold N. The returned set will have the property that no two members are more similar than N, and all of the omitted sequences are similar to one of the representative sequences at a score of N or more.</p>
+
+<p>You can optionally, speciy a set of <i>keepers</i>, which are indexes of sequence you want to be present in the representative set (if possible). Thus, the following command creates a representative set based on similarity threshhold of 50, and forces one of the members to be the genome with index 864. The returned set has 872 members.</p>
+
+<pre>        ?? rep_set 50 864
+        872
+
+        864     1150460.7       Bifidobacterium kashiwanohense JCM 15439 = DSM 21854
+        3       1678678.3       Burkholderia sp. HB1
+        5       1532555.3       Brevundimonas sp. DS20
+        6       1746199.3       Bordetella sp. N
+        10      224911.44       Bradyrhizobium diazoefficiens USDA 110
+        11      98804.3 Buchnera aphidicola (Tuberolachnus salignus)
+        12      118110.3        Buchnera aphidicola (Schlechtendalia chinensis)
+        13      1263829.3       Bibersteinia trehalosi USDA-ARS-USMARC-188
+
+        .
+        .
+        .
+        0.0565729141235352 seconds to execute command</pre>
+
+<h4><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Getting_a_Representative_set_with_a_Specified_Number_of_Members">Getting a Representative set with a Specified Number of Members</a></h4>
+
+<p>You can compute a representative set containing close to a specified number of members using something like</p>
+
+<pre>        ?? n_reps 1000
+        1001    0,3,5,6,10,11,12,13,14,15,17,18,19,20,...
+
+        0.0629708766937256 seconds to execute command
+
+        ??</pre>
+
+<p>Note that the genomes are given as a comma-separated set of genome indices.</p>
+
+<h4><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Trying_to_Find_a_Close_representative_sequence.">Trying to Find a Close representative sequence.</a></h4>
+
+<p>Suppose that you had an arbitrary PheS sequence, and you wanted to locate a genome with a close sequence. You could use something like</p>
+
+<pre>        ?? close_rep_seq 200 MGSMDLDQIVADAQQSFEGAADITTLENEKARFLGKSGALTELLKGLGKLDPETRKTEGARINVAKQQVEAALNARRQALADALLNQRLAAEAIDVTLPGRGAGAGSLHPVMRTWERVEQIFRSIGFDVADGPEIETDWYNFTALNSPENHPARSMQDTFYVDGKDADGRPLLLRTHTSPMQVRYARMNRPPIKVIAPGRTYRVDSDATHSPMFNQVEGLWIDENVSFADLKGVYTDFLKKFFERDDILVRFRPSYFPFTEPSAEIDMMFEHGKNAGKWLEISGSGQVHPTVIRNMGLDPERYIGFAFGSGLERLTMLRYGVQDLRLFFENDLRFLRQFA
+        268     1779    1009846.3       Burkholderia cepacia GG4
+        0.503750085830688 seconds to execute command</pre>
+
+<p>which tries to find a representative sequence that is close to the specified sequence. The search computes a set of about 200 rep sets that cover the collection, keeping the closest to the given sequence. It then takes that rep sequence and looks at the 50 closest other rep sequences. The closest is returned. In this case it was 1009846.3 (index=1779) that had 268 8-mers in common with the query PheS.</p>
+
+<h4><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Extending_a_Pin_to_Support_Compare_Regions">Extending a Pin to Support Compare Regions</a></h4>
+
+<p>Computing a <i>pin</i> is a key step in a compare regions computation. My intent is to create a strategy that is not guaranteed to produce the pin, but is fast enough to allow fallback approaches when it fails.</p>
+
+<p>The basic approach that I advocate would be</p>
+
+<ol>
+<li>Get the PheS from the focus genome. If the focus genome is in complete.genomes, this PheS has instantaneous access to the closest genomes from complete.genomes (via <code>closest_genomes</code> query). Otherwise, you need to use a <code>close_rep_seq</code> and a <code>closest_genomes</code> to get the set of close genomes.</li>
+
+<li>Once you have the close genomes, You need to get the set of pinned features. If the seed feature is in a protein family, compute the pin as the set of features from the family that are from the close genomes. This can lead to multiple pegs from the same genome. I think that is ok, if the seed feature occurs uniquely (and maybe ok even if it is not unique).</li>
+
+<li>If you cannot easily get a pin from the seed feature, find the closest non-hypo feature for which you can get a pin, and use that (adjusting the red to reflect the original seed feature -- not the close non-hypo).</li>
 </ol>
-<p>
 
-<h3> Accessing a Set of Representative PATRIC Genomes</h3>
+<p>This approach will, in the worst case, take under a second to fail. If the seed feature is from a genome in complete.genomes, it should take under 0.1 seconds to fail.</p>
 
+<p>My belief is that it will succeed most of the time.</p>
 
-You should use something like
-<pre>
-  p3-rep-genomes -n 50 > rep-genomes-group
-</pre>
-to create a genome-group of the representative genomes.  These genomes will all be
-from the <i>public</i> PATRIC genomes (note: this is a significant constraint).
-The "-n 50" parameter asks for genomes that have similarity scores (that is, the
-number of 8-mers in common) of 50 or more to have a common representative genome.
-<br><br>
-To prioritize the order in which genomes are added to the set, use an
-input genome-group, which is a genome-group in which the order of the genomes
-dictates the order in which they are considered for selection to be moved to the
-representative set.  Thus, somthing like this might be used
-<pre>
-  p3-rep-genomes -n 50 < prioritized-genomes > rep-genomes-group
-</pre>
-and it would be normal for typical model organisms' genomes to occur early within
-the prioritized genomes.
-<p>
-You should experiment a bit to get a feel for the representative sets generated for different values of <i>N</i>.  You might add a column to <i>rep-genomes-group</i>
-containing the name associated with each genome.
-
-</p>
-<p>
-Here is a pipeline to ponder:
-<pre>
-  p3-rep-genomes -n 40 | p3-close-genomes -n 2 > close.genomes
-</pre>
-
-Each row in the input table generates up to two lines of output.  Each
-line of output displays two genomes (a representative genome and a
-genome that is close) and the corresponding similarity score.
-
-</p>
-We suggest that you
-<ol><li> generate a file containing the first 2 representative genomes
-returned by <b>p3-rep-genomes</b>,</li>
-    <li> use <b>p3-close-genomes</b> to return up to three close representative
-         genomes for both of these first two reference genomes,</li> and finally
-    <li> add genome names columns (one for each of the genomes in each row).
-    </li>
-</ol>
-If you cannot perform each of these steps, ask for help before proceeding.
-
-<h3>Retrieving a Representative Set of a Specified Size</h3>
-<p>
-You may wish to create a representative set containing approximately <i>M</i>
-members.  This can be done using something like
-<pre>
-  p3-N-rep-genomes -m 500 > set.of.desired.size
-</pre>
-
-Note that you get a set that is approximately the size you requested, but
-probably not exactly.
-
-</p>
-<h4>Trying to Find a Close representative sequence</h4>
-
-
-<p>Suppose that you had an arbitrary PheS sequence, and you wanted to
-locate a representative genome with a close sequence.  You could use something like</p>
-
-<pre class="call">
-p3-close-rep-seq -n 200  MGSMDLDQIVADAQQSFEGAADITTLENEKARFLGKSGALTELLKGLGKLDPETRKTEGARINVAKQQVEAALNARRQALADALLNQRLAAEAIDVTLPGRGAGAGSLHPVMRTWERVEQIFRSIGFDVADGPEIETDWYNFTALNSPENHPARSMQDTFYVDGKDADGRPLLLRTHTSPMQVRYARMNRPPIKVIAPGRTYRVDSDATHSPMFNQVEGLWIDENVSFADLKGVYTDFLKKFFERDDILVRFRPSYFPFTEPSAEIDMMFEHGKNAGKWLEISGSGQVHPTVIRNMGLDPERYIGFAFGSGLERLTMLRYGVQDLRLFFENDLRFLRQFA > close.reps
-</pre>
-
-<p>which tries to find a representative sequence that is close to the
-specified sequence.  The search computes a set of about 200 rep sets
-that cover the collection, keeping the closest to the given sequence.
-It then takes that rep sequence and looks at the 50 closest other rep
-sequences.  The closest is returned.  In this case it was 1009846.3
-that had 268 8-mers in common with the query PheS.</p>
-
-<h2>Summary</h2>
+<h2><a class="u" href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=RepresentativeGenomes#___top" title="click to go to top of document" name="Identifying_Occurrences_of_the_Representative_Genomes">Identifying Occurrences of the Representative Genomes</a></h2>
 
 <p>Let us summarize some of the central ideas so far:</p>
 
-<p>We have a rapidly growing set of genomes. Right now, we have about 100,000, but the number is still growing exponentially.
-We speak of the total number of <i>good genomes</i> as the universe.</p>
+<p>We have a rapidly growing set of genomes. Right now, we have about 100,000, but the number is still growing exponentially. We speak of the total number of <i>good genomes</i> as the universe.</p>
 
-<p>The PheS protein is universal: there is normally one copy in each new genome. We are using a new measure of similarity: the
-number of 8-mer amino acid sequences in common between the PheS proteins encoded in two genomes.
-Let us say that 2 genomes are "similar" if they have 100 or more PheS 8-mers in common.
-Then a representative set of genomes <b>G</b> is a subset of the universe that has two properties:</p>
+<p>The PheS protein is universal: there is normally one copy in each new genome. We are using a new measure of similarity: the number of 8-mer amino acid sequences in common between the PheS proteins encoded in two genomes. Let us say that 2 genomes are "similar" if they have 100 or more PheS 8-mers in common. Then a representative set of genomes <b>G</b> is a subset of the universe that has two properties:</p>
+
 <ol>
 <li>Every genome in our universe is similar to at least one representative genome.</li>
+
 <li>No two representative genomes are similar.</li>
 </ol>
-<p>You might find it irritating that a genome can be represented by multiple representative genomes. Do not let
-this disturb you overmuch. What is important is that every genome in the universe has at least one representative,
-no two representatives are similar, and that this implies that the universe is covered by representatives.</p>
+
+<p>You might find it irritating that a genome can be represented by multiple representative genomes. Do not let this disturb you overmuch. What is important is that every genome in the universe has at least one representative, no two representatives are similar, and that this implies that the universe is covered by representatives.</p>
+
+<p>To generate this set, we start with a directory <code>Data.All</code> constructed as above with all good genomes in it. That is, <code>Data.All/complete.genomes</code> is a list of the good genomes and <code>Data.All/g.1.1.20.fasta</code> is a FASTA file of their PheS proteins. Then</p>
+
+<pre>         get_vss_for_reps Data.All
+         generate_cached_rep_data Data.All</pre>
+
+<p>builds <code>Data.All</code> into a fully functional <a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=rep_server.pl" class="podlinkpod">rep_server.pl</a> directory.</p>
+
+<pre>    rep_server Data.All
+    ?? rep_set 100 save=representative.genomes
+    ?? x</pre>
+
+<p>Computes a representative genome set according to the criteria above. Now we want a <a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=rep_server.pl" class="podlinkpod">rep_server.pl</a> directory for this reduced set of genomes (the representatives).</p>
+
+<pre>    mkdir Data.Rep
+    cp representative.genomes Data.Rep/complete.genomes
+    cp Data.All/6.1.1.20.fasta Data.Rep
+    get_vss_for_reps Data.Rep
+    generate_cached_rep_data Data.Rep</pre>
+
+<p>The above creates a <a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=rep_server.pl" class="podlinkpod">rep_server.pl</a> directory for just the representative genomes. Note that the FASTA file is too big, but the software filters it on input, so this is not a problem.</p>
+
+<p>We want to be able to examine a file of sequences and find out which representative sets are present. Use</p>
+
+<pre>    PheS_generate_signatures Data.Rep</pre>
+
+<p>to generate the file <code>Data.Rep/PheS.signatures</code> of protein signatures for the PheS proteins in the various representatives. Once this is done, you can find the signatures in a DNA FASTA file by running it through <a href="http://bioseed.mcs.anl.gov/~parrello/SEEDtk/Doc.cgi?module=PheS_evidence_of_reps.pl" class="podlinkpod">PheS_evidence_of_reps.pl</a> as follows</p>
+
+<pre>    PheS_evidence_of_reps Data.Rep &lt;input.fasta &gt;report.txt</pre>
+
+<p>We have two tools that together allow you to gain insight into the genomes that are present in a fasta DNA file.</p>
+
+<p>Let us presume a directory <code>representative.genomes</code> be a set of representative genomes Let <code>Data.Rep</code> be a directory of representative genomes set up using Use</p>
+
+<pre>      PheS_generate_signatures Data.Rep</pre>
+
+<p>To build Data.Rep/PheS.signatures use</p>
+
+<pre>      PheS_evidence_of_reps Data.Rep &lt; DNA-string &gt; report.on.occurrences</pre>
 
 </div>
 </body>
