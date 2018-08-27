@@ -232,7 +232,8 @@ eval {
             push @lines, CGI::h3("Module $modName not found.");
         } elsif ($modName =~ /\.spec/) {
             # This is a type specification file.
-            push @lines, ParseSpec::ToHtml($fileFound);
+            my $parser = ParseSpec->new();
+            push @lines, $parser->ToHtml($fileFound);
             # Tell the user where the file came from.
             push @lines, CGI::p("Module $modName is located at $fileFound.\n");
         } else {
