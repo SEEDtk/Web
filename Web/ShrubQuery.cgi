@@ -19,7 +19,8 @@
 
 
 use strict;
-use lib::Web_Config;
+use lib 'lib';
+use Web_Config;
 use Shrub;
 use ERDBtk::PDocPage;
 use ERDBtkExtras;
