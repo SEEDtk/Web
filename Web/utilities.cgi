@@ -31,11 +31,10 @@ use URI::Escape;
 use Shrub;
 use SeedUtils;
 use GenomeTypeObject;
-use SeedAware;
 
 =head1 Utility Script for SEEDtk Web Interface
 
-This CGI script executes simply SEEDtk commands. The output is put in a subdirectory of C<WebSpaces> underneath the
+This CGI script executes simple SEEDtk commands. The output is put in a subdirectory of C<WebSpaces> underneath the
 SEEDtk data directory. The user specifies an I<account> in each invocation that contains the subdirectory path.
 
 =head2 Parameters
@@ -117,7 +116,7 @@ eval {
         } else {
             my $gtoFile = "$sessionDir/$genomeID.gto";
             if (! -s $gtoFile) {
-                die "No GTO file founr for $genomeID.\n";
+                die "No GTO file found for $genomeID.\n";
             } else {
                 qual_gto($gtoFile, $sessionDir);
             }

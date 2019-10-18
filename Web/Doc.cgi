@@ -8,7 +8,7 @@ use WebUtils;
 use Web_Config;
 use Env;
 use ParseSpec;
-use SeedAware;
+use SeedTkRun;
 
 
 =head1 Documentation Display
@@ -297,7 +297,7 @@ eval {
                     push @lines, CGI::h1("USAGE");
                     my @usage;
                     eval {
-                        @usage = SeedAware::run_gathering_output('perl', $fileFound, '--help'); ##`$cmd --help`;
+                        @usage = SeedTkRun::run_gathering_output('perl', $fileFound, '--help'); ##`$cmd --help`;
                     };
                     if ($@) {
                         push @lines, CGI::blockquote("Script has error: $@");
