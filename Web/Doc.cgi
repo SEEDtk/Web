@@ -187,7 +187,7 @@ eval {
         # Here the user wants a list of the p3 command-line scripts.
         push @lines, CGI::div({ class => 'heading'}, CGI::h1("PATRIC-3 Scripts"));
         push @lines, CGI::start_div({ id => 'Dump' });
-        my $dir = "$FIG_Config::mod_base/RASTtk/scripts";
+        my $dir = "$FIG_Config::mod_base/p3_scripts/scripts";
         # Get a hash of the scripts in this directory.
         my $scriptHash = Env::GetScripts($dir);
         if (! scalar keys %$scriptHash) {
@@ -198,7 +198,7 @@ eval {
             # a documented script.
             my $doc;
             # Sort the script names and filter for p3s.
-            my @scripts = sort { Cmp($a, $b) } grep { $_ =~ /^p3-/ } keys %$scriptHash;
+            my @scripts = sort { Cmp($a, $b) } keys %$scriptHash;
             # Do the looping.
             for my $script (@scripts) {
                 # Get the comment.
