@@ -483,6 +483,10 @@ div.pod table,
    margin-top: 6px;
 }
 
+#Pod td.num {
+	text-align: right;
+}
+
 #Dump ol {
    font-weight: bold;
 }
