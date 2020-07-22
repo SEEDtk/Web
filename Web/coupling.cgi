@@ -67,6 +67,8 @@ eval {
             if (! $pegId) {
                 print CGI::h1("Genome $genome $gto->{scientific_name}") . "\n";
                 print CGI::start_div({ id => "Pod" }) . "\n";
+                print CGI::p(CGI::a({ href => "coupling.html"}, "Return to coupling page."));
+                print CGI::h2("Features with Couplings");
                 print CGI::start_table() . "\n";
                 print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
                 my @feats = sort { SeedUtils::by_fig_id($a->{id}, $b->{id}) }
@@ -83,6 +85,7 @@ eval {
                 my $focus = $gto->find_feature($pegId);
                 print CGI::h1("$focus->{id} $focus->{function}") . "\n";
                 print CGI::start_div({ id => "Pod" }) . "\n";
+                print CGI::p(CGI::a({ href => "coupling.cgi?genome=$genome"}, "Return to genome page."));
                 # Now we need to build a table of the coupled features.
                 my $couplings = $focus->{couplings};
                 print CGI::h2("Couplings") . "\n";
