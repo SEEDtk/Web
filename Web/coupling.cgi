@@ -74,11 +74,6 @@ eval {
                 print CGI::start_div({ id => "Pod" }) . "\n";
                 print CGI::p(CGI::a({ href => "coupling.html"}, "Return to main page.")) . "\n";
                 filter_form();
-                print CGI::start_form({ action => "coupling.cgi", method => "GET" }) . "\n";
-                print CGI::start_table() . "\n";
-                print CGI::Tr(CGI::td("Minimum Score"), CGI::td(CGI::input({ type => 'text', name => 'filter', value => $filter})),
-                        CGI::td(CGI::input({ type => 'submit', value => 'REFRESH' }))) . "\n";
-                print CGI::end_table() . "\n";
                 print CGI::input({ type => 'hidden', name => 'genome', value => $genome }) . "\n";
                 my @feats = sort { SeedUtils::by_fig_id($a->{id}, $b->{id}) }
                         grep { has_couplings($_) } @{$gto->{features}};
@@ -162,6 +157,7 @@ sub filter_form {
     if ($path) {
         print CGI::input({ type => 'hidden', name => 'path', value => $path }) . "\n";
     }
+    print CGI::end_form();
 }
 
 1;
