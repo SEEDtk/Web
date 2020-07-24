@@ -14,11 +14,15 @@ ID of the genome of interest.  It must have a GTO in the "GTOcouple" subdirector
 
 =item peg
 
-Feature to display.
+Feature to display.  If omitted, the whole genome is displayed.
 
-=item path
+=item path (only used if "peg" is specified)
 
 The features displayed on the way here.
+
+=item filter
+
+Minimum coupling size value.  The default is C<0>.
 
 =back
 
@@ -37,16 +41,17 @@ use SeedUtils;
 use constant PATRIC_PREFIX_URL => "https://www.patricbrc.org/view/Feature/";
 use constant CORE_PREFIX_URL => "https://core.theseed.org/FIG/seedviewer.cgi?page=Annotation&feature=";
 
-my ($home, $newPath, $urlPrefix);
+my ($home, $newPath, $path, $urlPrefix);
 my $cgi = CGI->new();
 my $genome = $cgi->param('genome');
 my $pegId = $cgi->param('peg');
+my $filter = $cgi->param('filter') // 0;
 print CGI::header();
 my $title = ($pegId ? "Feature Coupling for $pegId" : "Peg List for $genome");
 print CGI::start_html(-title => $title, -style =>  { src => "css/Basic.css" });
 eval {
     # Parse the path.
-    my $path = $cgi->param('path') // "";
+    $path = $cgi->param('path') // "";
     $newPath = "";
     # Read in the GTO.
     $genome = $cgi->param('genome');
@@ -67,17 +72,25 @@ eval {
             if (! $pegId) {
                 print CGI::h1("Genome $genome $gto->{scientific_name}") . "\n";
                 print CGI::start_div({ id => "Pod" }) . "\n";
-                print CGI::p(CGI::a({ href => "coupling.html"}, "Return to coupling page."));
-                print CGI::h2("Features with Couplings");
+                print CGI::p(CGI::a({ href => "coupling.html"}, "Return to main page.")) . "\n";
+                filter_form();
+                print CGI::start_form({ action => "coupling.cgi", method => "GET" }) . "\n";
+                print CGI::start_table() . "\n";
+                print CGI::Tr(CGI::td("Minimum Score"), CGI::td(CGI::input({ type => 'text', name => 'filter', value => $filter})),
+                        CGI::td(CGI::input({ type => 'submit', value => 'REFRESH' }))) . "\n";
+                print CGI::end_table() . "\n";
+                print CGI::input({ type => 'hidden', name => 'genome', value => $genome }) . "\n";
+                my @feats = sort { SeedUtils::by_fig_id($a->{id}, $b->{id}) }
+                        grep { has_couplings($_) } @{$gto->{features}};
+                my $count = scalar @feats;
+                print CGI::h2("$count Features with Couplings") . "\n";
                 print CGI::start_table() . "\n";
                 print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
-                my @feats = sort { SeedUtils::by_fig_id($a->{id}, $b->{id}) }
-                        grep { $_->{couplings} && @{$_->{couplings}} } @{$gto->{features}};
                 for my $feat (@feats) {
                     print CGI::Tr(fid_info($feat->{id}, $feat->{function})) . "\n";
                 }
-                print CGI::end_table();
-                print CGI::end_div();
+                print CGI::end_table() . "\n";
+                print CGI::end_div() . "\n";
             } else {
                 my @path = split /,/, $path;
                 shift @path if (scalar @path > 10);
@@ -85,9 +98,10 @@ eval {
                 my $focus = $gto->find_feature($pegId);
                 print CGI::h1("$focus->{id} $focus->{function}") . "\n";
                 print CGI::start_div({ id => "Pod" }) . "\n";
-                print CGI::p(CGI::a({ href => "coupling.cgi?genome=$genome"}, "Return to genome page."));
+                print CGI::p(CGI::a({ href => "coupling.cgi?genome=$genome&filter=$filter" }, "Return to genome page.")) . "\n";
+                filter_form();
                 # Now we need to build a table of the coupled features.
-                my $couplings = $focus->{couplings};
+                my $couplings = get_couplings($focus);
                 print CGI::h2("Couplings") . "\n";
                 print CGI::start_table() . "\n";
                 print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Score"), CGI::th("Strength")) . "\n";
@@ -98,14 +112,14 @@ eval {
                         CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength)) . "\n";
                 }
                 print CGI::end_table() . "\n";
-                print CGI::h2("History");
+                print CGI::h2("History") . "\n";
                 print CGI::start_table() . "\n";
                 print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
                 for my $fid (@path) {
                     my $function = $gto->feature_function($fid);
                     print CGI::Tr(fid_info($fid, $function)) . "\n";
                 }
-                print CGI::end_table();
+                print CGI::end_table() . "\n";
                 print CGI::end_div() . "\n";
             }
         }
@@ -118,8 +132,36 @@ print CGI::end_html();
 
 sub fid_info {
     my ($fid, $function) = @_;
-    return CGI::td(CGI::a({ href => "coupling.cgi?genome=$genome&peg=$fid&path=$newPath"}, $fid)),
+    return CGI::td(CGI::a({ href => "coupling.cgi?genome=$genome&peg=$fid&filter=$filter&path=$newPath"}, $fid)),
            CGI::td(CGI::a({ href => "$urlPrefix$fid", target => "_blank" }, $home)), CGI::td($function);
+}
+
+sub has_couplings {
+    my ($feat) = @_;
+    my $couples = get_couplings($feat);
+    return scalar(@$couples) > 0;
+}
+
+sub get_couplings {
+    my ($feat) = @_;
+    my $couples = $feat->{couplings} // [];
+    my @retVal = grep { $_->[1] >= $filter } @$couples;
+    return \@retVal;
+}
+
+sub filter_form {
+    print CGI::start_form({ action => "coupling.cgi", method => "GET" }) . "\n";
+    print CGI::start_table() . "\n";
+    print CGI::Tr(CGI::td("Minimum Score"), CGI::td(CGI::input({ type => 'text', name => 'filter', value => $filter})),
+            CGI::td(CGI::input({ type => 'submit', value => 'REFRESH' }))) . "\n";
+    print CGI::end_table() . "\n";
+    print CGI::input({ type => 'hidden', name => 'genome', value => $genome }) . "\n";
+    if ($pegId) {
+        print CGI::input({ type => 'hidden', name => 'peg', value => $pegId }) . "\n";
+    }
+    if ($path) {
+        print CGI::input({ type => 'hidden', name => 'path', value => $path }) . "\n";
+    }
 }
 
 1;
