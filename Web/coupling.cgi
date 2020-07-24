@@ -96,17 +96,25 @@ eval {
                 print CGI::p(CGI::a({ href => "coupling.cgi?genome=$genome&filter=$filter" }, "Return to genome page.")) . "\n";
                 filter_form();
                 # Now we need to build a table of the coupled features.
-                my $couplings = get_couplings($focus);
+                my $couplings = $focus->{couplings} // [];
                 print CGI::h2("Couplings") . "\n";
                 print CGI::start_table() . "\n";
                 print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Score"), CGI::th("Strength")) . "\n";
+                my $hidden = 0;
                 for my $coupling (@$couplings) {
                     my ($fid, $score, $strength) = @$coupling;
-                    my $function = $gto->feature_function($fid);
-                    print CGI::Tr(fid_info($fid, $function),
-                        CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength)) . "\n";
+                    if ($score < $filter) {
+                        $hidden++;
+                    } else {
+                        my $function = $gto->feature_function($fid);
+                        print CGI::Tr(fid_info($fid, $function),
+                            CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength)) . "\n";
+                    }
                 }
                 print CGI::end_table() . "\n";
+                if ($hidden > 0) {
+                    print CGI::p("$hidden couplings hidden by score filter.") . "\n";
+                }
                 print CGI::h2("History") . "\n";
                 print CGI::start_table() . "\n";
                 print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
