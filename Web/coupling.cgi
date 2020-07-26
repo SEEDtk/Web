@@ -70,6 +70,8 @@ eval {
                 $urlPrefix = CORE_PREFIX_URL;
             }
             if (! $pegId) {
+                # Here we are displaying the whole genome.  We show only the features with couplings
+                # that pass the filter.
                 print CGI::h1("Genome $genome $gto->{scientific_name}") . "\n";
                 print CGI::start_div({ id => "Pod" }) . "\n";
                 print CGI::p(CGI::a({ href => "coupling.html"}, "Return to main page.")) . "\n";
@@ -87,19 +89,27 @@ eval {
                 print CGI::end_table() . "\n";
                 print CGI::end_div() . "\n";
             } else {
+                # Here we are focused on a single feature.  We show the feature's couplings, and a short history of
+                # previous features viewed.
                 my @path = split /,/, $path;
                 shift @path if (scalar @path > 10);
                 $newPath = join(",", @path, $pegId);
                 my $focus = $gto->find_feature($pegId);
-                print CGI::h1("$focus->{id} $focus->{function}") . "\n";
+                print CGI::h1("$pegId $focus->{function}") . "\n";
                 print CGI::start_div({ id => "Pod" }) . "\n";
                 print CGI::p(CGI::a({ href => "coupling.cgi?genome=$genome&filter=$filter" }, "Return to genome page.")) . "\n";
                 filter_form();
-                # Now we need to build a table of the coupled features.
+                # Get all the features related to the focus feature and find the subsystems.
                 my $couplings = $focus->{couplings} // [];
+                my @fids = ($pegId, map { $_->[0] } @$couplings);
+                my $subHash = get_subsystems($gto, \@fids);
+                # Now we need to build a table of the coupled features.
                 print CGI::h2("Couplings") . "\n";
                 print CGI::start_table() . "\n";
-                print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Score"), CGI::th("Strength")) . "\n";
+                print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Score"),
+                        CGI::th("Strength"), CGI::th("Subsystems")) . "\n";
+                print CGI::Tr(fid_info($pegId, $focus->{function}), CGI::td({ class => 'num' }, 'focus'),
+                        CGI::td({ class => 'num' }, 'focus'), CGI::td(join(' | ', @{$subHash->{$pegId}})));
                 my $hidden = 0;
                 for my $coupling (@$couplings) {
                     my ($fid, $score, $strength) = @$coupling;
@@ -108,21 +118,24 @@ eval {
                     } else {
                         my $function = $gto->feature_function($fid);
                         print CGI::Tr(fid_info($fid, $function),
-                            CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength)) . "\n";
+                            CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength),
+                            CGI::td(join(' | ', @{$subHash->{$fid}}))) . "\n";
                     }
                 }
                 print CGI::end_table() . "\n";
                 if ($hidden > 0) {
                     print CGI::p("$hidden couplings hidden by score filter.") . "\n";
                 }
-                print CGI::h2("History") . "\n";
-                print CGI::start_table() . "\n";
-                print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
-                for my $fid (@path) {
-                    my $function = $gto->feature_function($fid);
-                    print CGI::Tr(fid_info($fid, $function)) . "\n";
+                if (scalar @path) {
+                    print CGI::h2("History") . "\n";
+                    print CGI::start_table() . "\n";
+                    print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
+                    for my $fid (@path) {
+                        my $function = $gto->feature_function($fid);
+                        print CGI::Tr(fid_info($fid, $function)) . "\n";
+                    }
+                    print CGI::end_table() . "\n";
                 }
-                print CGI::end_table() . "\n";
                 print CGI::end_div() . "\n";
             }
         }
@@ -166,6 +179,29 @@ sub filter_form {
         print CGI::input({ type => 'hidden', name => 'path', value => $path }) . "\n";
     }
     print CGI::end_form();
+}
+
+# Here we want to find the subsystems containing each of the features in the incoming list.
+sub get_subsystems {
+    my ($gto, $featList) = @_;
+    # Initialize to every feature having no subsystems.
+    my %retVal = map { $_ => [] } @$featList;
+    my $subsystems = $gto->{subsystems} // [];
+    for my $subsystem (@$subsystems) {
+        my $name = $subsystem->{name};
+        my $subID = $name;
+        $subID =~ tr/ /_/;
+        my $link = "https://core.theseed.org/FIG/seedviewer.cgi?page=Subsystems;subsystem=$subID";
+        my $bindings = $subsystem->{role_bindings} // [];
+        for my $binding (@$bindings) {
+            for my $fid (@{$binding->{features}}) {
+                if ($retVal{$fid}) {
+                    push @{$retVal{$fid}}, CGI::a({ href => $link, target => "_blank" }, $name);
+                }
+            }
+        }
+    }
+    return \%retVal;
 }
 
 1;
