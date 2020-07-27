@@ -111,18 +111,20 @@ sub display_peg {
     print CGI::h2("Couplings") . "\n";
     print CGI::start_table() . "\n";
     print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Score"),
-            CGI::th("Strength"), CGI::th("Subsystems")) . "\n";
+            CGI::th("Strength"), CGI::th("Others"), CGI::th("Subsystems")) . "\n";
     print CGI::Tr(fid_info($pegId, $focus->{function}, 1), CGI::td({ class => 'num' }, 'focus'),
-            CGI::td({ class => 'num' }, 'focus'), CGI::td(join(' | ', @{$subHash->{$pegId}})));
+            CGI::td("&nbsp;"), CGI::td("&nbsp;"),
+            CGI::td(join(' | ', @{$subHash->{$pegId}})));
     my $hidden = 0;
     for my $coupling (@$couplings) {
         my ($fid, $score, $strength) = @$coupling;
         if ($score < $filter) {
             $hidden++;
         } else {
-            my $function = $gto->feature_function($fid);
-            print CGI::Tr(fid_info($fid, $function),
-                      CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength),
+            my $other = $gto->find_feature($fid);
+            print CGI::Tr(fid_info($fid, $other->{function}),
+                    CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength),
+                    CGI::td(others_link($focus, $other)),
                     CGI::td(join(' | ', @{$subHash->{$fid}}))) . "\n";
         }
     }
@@ -141,6 +143,28 @@ sub display_peg {
         print CGI::end_table() . "\n";
     }
     print CGI::end_div() . "\n";
+}
+
+sub others_link {
+    my ($feat1, $feat2) = @_;
+    my $retVal = "&nbsp;";
+    my $fam1 = pgfam($feat1);
+    my $fam2 = pgfam($feat2);
+    if ($fam1 && $fam2) {
+        $retVal = CGI::a({ href => "familyPair.cgi?f1=$fam1&f2=$fam2", target => "_blank" }, "PAIRS");
+    }
+}
+
+sub pgfam {
+    my ($feat) = @_;
+    my $retVal = "0";
+    my $families = $feat->{family_assignments} // [];
+    for my $family (@$families) {
+        if ($family->[0] eq 'PGFAM') {
+            $retVal = $family->[1];
+        }
+    }
+    return $retVal;
 }
 
 sub display_genome {
