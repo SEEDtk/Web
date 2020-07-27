@@ -43,6 +43,10 @@ a:visited {
     color: #0ff;
 }
 
+a:focus {
+    background-color: #fff;
+}
+
 blockquote.rules a,
 blockquote.ability a {
     color: #099;
@@ -484,7 +488,7 @@ div.pod table,
 }
 
 #Pod td.num {
-	text-align: right;
+    text-align: right;
 }
 
 #Dump ol {

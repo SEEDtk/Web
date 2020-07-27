@@ -24,6 +24,10 @@ The features displayed on the way here.
 
 Minimum coupling size value.  The default is C<0>.
 
+=item focus
+
+For the genome page, the ID of the last peg displayed
+
 =back
 
 =cut
@@ -47,7 +51,7 @@ my $genome = $cgi->param('genome');
 my $pegId = $cgi->param('peg');
 my $filter = $cgi->param('filter') // 0;
 print CGI::header();
-my $title = ($pegId ? "Feature Coupling for $pegId" : "Peg List for $genome");
+my $title = ($pegId ? "Feature Coupling for $pegId" : ($genome ? "Peg List for $genome" : "Genomes With Coupling"));
 print CGI::start_html(-title => $title, -style =>  { src => "css/Basic.css" });
 eval {
     # Parse the path.
@@ -56,7 +60,7 @@ eval {
     # Read in the GTO.
     $genome = $cgi->param('genome');
     if (! $genome) {
-        die "No genome ID specified.";
+        list_genomes();
     } else {
         my $gtoFile = "$FIG_Config::data/GTOcouple/$genome.gto";
         if (! -s $gtoFile) {
@@ -70,85 +74,124 @@ eval {
                 $urlPrefix = CORE_PREFIX_URL;
             }
             if (! $pegId) {
-                # Here we are displaying the whole genome.  We show only the features with couplings
-                # that pass the filter.
-                print CGI::h1("Genome $genome $gto->{scientific_name}") . "\n";
-                print CGI::start_div({ id => "Pod" }) . "\n";
-                print CGI::p(CGI::a({ href => "coupling.html"}, "Return to main page.")) . "\n";
-                filter_form();
-                print CGI::input({ type => 'hidden', name => 'genome', value => $genome }) . "\n";
-                my @feats = sort { SeedUtils::by_fig_id($a->{id}, $b->{id}) }
-                        grep { has_couplings($_) } @{$gto->{features}};
-                my $count = scalar @feats;
-                print CGI::h2("$count Features with Couplings") . "\n";
-                print CGI::start_table() . "\n";
-                print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
-                for my $feat (@feats) {
-                    print CGI::Tr(fid_info($feat->{id}, $feat->{function})) . "\n";
-                }
-                print CGI::end_table() . "\n";
-                print CGI::end_div() . "\n";
+                display_genome($gto);
             } else {
-                # Here we are focused on a single feature.  We show the feature's couplings, and a short history of
-                # previous features viewed.
-                my @path = split /,/, $path;
-                shift @path if (scalar @path > 10);
-                $newPath = join(",", @path, $pegId);
-                my $focus = $gto->find_feature($pegId);
-                print CGI::h1("$pegId $focus->{function}") . "\n";
-                print CGI::start_div({ id => "Pod" }) . "\n";
-                print CGI::p(CGI::a({ href => "coupling.cgi?genome=$genome&filter=$filter" }, "Return to genome page.")) . "\n";
-                filter_form();
-                # Get all the features related to the focus feature and find the subsystems.
-                my $couplings = $focus->{couplings} // [];
-                my @fids = ($pegId, map { $_->[0] } @$couplings);
-                my $subHash = get_subsystems($gto, \@fids);
-                # Now we need to build a table of the coupled features.
-                print CGI::h2("Couplings") . "\n";
-                print CGI::start_table() . "\n";
-                print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Score"),
-                        CGI::th("Strength"), CGI::th("Subsystems")) . "\n";
-                print CGI::Tr(fid_info($pegId, $focus->{function}), CGI::td({ class => 'num' }, 'focus'),
-                        CGI::td({ class => 'num' }, 'focus'), CGI::td(join(' | ', @{$subHash->{$pegId}})));
-                my $hidden = 0;
-                for my $coupling (@$couplings) {
-                    my ($fid, $score, $strength) = @$coupling;
-                    if ($score < $filter) {
-                        $hidden++;
-                    } else {
-                        my $function = $gto->feature_function($fid);
-                        print CGI::Tr(fid_info($fid, $function),
-                            CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength),
-                            CGI::td(join(' | ', @{$subHash->{$fid}}))) . "\n";
-                    }
-                }
-                print CGI::end_table() . "\n";
-                if ($hidden > 0) {
-                    print CGI::p("$hidden couplings hidden by score filter.") . "\n";
-                }
-                if (scalar @path) {
-                    print CGI::h2("History") . "\n";
-                    print CGI::start_table() . "\n";
-                    print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
-                    for my $fid (@path) {
-                        my $function = $gto->feature_function($fid);
-                        print CGI::Tr(fid_info($fid, $function)) . "\n";
-                    }
-                    print CGI::end_table() . "\n";
-                }
-                print CGI::end_div() . "\n";
+                display_peg($gto);
             }
         }
     }
+    print "\n";
+    print '<script>';
+    print 'document.getElementById("focus").focus()';
+    print '</script>';
+    print "\n";
 };
 if ($@) {
     print CGI::blockquote($@);
 }
 print CGI::end_html();
 
+sub display_peg {
+    my ($gto) = @_;
+    # Here we are focused on a single feature.  We show the feature's couplings, and a short history of
+    # previous features viewed.
+    my @path = split /,/, $path;
+    shift @path if (scalar @path > 10);
+    $newPath = join(",", @path, $pegId);
+    my $focus = $gto->find_feature($pegId);
+    print CGI::h1("$pegId $focus->{function}") . "\n";
+    print CGI::start_div({ id => "Pod" }) . "\n";
+    print CGI::p(CGI::a({ href => "coupling.cgi?genome=$genome&filter=$filter&focus=$pegId" }, "Return to genome page.")) . "\n";
+    filter_form();
+    # Get all the features related to the focus feature and find the subsystems.
+    my $couplings = $focus->{couplings} // [];
+    my @fids = ($pegId, map { $_->[0] } @$couplings);
+    my $subHash = get_subsystems($gto, \@fids);
+    # Now we need to build a table of the coupled features.
+    print CGI::h2("Couplings") . "\n";
+    print CGI::start_table() . "\n";
+    print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Score"),
+            CGI::th("Strength"), CGI::th("Subsystems")) . "\n";
+    print CGI::Tr(fid_info($pegId, $focus->{function}, 1), CGI::td({ class => 'num' }, 'focus'),
+            CGI::td({ class => 'num' }, 'focus'), CGI::td(join(' | ', @{$subHash->{$pegId}})));
+    my $hidden = 0;
+    for my $coupling (@$couplings) {
+        my ($fid, $score, $strength) = @$coupling;
+        if ($score < $filter) {
+            $hidden++;
+        } else {
+            my $function = $gto->feature_function($fid);
+            print CGI::Tr(fid_info($fid, $function),
+                      CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength),
+                    CGI::td(join(' | ', @{$subHash->{$fid}}))) . "\n";
+        }
+    }
+    print CGI::end_table() . "\n";
+    if ($hidden > 0) {
+        print CGI::p("$hidden couplings hidden by score filter.") . "\n";
+    }
+    if (scalar @path) {
+        print CGI::h2("History") . "\n";
+        print CGI::start_table() . "\n";
+        print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
+        for my $fid (@path) {
+            my $function = $gto->feature_function($fid);
+            print CGI::Tr(fid_info($fid, $function)) . "\n";
+        }
+        print CGI::end_table() . "\n";
+    }
+    print CGI::end_div() . "\n";
+}
+
+sub display_genome {
+    my ($gto) = @_;
+    # Here we are displaying the whole genome.  We show only the features with couplings
+    # that pass the filter.
+    my $focus = $cgi->param("focus") // "";
+    print CGI::h1("Genome $genome $gto->{scientific_name}") . "\n";
+    print CGI::start_div({ id => "Pod" }) . "\n";
+    print CGI::p(CGI::a({ href => "coupling.cgi"}, "Return to main page.")) . "\n";
+    filter_form();
+    print CGI::input({ type => 'hidden', name => 'genome', value => $genome }) . "\n";
+    my @feats = sort { SeedUtils::by_fig_id($a->{id}, $b->{id}) }
+            grep { has_couplings($_) } @{$gto->{features}};
+    my $count = scalar @feats;
+    print CGI::h2("$count Features with Couplings") . "\n";
+    print CGI::start_table() . "\n";
+    print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
+    for my $feat (@feats) {
+        my $fid = $feat->{id};
+        print CGI::Tr(fid_info($fid, $feat->{function}, ($fid eq $focus))) . "\n";
+    }
+    print CGI::end_table() . "\n";
+    print CGI::end_div() . "\n";
+}
+
+sub list_genomes {
+    # Here we create a table of all the available genomes.
+    print CGI::h1("Genomes with Coupling Data") . "\n";
+    print CGI::start_div({ id => "Pod" }) . "\n";
+    open(my $ih, '<', "$FIG_Config::data/GTOcouple/genomes.tbl") || die "Could not open genomes.tbl file: $!";
+    print CGI::start_table() . "\n";
+    print CGI::Tr(CGI::th("Genome"), CGI::th("Scientific Name"), CGI::th({ class => 'num' }, "Couplings")) . "\n";
+    while (! eof $ih) {
+        my $line = <$ih>;
+        chomp $line;
+        my ($id, $name, $count) = split /\t/, $line;
+        print CGI::Tr(CGI::td(CGI::a({ href => "coupling.cgi?genome=$id" }, $id)),
+                CGI::td($name), CGI::td({ class => 'num' }, $count)) . "\n";
+    }
+    print CGI::end_table() . "\n";
+    print CGI::end_div() . "\n";
+}
+
 sub fid_info {
-    my ($fid, $function) = @_;
-    return CGI::td(CGI::a({ href => "coupling.cgi?genome=$genome&peg=$fid&filter=$filter&path=$newPath"}, $fid)),
+    my ($fid, $function, $focusFlag) = @_;
+    my %aParms = (href => "coupling.cgi?genome=$genome&peg=$fid&filter=$filter&path=$newPath");
+    if ($focusFlag) {
+        $aParms{id} = "focus";
+    }
+    return CGI::td(CGI::a(\%aParms, $fid)),
            CGI::td(CGI::a({ href => "$urlPrefix$fid", target => "_blank" }, $home)), CGI::td($function);
 }
 
