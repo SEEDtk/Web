@@ -180,12 +180,13 @@ sub display_genome {
     my @feats = sort { SeedUtils::by_fig_id($a->{id}, $b->{id}) }
             grep { has_couplings($_) } @{$gto->{features}};
     my $count = scalar @feats;
+    my $subHash = get_subsystems($gto, [map { $_->{id} } @feats]);
     print CGI::h2("$count Features with Couplings") . "\n";
     print CGI::start_table() . "\n";
-    print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function")) . "\n";
+    print CGI::Tr(CGI::th("Feature"), CGI::th("Home"), CGI::th("Function"), CGI::th("Subsystems")) . "\n";
     for my $feat (@feats) {
         my $fid = $feat->{id};
-        print CGI::Tr(fid_info($fid, $feat->{function}, ($fid eq $focus))) . "\n";
+        print CGI::Tr(fid_info($fid, $feat->{function}, ($fid eq $focus)), CGI::td($subHash->{$fid})) . "\n";
     }
     print CGI::end_table() . "\n";
     print CGI::end_div() . "\n";
