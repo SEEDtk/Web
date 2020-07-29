@@ -197,12 +197,17 @@ sub list_genomes {
     print CGI::h1("Genomes with Coupling Data") . "\n";
     print CGI::start_div({ id => "Pod" }) . "\n";
     open(my $ih, '<', "$FIG_Config::data/GTOcouple/genomes.tbl") || die "Could not open genomes.tbl file: $!";
-    print CGI::start_table() . "\n";
-    print CGI::Tr(CGI::th("Genome"), CGI::th("Scientific Name"), CGI::th({ class => 'num' }, "Couplings")) . "\n";
+    my @genomes;
     while (! eof $ih) {
         my $line = <$ih>;
         chomp $line;
-        my ($id, $name, $count) = split /\t/, $line;
+        push @genomes, [split /\t/, $line];
+    }
+    @genomes = sort { $a->[1] cmp $b->[1] } @genomes;
+    print CGI::start_table() . "\n";
+    print CGI::Tr(CGI::th("Genome"), CGI::th("Scientific Name"), CGI::th({ class => 'num' }, "Couplings")) . "\n";
+    for my $genomeData (@genomes) {
+        my ($id, $name, $count) = @$genomeData;
         print CGI::Tr(CGI::td(CGI::a({ href => "coupling.cgi?genome=$id" }, $id)),
                 CGI::td($name), CGI::td({ class => 'num' }, $count)) . "\n";
     }
