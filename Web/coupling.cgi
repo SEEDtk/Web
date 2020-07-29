@@ -114,7 +114,7 @@ sub display_peg {
             CGI::th("Strength"), CGI::th("Others"), CGI::th("Subsystems")) . "\n";
     print CGI::Tr(fid_info($pegId, $focus->{function}, 1), CGI::td({ class => 'num' }, 'focus'),
             CGI::td("&nbsp;"), CGI::td("&nbsp;"),
-            CGI::td(join(' | ', @{$subHash->{$pegId}})));
+            CGI::td($subHash->{$pegId}));
     my $hidden = 0;
     for my $coupling (@$couplings) {
         my ($fid, $score, $strength) = @$coupling;
@@ -125,7 +125,7 @@ sub display_peg {
             print CGI::Tr(fid_info($fid, $other->{function}),
                     CGI::td({ class => 'num' }, $score), CGI::td({ class => 'num'}, $strength),
                     CGI::td(others_link($focus, $other)),
-                    CGI::td(join(' | ', @{$subHash->{$fid}}))) . "\n";
+                    CGI::td($subHash->{$fid})) . "\n";
         }
     }
     print CGI::end_table() . "\n";
@@ -267,6 +267,15 @@ sub get_subsystems {
                 }
             }
         }
+    }
+    # Run through the hash and convert each list to a string.
+    for my $fid (keys %retVal) {
+        my @subs = @{$retVal{$fid}};
+        my $html = "<em>**</em>";
+        if (scalar @subs) {
+            $html = join(" | ", @subs);
+        }
+        $retVal{$fid} = $html;
     }
     return \%retVal;
 }
