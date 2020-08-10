@@ -221,8 +221,13 @@ sub fid_info {
     if ($focusFlag) {
         $aParms{id} = "focus";
     }
-    return CGI::td(CGI::a(\%aParms, $fid)),
-           CGI::td(CGI::a({ href => "$urlPrefix$fid", target => "_blank" }, $home)), CGI::td($function);
+    my $link;
+    if ($fid =~ /\.poi\./) {
+        $link = CGI::a({ href => "feature.cgi?gto=GTOcouple/$genome&fid=$fid", target => "_blank" }, "GTO");
+    } else {
+        $link = CGI::a({ href => "$urlPrefix$fid", target => "_blank" }, $home);
+    }
+    return CGI::td(CGI::a(\%aParms, $fid)), CGI::td($link), CGI::td($function);
 }
 
 sub has_couplings {
