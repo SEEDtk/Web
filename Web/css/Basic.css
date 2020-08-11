@@ -502,6 +502,7 @@ div.pod table,
 
 div.wide {
     width: 95%;
+    height: 800px;
     overflow-x: scroll;
 }
 
