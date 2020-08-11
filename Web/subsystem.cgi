@@ -104,8 +104,6 @@ sub write_report {
     my @countHashes;
     # For each role, this will count the number of times it occurs correctly in a feature.
     my @correctRole;
-    # For each role, this will count the pegs that do not exist.
-    my @badPegs;
     # For each role, this will count the pegs that are disconnected.
     my @disPegs;
     # This will hold the HTML for the spreadsheet table.
@@ -127,7 +125,6 @@ sub write_report {
             $columns{$role} = $#roles;
         }
         push @correctRole, 0;
-        push @badPegs, 0;
         push @disPegs, 0;
         push @countHashes, { };
     }
@@ -224,13 +221,6 @@ sub write_report {
                     }
                 }
             }
-            # Now look for features that don't exist.
-            for my $peg (keys %pegCols) {
-                if (! $functionH->{$peg}) {
-                    $cells[$pegCols{$peg}]{$peg} = 'missing';
-                    $badPegs[$pegCols{$peg}]++;
-                }
-            }
             my $genomeLink = CGI::a({ href => (CORE_GENOME_URL . $genome), target => '_blank'}, $genome);
             my @cellLinks;
             for my $cell (@cells) {
@@ -245,23 +235,24 @@ sub write_report {
     print CGI::p(CGI::a({ href => "#sheet" }, 'Go to spreadsheet'));
     # Are there missing genomes?
     if (scalar @missingGenomes) {
-        # Yes.  List them.
         my $count = scalar @missingGenomes;
         print CGI::p("$count genomes were not found.");
-        print CGI::p(CGI::a({ href => '#roles' }, 'Go to role summary.'));
-        print CGI::ol(map { CGI::li($_) } @missingGenomes);
     }
     # Write the role table.
-    write_role_table(\@names, \@abbrs, \@countHashes, \@correctRole, \@badPegs, \@disPegs);
+    write_role_table(\@names, \@abbrs, \@countHashes, \@correctRole, \@disPegs);
     # Write the spreadsheet.
     print CGI::h2(CGI::a({ name => 'sheet' }, "Subsystem Spreadsheet"));
     print CGI::p("LEGEND" . CGI::ul(
         CGI::li(CGI::a({ name => 'normal', class => 'normal' }, "Peg has correct role for column.")),
         CGI::li(CGI::a({ name => 'bad', class => 'bad' }, "Peg does not have correct role for column (Bad Role).")),
-        CGI::li(CGI::a({ name => 'disconnected', class => 'disconnected' }, "Peg belongs in column, but is disconnected.")),
-        CGI::li(CGI::span({ class => 'missing' }, "Peg does not exist in genome (Bad Peg)."))
+        CGI::li(CGI::a({ name => 'disconnected', class => 'disconnected' }, "Peg belongs in column, but is disconnected."))
         ));
     print join("\n", CGI::start_div({ class => 'wide' }), @lines, CGI::end_div());
+    # Write the missing genome list.
+    if (scalar @missingGenomes) {
+        print CGI::h2("Genomes No Longer in SEED");
+        print CGI::ol(CGI::li(\@missingGenomes));
+    }
     print CGI::p((time - $start) . " seconds to compute and format page.");
     print CGI::end_div();
 }
@@ -288,7 +279,7 @@ sub write_role_table {
     my ($roles, $abbrs, $countHashes, $correctRole, $badPegs, $disPegs) = @_;
     print CGI::h2(CGI::a({ name => 'roles'},"Role Summary"));
     print CGI::start_table();
-    print CGI::Tr(CGI::th("Abbr"), CGI::th("Functional Role"), CGI::th("Correct"), CGI::th("Bad Peg"), CGI::th("Disconnected"),
+    print CGI::Tr(CGI::th("Abbr"), CGI::th("Functional Role"), CGI::th("Correct"), CGI::th("Disconnected"),
             CGI::th("Bad Roles"));
     for (my $i = 0; $i < @$roles; $i++) {
         # Build the incorrect versions string.
@@ -302,7 +293,7 @@ sub write_role_table {
         my $versionString = (scalar @versions ? CGI::ul(@versions) : "&nbsp;");
         # Print the information for this row.
         print CGI::Tr(CGI::td($abbrs->[$i]), CGI::td($roles->[$i]), alert_num($correctRole->[$i]),
-            fancy_num($badPegs->[$i]), fancy_num($disPegs->[$i]), CGI::td($versionString));
+            fancy_num($disPegs->[$i]), CGI::td($versionString));
     }
     print CGI::end_table();
 }
