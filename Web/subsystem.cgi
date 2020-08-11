@@ -245,7 +245,8 @@ sub write_report {
     print CGI::p("LEGEND" . CGI::ul(
         CGI::li(CGI::a({ name => 'normal', class => 'normal' }, "Peg has correct role for column.")),
         CGI::li(CGI::a({ name => 'bad', class => 'bad' }, "Peg does not have correct role for column (Bad Role).")),
-        CGI::li(CGI::a({ name => 'disconnected', class => 'disconnected' }, "Peg belongs in column, but is disconnected."))
+        CGI::li(CGI::a({ name => 'disconnected', class => 'disconnected' }, "Peg belongs in column, but is disconnected.")),
+        CGI::li(CGI::span({ class => 'missing' }, "Peg has been deleted from the genome.")),
         ));
     print join("\n", CGI::start_div({ class => 'wide' }), @lines, CGI::end_div());
     # Write the missing genome list.
@@ -260,6 +261,17 @@ sub write_report {
 sub read_functions {
     my ($genome) = @_;
     my $retVal;
+    # Process the deleted features.
+    my %deleted;
+    for my $type (qw(peg rna)) {
+        if (open(my $ih, '<', "$orgDir/$genome/Features/$type/deleted.features")) {
+            while (! eof $ih) {
+                my $line = <$ih>;
+                chomp $line;
+                $deleted{$line} = 1;
+            }
+        }
+    }
     my $funFile = "$orgDir/$genome/assigned_functions";
     if (-s $funFile) {
         open(my $ih, '<', $funFile) || die "Could not open assigned functions for $genome: $!";
@@ -268,7 +280,9 @@ sub read_functions {
             my $line = <$ih>;
             chomp $line;
             my ($id, $function) = split /\t/, $line;
-            $retVal->{$id} = $function;
+            if (! $deleted{$id}) {
+                $retVal->{$id} = $function;
+            }
         }
     }
     return $retVal;
