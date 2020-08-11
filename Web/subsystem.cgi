@@ -79,7 +79,9 @@ sub write_index {
     print CGI::start_div({ id => 'Pod' });
     print CGI::start_ol();
     for my $sub (@subs) {
-        print CGI::li(CGI::a({ href => "subsystem.cgi?subsystem=$sub"}, ssName($sub)));
+        if (substr($sub, 0, 1) ne '.') {
+            print CGI::li(CGI::a({ href => "subsystem.cgi?subsystem=$sub"}, ssName($sub)));
+        }
     }
     print CGI::end_ol();
     print CGI::end_div();
