@@ -276,7 +276,7 @@ sub read_functions {
 
 ## Write the role table.  This tells us how many times each role is found and what other roles are found.
 sub write_role_table {
-    my ($roles, $abbrs, $countHashes, $correctRole, $badPegs, $disPegs) = @_;
+    my ($roles, $abbrs, $countHashes, $correctRole, $disPegs) = @_;
     print CGI::h2(CGI::a({ name => 'roles'},"Role Summary"));
     print CGI::start_table();
     print CGI::Tr(CGI::th("Abbr"), CGI::th("Functional Role"), CGI::th("Correct"), CGI::th("Disconnected"),
