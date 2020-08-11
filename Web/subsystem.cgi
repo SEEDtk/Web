@@ -146,7 +146,10 @@ sub write_report {
         while (scalar @cells < scalar @roles) {
             push @cells, '';
         }
-        $rows{$genome} = [$variant, @cells];
+        my $colsUsed = grep { $_ } @cells;
+        if ($colsUsed) {
+            $rows{$genome} = [$variant, @cells];
+        }
     }
     # Write the spreadsheet header.
     push @lines, CGI::start_table();
