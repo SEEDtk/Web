@@ -71,6 +71,11 @@ a.disconnected {
     color: #fff;
 }
 
+td.highlight {
+    font-weight: bold;
+    background-color: #fc0;
+}
+
 a.official {
     /* links to official site */
 }

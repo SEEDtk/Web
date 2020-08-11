@@ -301,12 +301,35 @@ sub write_role_table {
         }
         my $versionString = (scalar @versions ? CGI::ul(@versions) : "&nbsp;");
         # Print the information for this row.
-        print CGI::Tr(CGI::td($abbrs->[$i]), CGI::td($roles->[$i]), CGI::td({ class => 'num' }, $correctRole->[$i]),
-            CGI::td({ class => 'num' }, $badPegs->[$i]),
-            CGI::td({ class => 'num' }, $disPegs->[$i]),
-            CGI::td($versionString));
+        print CGI::Tr(CGI::td($abbrs->[$i]), CGI::td($roles->[$i]), alert_num($correctRole->[$i]),
+            fancy_num($badPegs->[$i]), fancy_num($disPegs->[$i]), CGI::td($versionString));
     }
     print CGI::end_table();
+}
+
+## Display a number in a cell, and highlight it if it is non-zero.
+sub fancy_num {
+    my ($num) = @_;
+    my $retVal;
+    if ($num > 0) {
+        $retVal = CGI::td({ class => 'num highlight' }, $num);
+    } else {
+        $retVal = CGI::td("&nbsp;");
+    }
+    return $retVal;
+}
+
+## Display a number in a cell, and highlight it if it is zero.
+sub alert_num {
+    my ($num) = @_;
+    my $retVal;
+    if ($num > 0) {
+        $retVal = CGI::td({ class => 'num' }, $num);
+    } else {
+        $retVal = CGI::td({ class => 'highlight num'}, '0');
+    }
+    return $retVal;
+
 }
 
 ## Convert a subsystem ID to a name.
