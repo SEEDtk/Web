@@ -57,6 +57,20 @@ blockquote.ability a:visited {
     color: #909;
 }
 
+span.missing {
+    background-color: #c00;
+    color: #fff;
+}
+
+a.bad {
+    background-color: #ff0;
+}
+
+a.disconnected {
+    background-color: #0c0;
+    color: #fff;
+}
+
 a.official {
     /* links to official site */
 }
@@ -219,7 +233,7 @@ ul.nav {
 .nav li,
 div.indexItem {
     border: outset #006;
-    background-color: #006;
+    background-color: #000065;
     margin-bottom: 0;
 }
 
@@ -357,7 +371,6 @@ div.pod hr,
 #Pod hr,
 #Dump hr {
    color: #CCCCCC;
-   background-color: #CCCCCC;
    display: block;
    margin-top: 0.5em;
    margin-bottom: 0.5em;
@@ -377,7 +390,7 @@ div.pod tt,
 #Dump pre,
 #Dump code,
 #Dump tt {
-    font-family: Courier New, Courier, monospace;
+    font-family: "Courier New", Courier, monospace;
     font-weight: bold;
     color: #006666;
     font-size: small;
@@ -485,6 +498,11 @@ div.pod table,
 #Pod table,
 #Dump table {
    margin-top: 6px;
+}
+
+div.wide {
+    width: 95%;
+    overflow-x: scroll;
 }
 
 #Pod td.num {
