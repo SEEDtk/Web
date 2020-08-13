@@ -44,6 +44,7 @@ use WebUtils;
 use XML::Simple;
 use Web_Config;
 use SeedUtils;		# This must go after "Web_Config" or it won't be found!
+use IPC::Run3;
 
 use constant CORE_PREFIX_URL => "https://core.theseed.org/FIG/seedviewer.cgi?page=Annotation&feature=";
 use constant CORE_SUBSYSTEM_URL => "https://core.theseed.org/FIG/seedviewer.cgi?page=Subsystems;subsystem=";
@@ -90,172 +91,22 @@ sub write_index {
 
 ## Write the health report.
 sub write_report {
-    my $ssName = ssName($ssID);
-    # We need to read the subsystem spreadsheet and then the assigned_functions file for each genome.
-    # This will contain a list of the roles in each column.
-    my @roles;
-    # This will contain the role abbreviations.
-    my @abbrs;
-    # This will contain the role strings.
-    my @names;
-    # This will map roles to column indices.
-    my %columns;
-    # For each role, this will contain a hash mapping incorrect roles to pegs containing them.
-    my @countHashes;
-    # For each role, this will count the number of times it occurs correctly in a feature.
-    my @correctRole;
-    # For each role, this will count the pegs that are disconnected.
-    my @disPegs;
-    # This will hold the HTML for the spreadsheet table.
-    my @lines;
-    # This will hold the IDs of the missing genomes.
-    my @missingGenomes;
-    # Write the title and link to the subsystem page.
-    print CGI::h1(CGI::a({ href => (CORE_SUBSYSTEM_URL . $ssID), target => "_blank"}, $ssName));
-    # Read the subsystem roles.
-    open(my $sh, '<', "$ssDir/$ssID/spreadsheet") || die "Could not open subsystem spreadsheet: $!";
-    for (my $line = <$sh>; defined $line && $line ne SECTION_MARKER; $line = <$sh>) {
-        chomp $line;
-        my ($abbr, $function) = split /\t/, $line;
-        push @abbrs, $abbr;
-        push @names, $function;
-        my @funRoles = SeedUtils::roles_of_function($function);
-        push @roles, \@funRoles;
-        for my $role (@funRoles) {
-            $columns{$role} = $#roles;
+    my $debug = $cgi->param('debug');
+    eval {
+        my @cmd = split /\s/, "java -Dlogback.configurationFile=$FIG_Config::mod_base/kernel/jars/weblogback.xml -jar $FIG_Config::mod_base/kernel/jars/web.utils.jar";
+        push @cmd, $ssID, "$FIG_Config::data/CoreSEED/FIG/Data";
+        my (@err, @out);
+        my $rc = IPC::Run3::run3(\@cmd, \undef, undef, \@err);
+        if ($debug) {
+            print CGI::h2("Log Messages");
+            print CGI::p("Return code is $rc.");
+            print CGI::ul(CGI::li(\@err));
         }
-        push @correctRole, 0;
-        push @disPegs, 0;
-        push @countHashes, { };
+    };
+    if ($@) {
+        print CGI::blockquote($@);
     }
-    # Skip the groups.
-    for (my $line = <$sh>; defined $line && $line ne SECTION_MARKER; $line = <$sh>) { }
-    # Open the display section.
-    print CGI::start_div({ id => 'Pod' });
-    # Read the spreadsheet.  Each line is a genome.  We read the full spreadsheet into a hash
-    # so the last version of a genome is kept.  Then we process them in order.
-    my %rows;
-    while (! eof $sh) {
-        my $line = <$sh>;
-        chomp $line;
-        # Note that not all the role cells will be filled, so we need to fix that.
-        my ($genome, $variant, @cells) = split /\t/, $line;
-        while (scalar @cells < scalar @roles) {
-            push @cells, '';
-        }
-        my $colsUsed = grep { $_ } @cells;
-        if ($colsUsed) {
-            $rows{$genome} = [$variant, @cells];
-        }
-    }
-    # Write the spreadsheet header.
-    push @lines, CGI::start_table();
-    push @lines, CGI::Tr(CGI::th(['Genome', 'Variant', @abbrs]));
-    # Now loop through the genomes.
-    for my $genome (sort keys %rows) {
-        my $row = $rows{$genome};
-        my ($variant, @cells) = @$row;
-        # This will hold the column index of each peg.
-        my %pegCols;
-        # Loop through the cells.  Each cell's peg list is converted to a hash:  peg -> mode.
-        # The default mode is "missing".  We change the mode if the peg is found in the assigned
-        # functions file.
-        for (my $i = 0; $i < @cells; $i++) {
-            my @pegs = split /,/, $cells[$i];
-            my %cellH;
-            for my $peg (@pegs) {
-                if ($peg =~ /^\D/) {
-                    $peg = "fig|$genome.$peg";
-                } else {
-                    $peg = "fig|$genome.peg.$peg";
-                }
-                $cellH{$peg} = 'missing';
-                $pegCols{$peg}{$i} = 1;
-            }
-            $cells[$i] = \%cellH;
-        }
-        # Now get the assigned functions.  We have to put these in a hash because only the last one counts.
-        my $functionH = read_functions($genome);
-        if (! $functionH) {
-            # Here the genome ID is not found.
-            push @missingGenomes, $genome;
-        } else {
-            # Loop through the functions, looking for features and roles that matter.
-            for my $peg (keys %$functionH) {
-                my $function = $functionH->{$peg};
-                my %runRoles = map { $_ => 1 } SeedUtils::roles_of_function($function);
-                # This will be set to the columns that should contain this peg.
-                my %goodCols;
-                # This is a hash of the columns that do contain the peg.
-                my $actualCols = $pegCols{$peg} // {};
-                # Process each role individually.
-                for my $role (keys %runRoles) {
-                    my $colIdx = $columns{$role};
-                    if (defined $colIdx) {
-                        # NOTE we had to used "defined" because 0 is a valid column index.  Here the role is used by the spreadsheet.
-                        # Verify that all roles in the column are present.
-                        my $errors = grep { ! $runRoles{$_} } @{$roles[$colIdx]};
-                        if (! $errors) {
-                            # Here the peg belongs in the role's column.
-                            $goodCols{$colIdx} = 1;
-                        }
-                    }
-                }
-                # Check the peg status.
-                for my $goodCol (keys %goodCols) {
-                    if ($actualCols->{$goodCol}) {
-                        # Here the peg is in the correct column.
-                        $cells[$goodCol]{$peg} = 'normal';
-                        $correctRole[$goodCol]++;
-                    } else {
-                        # Here the peg is disconnected in this column.
-                        $cells[$goodCol]{$peg} = 'disconnected';
-                        $disPegs[$goodCol]++;
-                    }
-                }
-                for my $actualCol (keys %$actualCols) {
-                    if (! $goodCols{$actualCol}) {
-                        # Here the peg is in a column where id does not belong.
-                        $cells[$actualCol]{$peg} = 'bad';
-                        push @{$countHashes[$actualCol]{$function}}, $peg;
-                    }
-                }
-            }
-            my $genomeLink = CGI::a({ href => (CORE_GENOME_URL . $genome), target => '_blank'}, $genome);
-            my @cellLinks;
-            for my $cell (@cells) {
-                my $html = join("<br />", map { display_peg($_, $cell->{$_}) } sort keys %$cell) || '&nbsp;';
-                push @cellLinks, $html;
-            }
-            push @lines, CGI::Tr(CGI::td([$genomeLink, $variant, @cellLinks]));
-        }
-    }
-    push @lines, CGI::end_table();
-    # Give the user a spreadsheet link.
-    print CGI::p(CGI::a({ href => "#sheet" }, 'Go to spreadsheet'));
-    # Are there missing genomes?
-    if (scalar @missingGenomes) {
-        my $count = scalar @missingGenomes;
-        print CGI::p("$count genomes were not found.");
-    }
-    # Write the role table.
-    write_role_table(\@names, \@abbrs, \@countHashes, \@correctRole, \@disPegs);
-    # Write the spreadsheet.
-    print CGI::h2(CGI::a({ name => 'sheet' }, "Subsystem Spreadsheet"));
-    print CGI::p("LEGEND" . CGI::ul(
-        CGI::li(CGI::a({ name => 'normal', class => 'normal' }, "Peg has correct role for column.")),
-        CGI::li(CGI::a({ name => 'bad', class => 'bad' }, "Peg does not have correct role for column (Bad Role).")),
-        CGI::li(CGI::a({ name => 'disconnected', class => 'disconnected' }, "Peg belongs in column, but is disconnected.")),
-        CGI::li(CGI::span({ class => 'missing' }, "Peg has been deleted from the genome.")),
-        ));
-    print join("\n", CGI::start_div({ class => 'wide' }), @lines, CGI::end_div());
-    # Write the missing genome list.
-    if (scalar @missingGenomes) {
-        print CGI::h2("Genomes No Longer in SEED");
-        print CGI::ol(CGI::li(\@missingGenomes));
-    }
-    print CGI::p((time - $start) . " seconds to compute and format page.");
-    print CGI::end_div();
+    print CGI::end_html();
 }
 
 sub read_functions {
