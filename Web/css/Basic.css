@@ -515,6 +515,10 @@ div.wide {
     text-align: right;
 }
 
+#Pod td.flag {
+	text-align: center;
+}
+
 #Dump ol {
    font-weight: bold;
 }
