@@ -22,6 +22,10 @@ h1, h2, h3, h4, h5 {
     color: #ff0;
 }
 
+h1.form, h2.form {
+    text-align: center;
+}
+
 a {
     color: #fff;
 }
@@ -43,7 +47,7 @@ a:visited {
     color: #0ff;
 }
 
-a:focus {
+#Pod a:focus {
     background-color: #fff;
 }
 
@@ -74,14 +78,6 @@ a.disconnected {
 td.highlight {
     font-weight: bold;
     background-color: #fc0;
-}
-
-a.official {
-    /* links to official site */
-}
-
-a.pageLink {
-    /* links to internal pages */
 }
 
 ol.a {
@@ -148,9 +144,10 @@ blockquote.example {
     display: table;
 }
 
-.logo img {
-    margin-top: -21px;
-    width: 300px;
+img.logo {
+    margin-top: -12px;
+    padding-right: 2em;
+    width: 60px;
     float: left;
     border: none;
 }
@@ -209,6 +206,10 @@ input.textFix {
     clear: both;
 }
 
+br.logo {
+    clear: left;
+}
+
 #Content {
     border: ridge 5px #222;
     padding: 5px;
@@ -256,7 +257,7 @@ div.indexItem {
     font-style: italic;
 }
 
-a:hover {
+#Content a:hover {
     background-color: #f00;
     color: #fff;
 }
@@ -308,6 +309,27 @@ form.special {
 form.basic, form.special {
     margin: 1em;
     background-color: #333;
+}
+
+form.web table {
+    margin: 0 auto;
+}
+
+#Pod form.web td {
+    height: 2em;
+    vertical-align: middle;
+}
+
+form.web td {
+    vertical-align: middle;
+}
+
+form.web p {
+    text-align: center;
+}
+
+form.web input.submit {
+    width: 10em;
 }
 
 div.left {
@@ -372,6 +394,19 @@ div.pod a,
    color: #00C;
 }
 
+input.file {
+    width: 25em;
+    padding: 1px;
+    border-style: inset;
+    border-width: 1px;
+}
+
+input.file[type="file"] {
+    padding: 2px;
+    border-style: none;
+    border-width: 0;
+}
+
 div.pod hr,
 #Pod hr,
 #Dump hr {
@@ -409,6 +444,24 @@ div.pod blockquote,
    border-color: #000;
    background-color: #ff0;
    padding: 2px;
+}
+
+div#Aligned {
+    overflow-x: scroll;
+    overflow-y: scroll;
+    max-height: 90vh;
+}
+
+
+#Aligned td {
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+#Aligned th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
 }
 
 #Dump pre.resp {
@@ -507,16 +560,25 @@ div.pod table,
 
 div.wide {
     width: 95%;
-    height: 800px;
+    max-height: 90vh;
     overflow-x: scroll;
+    overflow-y: scroll;
+}
+
+div.wide table {
+    display: inline-block;
 }
 
 #Pod td.num {
     text-align: right;
 }
 
+#Pod td.align {
+    font: monospace;
+}
+
 #Pod td.flag {
-	text-align: center;
+    text-align: center;
 }
 
 #Dump ol {
@@ -558,6 +620,36 @@ form#armyAnalysis {
 #Dump blockquote.alarm {
         background-color: #f00;
         color: #fff;
+}
+
+/** TOOLTIP SUPPORT */
+.tt {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tt:hover {
+    background-color: yellow;
+}
+
+/* Tooltip text */
+.tt .tip {
+  visibility: hidden;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px;
+}
+
+.tt:hover .tip {
+  visibility: visible;
 }
 
 @media screen {
