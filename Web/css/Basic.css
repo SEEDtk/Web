@@ -574,7 +574,7 @@ div.wide table {
 }
 
 #Pod td.align {
-    font: monospace;
+    font-family: monospace;
 }
 
 #Pod td.flag {
