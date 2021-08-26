@@ -373,7 +373,8 @@ sub FindPod {
         if ($modName eq 'Config.pl') {
             @files = ("$FIG_Config::proj/Config.pl");
         } elsif ($modName =~ /\.pl/) {
-            @files = map { "$_/$modName" } @FIG_Config::scripts;
+            my @allScripts = ("$FIG_Config::userHome/dev_container/modules/app_service/scripts", @FIG_Config::scripts);
+            @files = map { "$_/$modName" } @allScripts;
         } elsif ($modName =~ /\.spec/) {
             @files = map { "$_/$modName" } @FIG_Config::libs;
         } elsif ($modName =~ /\.cgi/) {
