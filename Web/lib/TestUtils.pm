@@ -2,6 +2,8 @@ package TestUtils;
 
     use strict;
     use CGI;
+    use FindBin 1.51 qw( $RealBin );
+    use lib $RealBin;
     use WebUtils;
 
 =head1 Test Utilities
