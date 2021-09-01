@@ -19,7 +19,8 @@
 
 
 use strict;
-use lib::Web_Config;
+use lib 'lib';
+use Web_Config;
 use P3DataAPI;
 use P3Utils;
 use Data::Dumper;
